@@ -1,0 +1,10 @@
+services:
+  mysql:
+    image: mysql:latest
+    environment:
+      - MYSQL_DATABASE=sooktin
+      - MYSQL_PASSWORD=sooktin0000
+      - MYSQL_ROOT_PASSWORD=sooktin0824
+      - MYSQL_USER=admin
+    ports:
+      - "3306:3306"
