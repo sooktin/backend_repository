@@ -27,23 +27,23 @@ public class CommunityController {
 
 
 
-   /* // 커뮤니티 목록 조회
+    // 커뮤니티 목록 조회
     @GetMapping
     public List<Community> getAllCommunities() {
-        return communityService.getAllCommunities();
+        return communityService.findAll();
     }
 
     // 특정 커뮤니티 조회
     @GetMapping("/{id}")
     public ResponseEntity<Community> getCommunityById(@PathVariable Long id) {
-        Optional<Community> community = communityService.getCommunityById(id);
+        Optional<Community> community = communityService.findById(id);
         return community.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    // 커뮤니티 생성
+    // 포스트 생성
     @PostMapping
-    public Community createCommunity(@RequestBody Community community) {
-        return communityService.createCommunity(community);
+    public Community createPost(@RequestBody Community community) {
+        return communityService.save(community);
     }
 
     // 커뮤니티 수정
@@ -56,11 +56,11 @@ public class CommunityController {
     // 커뮤니티 삭제
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCommunity(@PathVariable Long id) {
-        if (communityService.deleteCommunity(id)) {
+        if (communityService.deleteById(id)) { // 리턴값 수정해야 함
             return ResponseEntity.noContent().build();
         } else {
             return ResponseEntity.notFound().build();
         }
-    }*/
+    }
 
 }
