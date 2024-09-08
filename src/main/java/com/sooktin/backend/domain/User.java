@@ -1,11 +1,15 @@
 package com.sooktin.backend.domain;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.Set;
 
 @Entity
 @Table(name = "users")
+@Getter
+@Setter
 public class User {
 
     @Id
@@ -17,7 +21,7 @@ public class User {
     private String email;
 
     @Column(name = "is_email")
-    private boolean isEmail;
+    private boolean isEmail=false;
 
     @Column
     private String nickname;
