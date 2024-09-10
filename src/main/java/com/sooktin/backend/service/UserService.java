@@ -40,7 +40,7 @@ public class UserService {
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRoles(Collections.singleton(UserRole.USER));
-        user.setEmail(false);
+        //user.setEmail(false);
 
         User savedUser = userRepository.save(user);
 
@@ -69,7 +69,7 @@ public class UserService {
         if (verificationToken.getExpiryDate().getTime() - calendar.getTime().getTime() <= 0){
             return "Token expired";
         }
-        user.setEmail(true);
+        //user.setEmail(true);
         userRepository.save(user);
         return "이메일 인증에 성공하였습니다.";
     }
