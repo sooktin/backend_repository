@@ -1,11 +1,8 @@
 package com.sooktin.backend.controller;
 
-<<<<<<< HEAD
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RestController;
 
-@RestController
-=======
 import com.sooktin.backend.domain.Usernote;
 import com.sooktin.backend.service.UsernoteService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,62 +14,81 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping
->>>>>>> f938953 (0910 usernote 추가)
 public class UsernoteController {
+
     /**
      * 클라이언트(우리는 리액트)에게 전달합니다.
      *  controller에서 @GetMapping() { } 등등이 쓰임
      **/
-<<<<<<< HEAD
-=======
 
     private final UsernoteService usernoteService;
 
     @Autowired
-    public UsernoteController(UsernoteService UsernoteService) {
-        this.usernoteService = UsernoteService;
+    public UsernoteController(UsernoteService usernoteService) {
+        this.usernoteService = usernoteService;
     }
 
-    // 커뮤니티 목록 조회
-    @GetMapping
-    public List<Usernote> getAllUsernotes() {
-        return usernoteService.findAll();
+    // 포스트 목록 조회
+    @GetMapping("/usernotes")
+    public ResponseEntity<?> getAllUsernotes() {
+        try {
+            List<Usernote> usernotes = usernoteService.findAll();
+            return ResponseEntity.ok(usernotes);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("게시글 목록을 불러오는 중 오류가 발생했습니다: " + e.getMessage());
+        }
     }
 
-    // 특정 커뮤니티 조회
-    @GetMapping("/{id}")
-    public ResponseEntity<Usernote> getUsernoteById(@PathVariable Long id) {
-        Optional<Usernote> Usernote = usernoteService.findById(id);
-        return Usernote.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    // 특정 포스트 조회
+    @GetMapping("/usernote/{id}")
+    public ResponseEntity<?> getUsernoteById(@PathVariable Long id) {
+        try {
+            Optional<Usernote> usernote = usernoteService.findById(id);
+            return usernote.map(ResponseEntity::ok)
+                    .orElseGet(() -> ResponseEntity.notFound().build()); // 아 이거 오류메세지 적으면 오류뜨는거 왜그러지
+            // ResponseEntity.badRequest().body("해당 게시글을 찾을 수 없습니다."));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("게시글 조회 중 오류가 발생했습니다: " + e.getMessage());
+        }
     }
 
     // 포스트 생성
-    @PostMapping
-    public Usernote createPost(@RequestBody Usernote Usernote) {
-        return usernoteService.save(Usernote);
-    }
-     /*
-    // 커뮤니티 수정
-    @PutMapping("/{id}")
-    public ResponseEntity<Usernote> updateUsernote(@PathVariable Long id, @RequestBody Usernote UsernoteDetails) {
-        Optional<Usernote> updatedUsernote = usernoteService.updateUsernote(id, UsernoteDetails);
-        return updatedUsernote.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-      */
-
-    /*
-    // 커뮤니티 삭제
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUsernote(@PathVariable Long id) {
-        if (usernoteService.deleteById(id)) { // 리턴값 수정해야 함
-            return ResponseEntity.noContent().build();
-        } else {
-            return ResponseEntity.notFound().build();
+    @PostMapping("/usernotes")
+    public ResponseEntity<?> createPost(@RequestBody Usernote usernote) {
+        try {
+            Usernote newUsernote = new Usernote();
+            newUsernote.setTitle(usernote.getTitle());
+            newUsernote.setContent(usernote.getContent());
+            Usernote createdUsernote = usernoteService.createUsernote(newUsernote);
+            return ResponseEntity.ok(createdUsernote);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("게시글 생성 중 오류가 발생했습니다: " + e.getMessage());
         }
     }
-    */
 
+    // 포스트 수정
+    @PatchMapping("/usernote/{id}")
+    public ResponseEntity<?> updateUsernote(@PathVariable Long noteid, @RequestBody Usernote usernoteDetails) {
+        try {
+            Usernote updatedUsernote = usernoteService.updateUsernote(noteid, usernoteDetails);
+            return ResponseEntity.ok(updatedUsernote);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("게시글 수정 중 오류가 발생했습니다: " + e.getMessage());
+        }
+    }
 
->>>>>>> f938953 (0910 usernote 추가)
+    // 포스트 삭제
+    @DeleteMapping("/usernote/{id}")
+    public ResponseEntity<?> deleteUsernote(@PathVariable Long id) {
+        try {
+            if (usernoteService.deleteById(id)) { // 삭제 성공
+                return ResponseEntity.noContent().build();
+            } else { // 삭제 실패
+                // return ResponseEntity.notFound().build();
+                return ResponseEntity.badRequest().body("해당 게시글을 찾을 수 없습니다.");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("게시글 삭제 중 오류가 발생했습니다: " + e.getMessage());
+        }
+    }
 }

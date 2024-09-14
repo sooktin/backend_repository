@@ -1,87 +1,64 @@
 package com.sooktin.backend.service;
 
-<<<<<<< HEAD
-import com.sooktin.backend.domain.Usernote;
-import com.sooktin.backend.repository.UsernoteRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-=======
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.sooktin.backend.domain.Usernote;
 import com.sooktin.backend.repository.UsernoteRepository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
->>>>>>> f938953 (0910 usernote 추가)
 
 @Service
 public class UsernoteService {
-    /**
-<<<<<<< HEAD
-     * 여기에서 비즈니스 로직을 만들어냅니다.
-     * 스프링의 트랜잭션 관리를 받음
-     **/
-    @Autowired
-    UsernoteRepository usernoteRepository;
 
-    //이런 식으로!
-    public Usernote saveNote(Usernote usernote) {
+    private final UsernoteRepository usernoteRepository;
+
+    @Autowired
+    public UsernoteService(UsernoteRepository usernoteRepository) {
+        this.usernoteRepository = usernoteRepository;
+    }
+
+    // C - Create post
+    public Usernote createUsernote(Usernote usernote) {
+        if (usernote.getContent().length() > 300) {
+            throw new IllegalArgumentException("내용은 300자를 초과할 수 없습니다.");
+        }
+        if (usernote.getTitle() == null || usernote.getTitle().isEmpty()) {
+            throw new IllegalArgumentException("제목은 비워둘 수 없습니다.");
+        }
         return usernoteRepository.save(usernote);
     }
-=======
-     * 여기에서 게시판 CRUD 의 비즈니스 로직을 만들어냅니다.
-     * 스프링의 트랜잭션 관리를 받음
-     **/
-    private final  UsernoteRepository UsernoteRepository;
 
-    @Autowired
-    public  UsernoteService(UsernoteRepository UsernoteRepository) {
-        this.UsernoteRepository = UsernoteRepository;
-    }
-
-    //C - create post
-    public Usernote save(Usernote Usernote) {
-        return UsernoteRepository.save(Usernote);
-    }
-    //R - read all post
+    // R - Read all posts
     public List<Usernote> findAll() {
-        return UsernoteRepository.findAll();
+        return usernoteRepository.findAll();
     }
-    //R - read post by id
+
+    // R - Read post by ID
     public Optional<Usernote> findById(long id) {
-        return UsernoteRepository.findById(id);
+        return usernoteRepository.findById(id);
     }
 
-    /*
-
-    // U - update by id
-    public Long updateUsernote(Usernote Usernote) {
-        Usernote Usernote = UsernoteRepository.findById(id).orElseThrow(
-                () -> new IllegalArgumentException("해당 아이디가 존재하지 않습니다. ")
-        );
-        Usernote update();
-        return ;
-    }
-    //입력값을 받아와야 그 입력값으로 하는 건데 입력값 구현 X
-
-
-    /*
-    *  // 글 수정
+    // U - Update post by ID
     @Transactional
-    public Long updateBoard(Long id, BoardRequestDto requestDto) {
-        Board board = boardRepository.findById(id).orElseThrow(
-                () -> new IllegalArgumentException("해당 아이디가 존재하지 않습니다.")
+    public Usernote updateUsernote(Long id, Usernote updatedUsernote) {
+        Usernote usernote = usernoteRepository.findById(id).orElseThrow(
+                () -> new IllegalArgumentException("해당 포스트가 존재하지 않습니다. id: " + id)
         );
-        board.update(requestDto);
-        return board.getId();
+        usernote.setTitle(updatedUsernote.getTitle());
+        usernote.setContent(updatedUsernote.getContent());
+        usernote.setLikes(updatedUsernote.getLikes());
+        return usernote;
     }
-    * */
-    /*
-    //D - delete post by id
-    public void deleteById(long id) {
-        UsernoteRepository.deleteById(id);
+
+    // D - Delete post by ID
+    public boolean deleteById(long id) {
+        if (usernoteRepository.existsById(id)) {
+            usernoteRepository.deleteById(id);
+            return true;
+        } else {
+            throw new IllegalArgumentException("해당 포스트가 존재하지 않습니다. id: " + id);
+        }
     }
-    */
->>>>>>> f938953 (0910 usernote 추가)
 }
