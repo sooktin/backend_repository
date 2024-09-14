@@ -9,16 +9,11 @@ import java.util.Optional;
 
 @Repository
 public interface UsernoteRepository extends JpaRepository<Usernote, Long> {
-    // 제목으로 Usernote 엔터티 찾기
-    Optional<Usernote> findByTitle(String title);
 
-    // ID로 Usernote 엔터티 찾기
-    Optional<Usernote> findById(Long id);
-
-    // 모든 Usernote 엔터티 리스트로 가져오기
-    List<Usernote> findAll();
-
-    // ID로 Usernote 삭제
+    Usernote save(Usernote usernote);
+    Optional<Usernote> findByTitle(String title); // 제목으로 Usernote 엔터티 찾기
+    Optional<Usernote> findById(long id);
+    List<Usernote> findAll(); // 모든 Usernote 엔터티 리스트로 가져오기
     @Override
-    void deleteById(Long id);
+    void deleteById(Long id);  // ID로 Usernote 삭제
 }
