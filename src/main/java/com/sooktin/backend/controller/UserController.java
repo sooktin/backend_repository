@@ -12,6 +12,10 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @GetMapping("/register")
+    public String showRegister(){
+        return "good";
+    }
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody User user){
         try {

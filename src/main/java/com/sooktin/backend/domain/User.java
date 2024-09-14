@@ -21,7 +21,7 @@ public class User {
     private String email;
 
     @Column(name = "is_email")
-    private boolean isEmail=false;
+    private boolean isEmail;
 
     @Column
     private String nickname;
