@@ -13,7 +13,7 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    /*@Bean
+/*    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
 
@@ -25,7 +25,21 @@ public class SecurityConfig {
                 .httpBasic(httpBasic -> {});
         return http.build();
     }*/
+
     @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .authorizeHttpRequests((requests) -> requests
+                        .anyRequest().permitAll() // 모든 요청을 허용
+                )
+                .csrf((csrf) -> csrf.disable()) // CSRF 보호 비활성화
+                .formLogin((login) -> login.disable()) // 폼 로그인 비활성화
+                .httpBasic((basic) -> basic.disable()); // HTTP Basic 인증 비활성화
+
+        return http.build();
+    }
+
+/*    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests((requests) -> requests
@@ -37,7 +51,7 @@ public class SecurityConfig {
                 .httpBasic((basic)->basic.disable());
 
         return http.build();
-    }
+    }*/
 
     @Bean
     public PasswordEncoder passwordEncoder() {
