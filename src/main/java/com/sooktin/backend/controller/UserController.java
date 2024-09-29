@@ -1,16 +1,28 @@
 package com.sooktin.backend.controller;
 
+import com.nimbusds.openid.connect.sdk.LogoutRequest;
+import com.sooktin.backend.auth.AuthResponse;
+import com.sooktin.backend.auth.AuthenticationResult;
+import com.sooktin.backend.auth.AuthenticationStatus;
+import com.sooktin.backend.auth.TwofaRequiredResponse;
 import com.sooktin.backend.domain.User;
+import com.sooktin.backend.dto.user.UserDto;
+import com.sooktin.backend.service.AuthenticationService;
 import com.sooktin.backend.service.UserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.web.csrf.InvalidCsrfTokenException;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
+@RequiredArgsConstructor
 public class UserController {
-    @Autowired
-    private UserService userService;
+    private final AuthenticationService authenticationService;
+
+    private final UserService userService;
 
     @GetMapping("/register")
     public String showRegister(){
@@ -27,12 +39,31 @@ public class UserController {
     }
 
     @GetMapping("/2fa")
-    public ResponseEntity<?> confirmEmail(@RequestParam("token") String token) {
-        String result = userService.confirmEmail(token);
-        if (result.equals("이메일 인증에 성공하였습니다.")) {
+    public ResponseEntity<String> confirmEmail(@RequestParam("token") String token) {
+        try {
+            String result = userService.confirmEmail(token);
             return ResponseEntity.ok(result);
-        } else {
-            return ResponseEntity.badRequest().body(result);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("에러 발생");
         }
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody User user){
+        AuthenticationResult result = authenticationService.authenticate(user.getEmail(), user.getPassword());
+        if (result.getStatus() == AuthenticationStatus.REQUIRES_2FA) {
+            return ResponseEntity.ok(new TwofaRequiredResponse());
+        } else if (result.getStatus() == AuthenticationStatus.AUTHENTICATED) {
+            return ResponseEntity.ok(new AuthResponse(result.getToken()));
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("다시 접속해주세요.");
+        }
+
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@RequestBody UserDto.LogoutRequestDto logoutRequestDto){
+        authenticationService.logout(logoutRequestDto.getEmail());
+        return ResponseEntity.ok().build();
     }
 }

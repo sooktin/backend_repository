@@ -1,10 +1,13 @@
+jwt:
+    access-expiration: 360000
+    secret-key: cThIIoDvwdueQB468K5xDc5633seEFoqwxjF_xSJyQQ
 server:
   error:
     include-binding-errors: always
     include-message: always
 spring:
   application:
-    name: backend
+    name: sooktin
   datasource:
     url: jdbc:mysql://localhost:3306/sooktin
     username: admin
@@ -12,7 +15,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
@@ -33,3 +36,7 @@ spring:
           auth: true
           starttls:
             enable: true
+  data:
+    redis:
+      host: test
+      port: 6379
