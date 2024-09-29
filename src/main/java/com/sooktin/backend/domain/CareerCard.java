@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -34,7 +35,11 @@ public class CareerCard {
 
     @CreationTimestamp
     @Column(nullable = false)
-    private LocalDateTime created_at; // 만든날짜
+    private LocalDateTime created_at; // 생성일시
+
+    @UpdateTimestamp
+    @Column(nullable = false)
+    private LocalDateTime modified_at; // 수정일시
 
     @Column(length = 255)
     private String image_url; // 이미지(s3에서 업로드)
