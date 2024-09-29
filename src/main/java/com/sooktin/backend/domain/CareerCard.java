@@ -21,6 +21,14 @@ public class CareerCard {
     @Column(name = "cardId")
     private Long id; // 카드ID
 
+    @OneToOne(fetch = FetchType.LAZY) // 회원ID 외래키 - 일대일
+    @JoinColumn(name = "user_id", nullable = false) // 외래키 선언
+    private User user; // 회원 정보 (User 엔티티와 연결)
+
+    @ManyToOne(fetch = FetchType.LAZY) // 보관Id 외래키 - 다대일
+    @JoinColumn(name = "storage_id", nullable = false) // 외래키 선언
+    private CareerCard_store careerCardStore; // CareerCard_store 엔티티와 연결
+
     @Column(length = 10, nullable = false)
     private String major; // 전공
 
@@ -32,7 +40,7 @@ public class CareerCard {
     private String image_url; // 이미지(s3에서 업로드)
 
     @Column(length = 10, nullable = false)
-    private boolean student_statue; // 재학여부(휴학/재학/졸업)
+    private boolean student_status; // 재학여부(휴학/재학/졸업)
 
     @Column(nullable = false)
     private byte grade; // 학년 (1 ,2, 3 ..etc.)
