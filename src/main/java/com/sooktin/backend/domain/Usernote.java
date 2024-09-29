@@ -34,4 +34,9 @@ public class Usernote {
     @UpdateTimestamp
     @Column(nullable = false)
     private LocalDateTime modified_at; // 수정일시
+
+    // User와 일대일 관계 설정 (회원ID 외래키)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false) // 외래키 선언
+    private User user; // 회원 정보 (User 엔티티와 연결)
 }
