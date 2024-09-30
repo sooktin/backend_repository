@@ -35,10 +35,6 @@ public class AuthenticationService {
     public AuthenticationResult authenticate(String email, String password) {
 
 
-        if (!userRepository.existsByEmail(email)) {
-            return new AuthenticationResult(AuthenticationStatus.NONE_ACCOUNT, null);
-        }
-
 
        if (!userRepository.existsByEmail(email)) {
            return new AuthenticationResult(AuthenticationStatus.NONE_ACCOUNT,null);
