@@ -13,6 +13,9 @@ import com.sooktin.backend.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
+
+import org.springframework.security.authentication.BadCredentialsException;
+
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -32,10 +35,22 @@ public class AuthenticationService {
 
 
     public AuthenticationResult authenticate(String email, String password) {
+
+        if (!userRepository.existsByEmail(email)) {
+            return new AuthenticationResult(AuthenticationStatus.NONE_ACCOUNT, null);
+        }
+
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(email, password)
         );
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
+        if (!userDetails.isEnabled()) {
+            return new AuthenticationResult(AuthenticationStatus.ACCOUNT_DISABLED, null);
+        }
+        if (authentication.getName() == null) {
+            return new AuthenticationResult(AuthenticationStatus.NONE_ACCOUNT, null);
+        }
 
         if (userDetails.is2faEnabled()) {
             String twoFc = generate2faCode();
@@ -48,11 +63,14 @@ public class AuthenticationService {
             return new AuthenticationResult(AuthenticationStatus.REQUIRES_2FA, null);
         } else {
             String token = generateTokenAndSave(userDetails);
-            return new AuthenticationResult(AuthenticationStatus.AUTHENTICATED,token);
+            return new AuthenticationResult(AuthenticationStatus.AUTHENTICATED, token);
         }
     }
 
-    public String completeTFAuthentication(String email, String twoFc){
+
+
+    public String completeTFAuthentication(String email, String twoFc) {
+
         String storedCode = redisTemplate.opsForValue().get("2FA_" + email);
         if (storedCode == null) {
             throw new InvalidTwoFaCodeException("2FA code has expired or does not exist");
@@ -71,10 +89,13 @@ public class AuthenticationService {
     private String generate2faCode() {
         Random random = new Random();
         int num = random.nextInt(999999);
-        return String.format("%06d",num);
+
+        return String.format("%06d", num);
     }
 
-    private String generateTokenAndSave (CustomUserDetails userDetails){
+
+    private String generateTokenAndSave(CustomUserDetails userDetails) {
+
         String token = jwtUtil.generateToken(userDetails);
         redisTemplate.opsForValue().set(
                 "JWT_" + userDetails.getUsername(),
@@ -84,9 +105,12 @@ public class AuthenticationService {
         return token;
     }
 
-    public void logout(String email){
-        redisTemplate.delete("JWT_"+email);
+
+    public void logout(String email) {
+        redisTemplate.delete("JWT_" + email);
     }
+
+
     public boolean validateToken(String token) {
         /*if (!jwtUtil.validateToken(token)) {
             return false;
@@ -94,5 +118,10 @@ public class AuthenticationService {
         String email = jwtUtil.getEmailFromToken(token);
         String storedToken = redisTemplate.opsForValue().get("JWT_" + email);
         return token.equals(storedToken);
+    }
+
+
+    public boolean checkEmailExists(String email) {
+        return userRepository.existsByEmail(email);
     }
 }

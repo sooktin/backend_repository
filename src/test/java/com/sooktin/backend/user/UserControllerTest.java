@@ -1,5 +1,6 @@
 package com.sooktin.backend.user;
 
+<<<<<<< HEAD
 import com.sooktin.backend.domain.User;
 import com.sooktin.backend.domain.UserRole;
 import com.sooktin.backend.repository.UserRepository;
@@ -10,6 +11,28 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+=======
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sooktin.backend.auth.AuthenticationResult;
+import com.sooktin.backend.auth.AuthenticationStatus;
+import com.sooktin.backend.controller.UserController;
+import com.sooktin.backend.domain.User;
+import com.sooktin.backend.domain.UserRole;
+import com.sooktin.backend.repository.UserRepository;
+import com.sooktin.backend.service.AuthenticationService;
+import com.sooktin.backend.service.UserService;
+import jakarta.persistence.Table;
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+>>>>>>> 309acbb (중간저장)
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.web.servlet.MockMvc;
@@ -27,6 +50,10 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+<<<<<<< HEAD
+=======
+import static org.mockito.Mockito.when;
+>>>>>>> 309acbb (중간저장)
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -38,6 +65,44 @@ public class UserControllerTest {
     @Autowired
     private UserRepository userRepository;
 
+<<<<<<< HEAD
+=======
+    @MockBean
+    private AuthenticationService authenticationService;
+    @InjectMocks
+    private UserController userController;
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @BeforeEach
+    public void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
+
+
+
+    @Test
+    public void testLoginWithNoneAccount() throws Exception {
+        Long id = 1L;
+        String nickname="123";
+        String email ="123@example.com";
+        String password="123";
+        User user = User.builder()
+                .id(id)
+                .nickname(nickname)
+                .email(email)
+                .password(password)
+                .build();
+        when(authenticationService.authenticate(email,password))
+                .thenReturn(new AuthenticationResult(AuthenticationStatus.NONE_ACCOUNT,null));
+
+        mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(user)))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("이메일이 존재하지 않아 회원가입으로 이동합니다."));
+    }
+>>>>>>> 309acbb (중간저장)
 
     @Transactional
     @Rollback
