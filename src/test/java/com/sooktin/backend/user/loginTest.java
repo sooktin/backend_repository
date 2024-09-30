@@ -1,10 +1,8 @@
 package com.sooktin.backend.user;
 
-<<<<<<< HEAD
-import com.sooktin.backend.dto.user.UserDto;
-=======
+
 import com.sooktin.backend.dto.UserDto;
->>>>>>> 309acbb (중간저장)
+
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -13,10 +11,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-<<<<<<< HEAD
-import org.springframework.transaction.annotation.Transactional;
-=======
->>>>>>> 309acbb (중간저장)
 
 import java.util.Set;
 

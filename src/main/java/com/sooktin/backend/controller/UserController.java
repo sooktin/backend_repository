@@ -6,12 +6,21 @@ import com.sooktin.backend.auth.AuthenticationStatus;
 import com.sooktin.backend.auth.TwofaRequiredResponse;
 import com.sooktin.backend.domain.User;
 
+import com.sooktin.backend.dto.email.EmailCheckRequest;
+import com.sooktin.backend.dto.email.EmailCheckResponse;
+
 import com.sooktin.backend.service.AuthenticationService;
 import com.sooktin.backend.service.UserService;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
 import org.springframework.security.web.csrf.InvalidCsrfTokenException;
 
 import com.sooktin.backend.dto.UserDto;
@@ -28,6 +37,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
 
 import org.springframework.web.bind.annotation.*;
 
@@ -100,7 +110,12 @@ public class UserController {
         }
 
 
+
     }
+
+
+
+
 
 
     @Operation(summary = "로그아웃 API", description = "이미 로그아웃되었으므로 아무것도 반환하지 않습니다.")

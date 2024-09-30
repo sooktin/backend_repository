@@ -13,9 +13,7 @@ import com.sooktin.backend.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
-
 import org.springframework.security.authentication.BadCredentialsException;
-
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -36,14 +34,21 @@ public class AuthenticationService {
 
     public AuthenticationResult authenticate(String email, String password) {
 
+
         if (!userRepository.existsByEmail(email)) {
             return new AuthenticationResult(AuthenticationStatus.NONE_ACCOUNT, null);
         }
+
+
+       if (!userRepository.existsByEmail(email)) {
+           return new AuthenticationResult(AuthenticationStatus.NONE_ACCOUNT,null);
+       }
 
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(email, password)
         );
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
 
         if (!userDetails.isEnabled()) {
             return new AuthenticationResult(AuthenticationStatus.ACCOUNT_DISABLED, null);
@@ -65,8 +70,9 @@ public class AuthenticationService {
             String token = generateTokenAndSave(userDetails);
             return new AuthenticationResult(AuthenticationStatus.AUTHENTICATED, token);
         }
-    }
 
+
+    }
 
 
     public String completeTFAuthentication(String email, String twoFc) {
@@ -94,8 +100,8 @@ public class AuthenticationService {
     }
 
 
-    private String generateTokenAndSave(CustomUserDetails userDetails) {
 
+    private String generateTokenAndSave(CustomUserDetails userDetails) {
         String token = jwtUtil.generateToken(userDetails);
         redisTemplate.opsForValue().set(
                 "JWT_" + userDetails.getUsername(),
@@ -110,7 +116,6 @@ public class AuthenticationService {
         redisTemplate.delete("JWT_" + email);
     }
 
-
     public boolean validateToken(String token) {
         /*if (!jwtUtil.validateToken(token)) {
             return false;
@@ -121,7 +126,8 @@ public class AuthenticationService {
     }
 
 
-    public boolean checkEmailExists(String email) {
+    public boolean checkEmailExists(String email){
+
         return userRepository.existsByEmail(email);
     }
 }
