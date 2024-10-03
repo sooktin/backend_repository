@@ -21,14 +21,7 @@ public class CareerCardService {
 
     // C - Create CareerCard
     public CareerCard createCareerCard(CareerCard careerCard) {
-        // 유효성 검사 (닉네임이 비어있을 수 없음)
-        if (careerCard.getNickname() == null || careerCard.getNickname().isEmpty()) {
-            throw new IllegalArgumentException("닉네임은 비워둘 수 없습니다.");
-        }
-        // 재학 여부는 반드시 설정되어야 함
-        if (careerCard.isStudent_status() == false) {
-            throw new IllegalArgumentException("재학 여부는 필수 항목입니다.");
-        }
+        validateCareerCard(careerCard);
         return careerCardRepository.save(careerCard);
     }
 
@@ -92,4 +85,55 @@ public class CareerCardService {
         // return careerCard.getUser().getId().equals(loggedInUser.getId());
         return true;
     }
+
+    public void validateCareerCard(CareerCard careerCard) {
+        // 1. 닉네임 검증
+        if (careerCard.getNickname() == null || careerCard.getNickname().isEmpty()) {
+            throw new IllegalArgumentException("닉네임은 비워둘 수 없습니다.");
+        }
+
+        // 2. 재학 여부 검증
+        if (!careerCard.isStudent_status()) {
+            throw new IllegalArgumentException("재학 여부는 필수 항목입니다.");
+        }
+
+        // 3. 전공(major) 필드 검증
+        if (careerCard.getMajor() == null || careerCard.getMajor().isEmpty()) {
+            throw new IllegalArgumentException("전공은 비워둘 수 없습니다.");
+        }
+        if (careerCard.getMajor().length() > 10) {
+            throw new IllegalArgumentException("전공 필드는 최대 10자까지 입력 가능합니다.");
+        }
+
+        // 4. 이미지 URL 검증 (유효한 URL 형식인지)
+        if (careerCard.getImage_url() != null && !careerCard.getImage_url().isEmpty()) {
+                throw new IllegalArgumentException("유효하지 않은 URL 형식입니다.");
+        }
+
+        // 5. 학번(student_num) 필드 검증
+        if (careerCard.getStudent_num() == null || !careerCard.getStudent_num().matches("\\d{2}")) {
+            throw new IllegalArgumentException("학번은 정확히 2자리 숫자여야 합니다.");
+        }
+
+        // 6. 학년(grade) 필드 검증
+        if (careerCard.getGrade() < 1 || careerCard.getGrade() > 4) {
+            throw new IllegalArgumentException("학년은 1~4 사이의 값이어야 합니다.");
+        }
+
+        // 7. 경력(experience) 필드 검증 (길이 제한)
+        if (careerCard.getExperience() != null && careerCard.getExperience().length() > 5000) {
+            throw new IllegalArgumentException("경력 정보는 최대 5000자까지 입력 가능합니다.");
+        }
+
+        // 8. 기술(skills) 필드 검증
+        if (careerCard.getSkills() == null || careerCard.getSkills().isEmpty()) {
+            throw new IllegalArgumentException("기술 정보는 비워둘 수 없습니다.");
+        }
+
+        // 9. 소속(department) 필드 검증
+        if (careerCard.getDepartment() != null && careerCard.getDepartment().length() > 20) {
+            throw new IllegalArgumentException("소속 필드는 최대 20자까지 입력 가능합니다.");
+        }
+    }
+
 }
