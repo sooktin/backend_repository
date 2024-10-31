@@ -2,45 +2,15 @@ package com.sooktin.backend.user;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sooktin.backend.auth.AuthenticationResult;
-import com.sooktin.backend.auth.AuthenticationStatus;
-import com.sooktin.backend.controller.UserController;
-import com.sooktin.backend.domain.User;
-import com.sooktin.backend.domain.UserRole;
-import com.sooktin.backend.repository.UserRepository;
-import com.sooktin.backend.service.AuthenticationService;
-import com.sooktin.backend.service.UserService;
-import jakarta.persistence.Table;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sooktin.backend.auth.AuthenticationResult;
-import com.sooktin.backend.auth.AuthenticationStatus;
-import com.sooktin.backend.controller.UserController;
-import com.sooktin.backend.domain.User;
-import com.sooktin.backend.domain.UserRole;
-import com.sooktin.backend.repository.UserRepository;
-import com.sooktin.backend.service.AuthenticationService;
-import com.sooktin.backend.service.UserService;
-import jakarta.persistence.Table;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.Rollback;
@@ -49,7 +19,6 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
