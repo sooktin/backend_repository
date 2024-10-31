@@ -20,7 +20,7 @@ public class CareerCardController {
         this.careerCardService = careerCardService;
     }
 
-    // 모든 CareerCard 목록 조회
+    // 모든 CareerCard 목록 조회 - 개발자용
     @GetMapping("/all")
     public ResponseEntity<?> getAllCareerCards() {
         try {
@@ -90,10 +90,11 @@ public class CareerCardController {
             return ResponseEntity.badRequest().body("커리어카드를 수정하는 중 오류가 발생했습니다: " + e.getMessage());
         }
     }
+
     // /career-card/edit 엔드포인트: 현재 로그인된 사용자의 CareerCard 수정
 
     // CareerCard 삭제
-    @DeleteMapping("/careercard/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteCareerCard(@PathVariable Long id) {
         try {
             if (careerCardService.deleteById(id)) { // 삭제 성공

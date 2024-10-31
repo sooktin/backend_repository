@@ -45,7 +45,7 @@ public class CareerCard {
     private String image_url; // 이미지(s3에서 업로드)
 
     @Column(length = 10, nullable = false)
-    private boolean student_status; // 재학여부(휴학/재학/졸업)
+    private String student_status; // 재학여부(휴학/재학/졸업)
 
     @Column(nullable = false)
     private byte grade; // 학년 (1 ,2, 3 ..etc.)

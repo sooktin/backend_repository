@@ -50,7 +50,7 @@ public class CareerCardService {
 
         careerCard.setNickname(updatedCareerCard.getNickname()); // 닉네임 수정
         careerCard.setMajor(updatedCareerCard.getMajor()); // 전공 수정
-        careerCard.setStudent_status(updatedCareerCard.isStudent_status()); // 재학 여부 수정
+        careerCard.setStudent_status(updatedCareerCard.getStudent_status()); // 재학 여부 수정
         careerCard.setGrade(updatedCareerCard.getGrade()); // 학년 수정
         careerCard.setDepartment(updatedCareerCard.getDepartment()); // 소속 수정
         careerCard.setExperience(updatedCareerCard.getExperience()); // 경력 수정
@@ -93,9 +93,12 @@ public class CareerCardService {
         }
 
         // 2. 재학 여부 검증
-        if (!careerCard.isStudent_status()) {
-            throw new IllegalArgumentException("재학 여부는 필수 항목입니다.");
+        if (!careerCard.getStudent_status().equals("재학") &&
+                !careerCard.getStudent_status().equals("휴학") &&
+                !careerCard.getStudent_status().equals("졸업")) {
+            throw new IllegalArgumentException("재학 여부는 '재학', '휴학', '졸업' 중 하나여야 합니다.");
         }
+
 
         // 3. 전공(major) 필드 검증
         if (careerCard.getMajor() == null || careerCard.getMajor().isEmpty()) {

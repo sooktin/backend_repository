@@ -10,7 +10,6 @@ import java.util.Optional;
 public interface CareerCardRepository extends JpaRepository<CareerCard, Long> {
 
     CareerCard save(CareerCard community);
-    Optional<CareerCard> findByTitle(String title);
     Optional<CareerCard> findById(long id);
     List<CareerCard> findAll();
 
