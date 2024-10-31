@@ -1,4 +1,4 @@
-package com.sooktin.backend.global;
+package com.sooktin.backend.global.exception;
 
 public class InvalidTwoFaCodeException extends RuntimeException {
     public InvalidTwoFaCodeException(String s) {

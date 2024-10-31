@@ -5,17 +5,15 @@ import com.sooktin.backend.auth.AuthenticationResult;
 import com.sooktin.backend.auth.AuthenticationStatus;
 import com.sooktin.backend.auth.JwtUtil;
 import com.sooktin.backend.domain.User;
-import com.sooktin.backend.global.InvalidTwoFaCodeException;
+import com.sooktin.backend.global.exception.InvalidTwoFaCodeException;
 import com.sooktin.backend.repository.UserRepository;
-import com.sooktin.backend.service.CustomUserDetails;
-import com.sooktin.backend.service.EmailService;
-import com.sooktin.backend.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -30,15 +28,9 @@ public class AuthenticationService {
     private final RedisTemplate<String, String> redisTemplate;
     private final UserRepository userRepository;
     private final EmailService emailService;
-
+    private final CustomUserDetailsService customUserDetailsService;
 
     public AuthenticationResult authenticate(String email, String password) {
-
-
-
-       if (!userRepository.existsByEmail(email)) {
-           return new AuthenticationResult(AuthenticationStatus.NONE_ACCOUNT,null);
-       }
 
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(email, password)
@@ -56,7 +48,7 @@ public class AuthenticationService {
         if (userDetails.is2faEnabled()) {
             String twoFc = generate2faCode();
             redisTemplate.opsForValue().set(
-                    "2FA_" + userDetails.getUsername(),
+                    "JWT_" + userDetails.getUsername(),
                     twoFc,
                     Duration.ofMinutes(5)
             );
@@ -84,7 +76,7 @@ public class AuthenticationService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         CustomUserDetails userDetails = new CustomUserDetails(user);
-        redisTemplate.delete("2FA_" + email);
+        redisTemplate.delete("JWT_" + email);
         return generateTokenAndSave(userDetails);
     }
 
@@ -94,7 +86,6 @@ public class AuthenticationService {
 
         return String.format("%06d", num);
     }
-
 
 
     private String generateTokenAndSave(CustomUserDetails userDetails) {
@@ -109,21 +100,45 @@ public class AuthenticationService {
 
 
     public void logout(String email) {
-        redisTemplate.delete("JWT_" + email);
+        try {
+            SecurityContextHolder.clearContext(); //보안 컨텍스트 정리
+            redisTemplate.delete("JWT_" + email);
+        } catch (Exception e) {
+            throw new RuntimeException("logout failed", e);
+        }
     }
 
     public boolean validateToken(String token) {
-        /*if (!jwtUtil.validateToken(token)) {
-            return false;
-        }*/
         String email = jwtUtil.getEmailFromToken(token);
         String storedToken = redisTemplate.opsForValue().get("JWT_" + email);
         return token.equals(storedToken);
     }
 
 
-    public boolean checkEmailExists(String email){
+    public AuthenticationResult checkEmailExists(String email) {
+        try {
+            CustomUserDetails userDetails =
+                    (CustomUserDetails) customUserDetailsService.loadUserByUsername(email);
 
-        return userRepository.existsByEmail(email);
+            if (userDetails.isEmailNull()) {
+                return new AuthenticationResult(AuthenticationStatus.NONE_ACCOUNT, null);
+            } else {
+                return new AuthenticationResult(AuthenticationStatus.AUTHENTICATED, null);
+            }
+        } catch (UsernameNotFoundException e) {
+            return new AuthenticationResult(AuthenticationStatus.NONE_ACCOUNT, null);
+        }
+
     }
+
+
+    public String extractUsername(String token) {
+
+        return jwtUtil.extractUsername(token);
+    }
+
+    public UserDetails loadUserByUsername(String username) {
+        return customUserDetailsService.loadUserByUsername(username);
+    }
+
 }

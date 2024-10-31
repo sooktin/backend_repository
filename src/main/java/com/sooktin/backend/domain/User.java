@@ -1,5 +1,6 @@
 package com.sooktin.backend.domain;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -11,6 +12,7 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(description = "회원")
 public class User {
 
     @Id
@@ -19,14 +21,17 @@ public class User {
     private Long id;
 
     @Column(nullable = false, unique = true)
+    @Schema(description = "email", example = "foo@sookmyung.ac.kr")
     private String email;
 
+    @Schema(description = "Is_2fa", example = "true")
     @Column(name = "is_2fa")
     private boolean is2fa;
 
     @Column(nullable = false, unique = true)
     private String nickname;
 
+    @Schema(description = "password", example = "jamone122@3")
     @Column(nullable = false)
     private String password;
 
@@ -41,5 +46,9 @@ public class User {
 
     public boolean getIs2fa() {
         return is2fa;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

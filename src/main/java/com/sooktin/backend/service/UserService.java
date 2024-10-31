@@ -1,11 +1,14 @@
 package com.sooktin.backend.service;
 
+import com.sooktin.backend.auth.JwtUtil;
 import com.sooktin.backend.domain.User;
 import com.sooktin.backend.domain.UserRole;
 import com.sooktin.backend.domain.VerificationToken;
+import com.sooktin.backend.dto.user.PasswordChangeResponse;
 import com.sooktin.backend.repository.UserRepository;
 import com.sooktin.backend.repository.VerificationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +31,8 @@ public class UserService {
 
     @Autowired
     private EmailService emailService;
+    @Autowired
+    private JwtUtil jwtUtil;
 
     @Transactional
     public User registerUser(User user) throws Exception {
@@ -85,4 +90,19 @@ public class UserService {
 
       return
     }*/
+
+    @Transactional
+    public PasswordChangeResponse changeResponse(String token, String oldPassword, String newPassword) {
+        Long userId = jwtUtil.getUserIdFromToken(token);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("user not found!"));
+
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())){
+            return new PasswordChangeResponse(400,"current password not matches");
+        }
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        return new PasswordChangeResponse(200,"비밀번호가 변경되었습니다");
+    }
 }

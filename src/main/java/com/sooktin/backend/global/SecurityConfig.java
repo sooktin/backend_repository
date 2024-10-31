@@ -23,12 +23,10 @@ public class SecurityConfig{
 
     private final CustomUserDetailsService customUserDetailsService;
 
-
     public SecurityConfig(CustomUserDetailsService customUserDetailsService) {
         this.customUserDetailsService = customUserDetailsService;
 
     }
-
 
     //BCryptPasswordEncoder는 passwordEncoder 인터페이스를 구현한다.
     @Bean

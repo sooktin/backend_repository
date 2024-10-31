@@ -30,25 +30,27 @@ public class JwtUtil {
     @Value("${jwt.secret-key}")
     private String secret_key;
 
+    @Value("${jwt.issuer}")
+    private String issuer;
     @Value("${jwt.access-expiration}")
     private long expiration;
 
-    public String generateToken(CustomUserDetails userDetails){
+    public String generateToken(CustomUserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("id", userDetails.getUsername());
-        claims.put("roles",userDetails.getAuthorities().stream()
+        claims.put("email", userDetails.getUsername());
+        claims.put("roles", userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList()));
         return createToken(claims, userDetails.getUsername());
     }
 
-    public String createToken(Map<String,Object> claims,String subject) {
+    public String createToken(Map<String, Object> claims, String subject) {
         return Jwts.builder()
-                .issuer("sooktin")
+                .issuer(issuer)
                 .claims(claims)
                 .subject(subject)
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis()+expiration))
+                .expiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSigningKey(), Jwts.SIG.HS256)
                 .compact();
 
@@ -60,25 +62,48 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public Jws<Claims> validateToken(String token) {
+    public boolean validateToken(String token) {
         try {
-            val jwt = Jwts.parser()
+            Jwts.parser()
                     .verifyWith(getSigningKey())
                     .build()
                     .parseSignedClaims(token);
-            return jwt;
+            return true;
         } catch (JwtException e) {
-            log.error("JWT validation failed: {}",e.getMessage());
-            return  null;
+            log.error("JWT validation failed: {}", e.getMessage());
+            return false;
         }
     }
 
-    public String getEmailFromToken(String token){
+
+    public String getEmailFromToken(String token) {
         return Jwts.parser()
                 .verifyWith(getSigningKey())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload()
                 .getSubject();
+    }
+
+    public Long getUserIdFromToken(String token) {
+        return Jwts.parser()
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("id", Long.class);
+    }
+
+    public String extractUsername(String token) {
+        return parserClaims(token)
+                .getPayload()
+                .getSubject();
+    }
+
+    public Jws<Claims> parserClaims(String token) throws JwtException {
+        return Jwts.parser()
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token);
     }
 }

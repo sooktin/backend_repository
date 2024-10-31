@@ -1,4 +1,5 @@
 jwt:
+    issuer: sooktin
     access-expiration: 360000
     secret-key: cThIIoDvwdueQB468K5xDc5633seEFoqwxjF_xSJyQQ
 server:
