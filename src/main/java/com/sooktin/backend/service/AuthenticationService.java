@@ -52,7 +52,7 @@ public class AuthenticationService {
                     twoFc,
                     Duration.ofMinutes(5)
             );
-            emailService.sendVerificationEmail(userDetails.getUsername(), twoFc);
+
             return new AuthenticationResult(AuthenticationStatus.REQUIRES_2FA, null);
         } else {
             String token = generateTokenAndSave(userDetails);

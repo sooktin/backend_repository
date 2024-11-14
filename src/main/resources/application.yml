@@ -10,7 +10,7 @@ spring:
   application:
     name: sooktin
   datasource:
-    url: jdbc:mysql://localhost:3306/sooktin
+    url: jdbc:mysql://localhost:3306/sooktin?allowPublicKeyRetrieval=true&useSSL=false
     username: admin
     password: sooktin0000
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -39,7 +39,7 @@ spring:
             enable: true
   data:
     redis:
-      host: test
+      host: localhost
       port: 6379
 
 springdoc:
