@@ -43,9 +43,7 @@ public class UserService {
 
     @Transactional
     public void registerUser(RegisterRequest request) throws Exception {
-        if (!request.isPasswordMatch()) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
-        }
+
         if (userRepository.existsByNickname(request.getNickname())) {
             throw new Exception("닉네임이 이미 존재합니다.");
         }

@@ -18,6 +18,7 @@ import com.sooktin.backend.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,6 +36,10 @@ public class UserController {
     private final JwtUtil jwtUtil;
     private final UserService userService;
 
+    @GetMapping("/id")
+    public String id(){
+        return "hey 나연";
+    }
 
     @PostMapping("/register")
     public ResponseEntity<RegisterResponse> registerUser(@RequestBody RegisterRequest request) {

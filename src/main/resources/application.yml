@@ -6,6 +6,8 @@ server:
   error:
     include-binding-errors: always
     include-message: always
+  address: 0.0.0.0
+  port: 8080
 spring:
   application:
     name: sooktin
