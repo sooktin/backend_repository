@@ -37,7 +37,7 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/id")
-    public String id(){
+    public String id() {
         return "hey 나연";
     }
 
@@ -88,7 +88,7 @@ public class UserController {
     public ResponseEntity<?> login(LoginRequest loginRequest) {
         AuthenticationResult result = authenticationService.authenticate(loginRequest.getEmail(), loginRequest.getPassword());
         if (result.getStatus() == AUTHENTICATED) {
-            return ResponseEntity.ok(new AuthResponse(result.getToken()));
+            return ResponseEntity.ok(new AuthResponse(result.getAccessToken()));
         } else {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("다시 접속해주세요.");
         }
@@ -96,14 +96,7 @@ public class UserController {
 
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "사용자 로그아웃 정보",
-                    required = true,
-                    content = @Content(schema = @Schema(implementation = LogoutRequest.class))
-            )
-            @RequestBody LogoutRequest logoutRequestDto
-    ) {
+    public ResponseEntity<?> logout(@RequestBody LogoutRequest logoutRequestDto) {
         authenticationService.logout(logoutRequestDto.getEmail());
         return ResponseEntity.ok().build();
     }
@@ -120,5 +113,15 @@ public class UserController {
                 : ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
+    @PostMapping("/refresh-token")
+    public ResponseEntity<RefreshTokenResponse> refreshToken(@RequestHeader("Authorization") String expiredAccessToken) {
+        try {
+            String newAccessToken = authenticationService.refreshAccessToken(expiredAccessToken);
+            return ResponseEntity.ok(RefreshTokenResponse.success(newAccessToken));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(RefreshTokenResponse.fail());
+        }
+    }
 }
 

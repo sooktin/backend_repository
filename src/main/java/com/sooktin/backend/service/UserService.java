@@ -55,26 +55,10 @@ public class UserService {
                 .nickname(request.getNickname())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .roles(Collections.singleton(UserRole.USER))
-                .is2fa(true)
                 .build();
 
         userRepository.save(newUser);
     }
-
-    @Transactional
-    public void createVerificationToken(String email, String code) {
-        VerificationToken verificationToken = new VerificationToken(code, email);
-        tokenRepository.save(verificationToken);
-        emailService.sendVerificationEmail(email, code);
-    }
-
-
-
-    /*@Transactional
-    public User loginUser(){
-
-      return
-    }*/
 
     @Transactional
     public PasswordChangeResponse changeResponse(String token, String oldPassword, String newPassword) {
@@ -103,6 +87,13 @@ public class UserService {
         } catch (Exception e) {
             return EmailCheckResponse.serverRequired();
         }
+    }
+
+    @Transactional
+    public void createVerificationToken(String email, String code) {
+        VerificationToken verificationToken = new VerificationToken(code, email);
+        tokenRepository.save(verificationToken);
+        emailService.sendVerificationEmail(email, code);
     }
 
     @Transactional

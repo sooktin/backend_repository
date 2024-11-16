@@ -20,9 +20,6 @@ public class CustomUserDetails implements UserDetails {
 
     private final User user;
 
-    public boolean is2faEnabled() {
-        return user.getIs2fa();
-    }
 
     public boolean isEmailNull() {
         return user.getEmail().isEmpty();

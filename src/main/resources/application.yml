@@ -1,6 +1,7 @@
 jwt:
     issuer: sooktin
-    access-expiration: 360000
+    access-expiration: 3600000  # 1시간
+    refresh-expiration: 1209600000  # 14일
     secret-key: cThIIoDvwdueQB468K5xDc5633seEFoqwxjF_xSJyQQ
 server:
   error:
