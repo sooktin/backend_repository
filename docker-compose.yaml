@@ -9,3 +9,9 @@ services:
       - MYSQL_USER=admin
     ports:
       - "3306:3306"
+  redis:
+    image: redis:latest
+    container_name: redis
+    hostname: test
+    ports:
+      - "6379:6379"
