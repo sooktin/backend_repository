@@ -1,61 +1,66 @@
 package com.sooktin.backend.global;
 
+import com.sooktin.backend.auth.JwtAuthenticationFilter;
+import com.sooktin.backend.service.AuthenticationService;
+import com.sooktin.backend.service.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.NoOpPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig {
+public class SecurityConfig{
 
-/*    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
+    private final CustomUserDetailsService customUserDetailsService;
 
-                .authorizeHttpRequests((authz) -> authz
-                        .requestMatchers("/","/auth/**").permitAll()
-                        .anyRequest().authenticated()
-                )
-                .csrf((csrf) -> csrf.disable()) //개발중에만사용
-                .httpBasic(httpBasic -> {});
-        return http.build();
-    }*/
+    public SecurityConfig(CustomUserDetailsService customUserDetailsService) {
+        this.customUserDetailsService = customUserDetailsService;
+
+    }
+
+    //BCryptPasswordEncoder는 passwordEncoder 인터페이스를 구현한다.
+    @Bean
+    public BCryptPasswordEncoder bCryptPasswordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .authorizeHttpRequests((requests) -> requests
-                        .anyRequest().permitAll() // 모든 요청을 허용
-                )
-                .csrf((csrf) -> csrf.disable()) // CSRF 보호 비활성화
-                .formLogin((login) -> login.disable()) // 폼 로그인 비활성화
-                .httpBasic((basic) -> basic.disable()); // HTTP Basic 인증 비활성화
-
-        return http.build();
-    }
-
-/*    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .authorizeHttpRequests((requests) -> requests
-                        .requestMatchers("/", "/home", "/register", "/auth/**").permitAll()
-                        .anyRequest().authenticated()
-                )
                 .csrf((csrf) -> csrf.disable())
-                .formLogin((login)->login.disable())
-                .httpBasic((basic)->basic.disable());
+                .authorizeHttpRequests((requests) -> requests
+                        .requestMatchers("/","/**", "/home", "/register", "/auth/**").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authenticationProvider(authenticationProvider());
 
         return http.build();
-    }*/
+    }
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        //return new BCryptPasswordEncoder();
-        return new BCryptPasswordEncoder(4);
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
     }
+    @Bean
+    public DaoAuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+
+        authProvider.setUserDetailsService(customUserDetailsService);
+        authProvider.setPasswordEncoder(bCryptPasswordEncoder());
+        return authProvider;
+    }
+
+
+
 }
