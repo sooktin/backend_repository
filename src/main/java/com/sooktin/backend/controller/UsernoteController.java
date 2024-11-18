@@ -68,9 +68,9 @@ public class UsernoteController {
 
     // 포스트 수정
     @PatchMapping("/usernote/{id}")
-    public ResponseEntity<?> updateUsernote(@PathVariable Long noteid, @RequestBody Usernote usernoteDetails) {
+    public ResponseEntity<?> updateUsernote(@PathVariable Long id, @RequestBody Usernote usernoteDetails) {
         try {
-            Usernote updatedUsernote = usernoteService.updateUsernote(noteid, usernoteDetails);
+            Usernote updatedUsernote = usernoteService.updateUsernote(id, usernoteDetails);
             return ResponseEntity.ok(updatedUsernote);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("게시글 수정 중 오류가 발생했습니다: " + e.getMessage());
