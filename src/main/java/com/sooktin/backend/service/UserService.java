@@ -1,12 +1,17 @@
 package com.sooktin.backend.service;
 
 import com.sooktin.backend.auth.JwtUtil;
+import com.sooktin.backend.controller.UserController;
 import com.sooktin.backend.domain.User;
 import com.sooktin.backend.domain.UserRole;
 import com.sooktin.backend.domain.VerificationToken;
+import com.sooktin.backend.dto.email.EmailCheckResponse;
 import com.sooktin.backend.dto.user.PasswordChangeResponse;
+import com.sooktin.backend.dto.user.RegisterRequest;
+import com.sooktin.backend.dto.verification.VerficationResponse;
 import com.sooktin.backend.repository.UserRepository;
 import com.sooktin.backend.repository.VerificationRepository;
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Random;
 import java.util.UUID;
 
 @Service
@@ -31,65 +37,28 @@ public class UserService {
 
     @Autowired
     private EmailService emailService;
+
     @Autowired
     private JwtUtil jwtUtil;
 
     @Transactional
-    public User registerUser(User user) throws Exception {
-        if (userRepository.existsByNickname(user.getNickname())) {
+    public void registerUser(RegisterRequest request) throws Exception {
+
+        if (userRepository.existsByNickname(request.getNickname())) {
             throw new Exception("닉네임이 이미 존재합니다.");
         }
-        if (userRepository.existsByEmail(user.getEmail())){
+        if (userRepository.existsByEmail(request.getEmail())) {
             throw new Exception("이메일이 이미 존재합니다.");
         }
         User newUser = User.builder()
-                .email(user.getEmail())
-                .nickname(user.getNickname())
-                .password(passwordEncoder.encode(user.getPassword()))
+                .email(request.getEmail())
+                .nickname(request.getNickname())
+                .password(passwordEncoder.encode(request.getPassword()))
                 .roles(Collections.singleton(UserRole.USER))
-                .is2fa(false)
                 .build();
-       /* user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRoles(Collections.singleton(UserRole.USER));
-        //user.setEmail(false);
-        user.set2fa(false); ->를 빌더패턴으로 변환*/
-        User savedUser = userRepository.save(newUser);
 
-        String token = UUID.randomUUID().toString();
-        createVerificationToken(savedUser,token);
-
-        emailService.sendVerificationEmail(user.getEmail(),token);
-
-        return savedUser;
+        userRepository.save(newUser);
     }
-
-    @Transactional
-    public void createVerificationToken(User user, String token) {
-        VerificationToken myToken = new VerificationToken(token, user);
-        tokenRepository.save(myToken);
-    }
-
-    @Transactional
-    public String confirmEmail(String token) {
-        VerificationToken verificationToken = tokenRepository.findByToken(token);
-        if (verificationToken == null){
-            return "토큰이 유효하지 않습니다.";
-        }
-        User user = verificationToken.getUser();
-        Calendar calendar = Calendar.getInstance();
-        if (verificationToken.getExpiryDate().getTime() - calendar.getTime().getTime() <= 0){
-            return "토큰이 만료하였습니다.";
-        }
-        user.setIs2fa(true);
-        userRepository.save(user);
-        return "이메일 인증에 성공하였습니다.";
-    }
-
-    /*@Transactional
-    public User loginUser(){
-
-      return
-    }*/
 
     @Transactional
     public PasswordChangeResponse changeResponse(String token, String oldPassword, String newPassword) {
@@ -97,12 +66,64 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UsernameNotFoundException("user not found!"));
 
-        if (!passwordEncoder.matches(oldPassword, user.getPassword())){
-            return new PasswordChangeResponse(400,"current password not matches");
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            return new PasswordChangeResponse(400, "current password not matches");
         }
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
 
-        return new PasswordChangeResponse(200,"비밀번호가 변경되었습니다");
+        return new PasswordChangeResponse(200, "비밀번호가 변경되었습니다");
+    }
+
+    @Transactional
+    public EmailCheckResponse checkEmail(String email) {
+        try {
+            if (userRepository.existsByEmail(email)) {
+                return EmailCheckResponse.loginRequired();
+            }
+            return EmailCheckResponse.registerRequired();
+        } catch (IllegalArgumentException e) {
+            return EmailCheckResponse.badRequestRequired();
+        } catch (Exception e) {
+            return EmailCheckResponse.serverRequired();
+        }
+    }
+
+    @Transactional
+    public void createVerificationToken(String email, String code) {
+        VerificationToken verificationToken = new VerificationToken(code, email);
+        tokenRepository.save(verificationToken);
+        emailService.sendVerificationEmail(email, code);
+    }
+
+    @Transactional
+    public void sendVerificationCode(String email) {
+        String verficationCode = generateVerificationCode();
+
+        createVerificationToken(email, verficationCode);
+    }
+
+    private String generateVerificationCode() {
+        Random random = new Random();
+        return String.format("%06d", random.nextInt(1000000));
+    }
+
+    @Transactional
+    public VerficationResponse verifyEmail(String email, String code) {
+        VerificationToken verificationToken = tokenRepository.findByEmailAndToken(email,code);
+
+        if (verificationToken == null) {
+            return VerficationResponse.invalidCode();
+        }
+
+        Calendar calendar = Calendar.getInstance();
+        if (verificationToken.getExpiryDate().getTime() - calendar.getTime().getTime() <= 0) {
+            tokenRepository.delete(verificationToken);
+            return VerficationResponse.expired();
+        }
+
+        tokenRepository.delete(verificationToken);
+
+        return VerficationResponse.success();
     }
 }

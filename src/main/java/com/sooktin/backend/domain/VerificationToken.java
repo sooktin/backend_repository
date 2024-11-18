@@ -10,25 +10,22 @@ import java.util.Date;
 @Entity
 @Getter
 public class VerificationToken {
-    private static final int EXPIRATION = 60 * 24; // 24 hours
+    private static final int EXPIRATION = 40; // 40 mins!
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String token;
-
-    @OneToOne(targetEntity = User.class, fetch = FetchType.EAGER)
-    @JoinColumn(nullable = false, name = "user_id")
-    private User user;
+    private String email;
 
     private Date expiryDate;
 
     public VerificationToken() {
         this.expiryDate = calculateExpiryDate(EXPIRATION);
     }
-    public VerificationToken(String token,User user){
-        this.user = user;
+    public VerificationToken(String token,String email){
+        this.email = email;
         this.token = token;
         this.expiryDate = calculateExpiryDate(EXPIRATION);
     }

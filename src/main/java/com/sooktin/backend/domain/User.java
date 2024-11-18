@@ -24,10 +24,6 @@ public class User {
     @Schema(description = "email", example = "foo@sookmyung.ac.kr")
     private String email;
 
-    @Schema(description = "Is_2fa", example = "true")
-    @Column(name = "is_2fa")
-    private boolean is2fa;
-
     @Column(nullable = false, unique = true)
     private String nickname;
 

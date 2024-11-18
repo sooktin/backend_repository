@@ -32,15 +32,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
             String token = getJwtFromRequest(request);
+            // refresh-token endpoint는 만료된 토큰도 허용
+            boolean isRefreshRequest = request.getRequestURI().equals("/auth/refresh-token");
 
             if (StringUtils.hasText(token)) {
                 Jws<Claims> claims = jwtUtil.parserClaims(token);
                 String email = claims.getPayload().getSubject();
 
-                String storedToken = redisTemplate.opsForValue().get("JWT_"+email);
+                String storedToken = redisTemplate.opsForValue().get("REFRESH_"+email);
 
-                if (token.equals(storedToken) &&
-                    SecurityContextHolder.getContext().getAuthentication() == null) {
+                if (SecurityContextHolder.getContext().getAuthentication() == null) {
 
                     CustomUserDetails userDetails =
                             (CustomUserDetails) userDetailsService.loadUserByUsername(email);

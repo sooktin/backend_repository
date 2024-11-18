@@ -8,7 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Schema(description = "로그아웃 요청 DTO")
-public  class LogoutRequestDto {
+public  class LogoutRequest {
     @NotBlank
     @Schema(description = "email", example = "foo@sookmyung.ac.kr")
     private String email;

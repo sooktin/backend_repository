@@ -6,7 +6,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class LoginResponseDto {
+public class LoginResponse {
     @NotBlank
     private String message;
     @NotBlank

@@ -7,16 +7,15 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class EmailService {
-
     @Autowired
     private JavaMailSender mailSender;
 
-    public void sendVerificationEmail(String to, String token) {
+    public void sendVerificationEmail(String to, String code) {
         SimpleMailMessage msg = new SimpleMailMessage();
         msg.setTo(to);
         msg.setSubject("숙틴에 오신 걸 환영합니다.");
-        msg.setText("다음을 클릭해서 인증에 성공하세요!\n"
-                + "http://localhost:8080/auth/2fa?token=" + token);
+        msg.setText("다음을 인증 코드를 전 페이지로 돌아가 입력해주세요!\n"
+                + code + "\n" + "이 코드는 40분 동안 유효합니다.");
         mailSender.send(msg);
     }
 }
