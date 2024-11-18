@@ -1,6 +1,7 @@
 package com.sooktin.backend.service;
 
 import com.sooktin.backend.domain.Liked;
+import com.sooktin.backend.domain.User;
 import com.sooktin.backend.domain.Usernote;
 import com.sooktin.backend.repository.LikedRepository;
 import com.sooktin.backend.repository.UsernoteRepository;
@@ -9,6 +10,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityNotFoundException;
+
+import java.util.List;
+
+//comments import 필요
 
 @Service
 public class LikedService {
@@ -19,35 +24,77 @@ public class LikedService {
     @Autowired
     private UsernoteRepository usernoteRepository;
 
+    // C & D - 좋아요 및 좋아요 취소 - 토글 사용
     @Transactional
-    public String toggleLike(Long postId, Long userId) {
-        Usernote post = usernoteRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException("Invalid post ID"));
+    public String toggleLike(Long postId, Long commentId, Long userId) {
+        // 게시물에 대한 좋아요 처리
+        if (postId != null) {
+            Usernote post = usernoteRepository.findById(postId)
+                    .orElseThrow(() -> new EntityNotFoundException("Invalid post ID"));
 
-        if (likedRepository.existsByPost_idIdAndUserId(postId, userId)) {
-            Liked liked = likedRepository.findByPost_idIdAndUserId(postId, userId);
-            likedRepository.delete(liked);
-            return "좋아요 취소";
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new EntityNotFoundException("Invalid user ID"));
+
+            if (likedRepository.existsByPostAndUserId(post.getId(), userId)) {
+                Liked liked = likedRepository.findByPostAndUserId(post.getId(), userId);
+                likedRepository.delete(liked);
+                return "좋아요 취소";
+            } else {
+                Liked liked = new Liked();
+                liked.setPost_id(post); // Usernote 객체 설정
+                liked.setUser(user);   // User 객체 설정
+                likedRepository.save(liked);
+                return "좋아요 추가";
+            }
+        }
+        // 댓글에 대한 좋아요 처리
+        else if (commentId != null) {
+            Comments comment = commentsRepository.findById(commentId)
+                    .orElseThrow(() -> new EntityNotFoundException("Invalid comment ID"));
+
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new EntityNotFoundException("Invalid user ID"));
+
+            if (likedRepository.existsByCommentAndUserId(comment, userId)) {
+                Liked liked = likedRepository.findByCommentAndUserId(comment, userId);
+                likedRepository.delete(liked);
+                return "좋아요 취소";
+            } else {
+                Liked liked = new Liked();
+                liked.setComment_id(comment); // Comments 객체 설정
+                liked.setUser(user);          // User 객체 설정
+                likedRepository.save(liked);
+                return "좋아요 추가";
+            }
         } else {
-            Liked liked = new Liked();
-            liked.setPost_id(post); // Usernote 객체 설정
-            liked.setUserId(userId);
-            likedRepository.save(liked);
-            return "좋아요 추가";
+            throw new IllegalArgumentException("Either postId or commentId must be provided.");
         }
     }
 
+
+
+    // R - 특정 게시물에 대해 좋아요를 누른 사용자 목록 조회
+    public List<Liked> getLikesByPost(Long postId) {
+        return likedRepository.findByPost(postId);
+    }
+
+    // R - 특정 댓글에 대해 좋아요를 누른 사용자 목록 조회
+    public List<Liked> getLikesByComment(Long commentId) {
+        return likedRepository.findByComment(commentId);
+    }
+
+    // R - 특정 게시글에 대한 좋아요 개수 반환
     public Long countLikesByPost(Long postId) {
-        return likedRepository.countByPost_idId(postId);
+        return likedRepository.countByPost(postId);
     }
 
+    // R - 특정 댓글에 대한 좋아요 개수 반환
     public Long countLikesByComment(Long commentId) {
-        return likedRepository.countByComment_id(commentId);
+        return likedRepository.countByComment(commentId);
     }
 
-    public boolean existsLikeByUser(Long postId, Long userId) {
-        return likedRepository.existsByPost_idIdAndUserId(postId, userId);
+    // R - 특정 게시글에 특정 사용자가 좋아요를 눌렀는지 여부
+    public boolean existsLikeByUser(Long postId, Long userId, Long id) {
+        return likedRepository.existsByPostAndUserId(postId, userId);
     }
 }
-
-//setPost_id(postId) 부분에서 오류가 발생하는 이유는 Liked 엔티티의 post_id 필드가 Usernote 엔티티와의 연관 관계로 정의되어 있기 때문입니다. post_id는 단순한 Long 타입이 아니라 Usernote 타입이어야 합니다. 따라서, Liked 엔티티에서 post_id 대신 Usernote 객체를 설정해야 합니다.
