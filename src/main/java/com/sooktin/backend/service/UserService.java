@@ -1,0 +1,129 @@
+package com.sooktin.backend.service;
+
+import com.sooktin.backend.auth.JwtUtil;
+import com.sooktin.backend.controller.UserController;
+import com.sooktin.backend.domain.User;
+import com.sooktin.backend.domain.UserRole;
+import com.sooktin.backend.domain.VerificationToken;
+import com.sooktin.backend.dto.email.EmailCheckResponse;
+import com.sooktin.backend.dto.user.PasswordChangeResponse;
+import com.sooktin.backend.dto.user.RegisterRequest;
+import com.sooktin.backend.dto.verification.VerficationResponse;
+import com.sooktin.backend.repository.UserRepository;
+import com.sooktin.backend.repository.VerificationRepository;
+import org.apache.coyote.BadRequestException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Random;
+import java.util.UUID;
+
+@Service
+public class UserService {
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private VerificationRepository tokenRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private EmailService emailService;
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    @Transactional
+    public void registerUser(RegisterRequest request) throws Exception {
+
+        if (userRepository.existsByNickname(request.getNickname())) {
+            throw new Exception("닉네임이 이미 존재합니다.");
+        }
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new Exception("이메일이 이미 존재합니다.");
+        }
+        User newUser = User.builder()
+                .email(request.getEmail())
+                .nickname(request.getNickname())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .roles(Collections.singleton(UserRole.USER))
+                .build();
+
+        userRepository.save(newUser);
+    }
+
+    @Transactional
+    public PasswordChangeResponse changeResponse(String token, String oldPassword, String newPassword) {
+        Long userId = jwtUtil.getUserIdFromToken(token);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("user not found!"));
+
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            return new PasswordChangeResponse(400, "current password not matches");
+        }
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        return new PasswordChangeResponse(200, "비밀번호가 변경되었습니다");
+    }
+
+    @Transactional
+    public EmailCheckResponse checkEmail(String email) {
+        try {
+            if (userRepository.existsByEmail(email)) {
+                return EmailCheckResponse.loginRequired();
+            }
+            return EmailCheckResponse.registerRequired();
+        } catch (IllegalArgumentException e) {
+            return EmailCheckResponse.badRequestRequired();
+        } catch (Exception e) {
+            return EmailCheckResponse.serverRequired();
+        }
+    }
+
+    @Transactional
+    public void createVerificationToken(String email, String code) {
+        VerificationToken verificationToken = new VerificationToken(code, email);
+        tokenRepository.save(verificationToken);
+        emailService.sendVerificationEmail(email, code);
+    }
+
+    @Transactional
+    public void sendVerificationCode(String email) {
+        String verficationCode = generateVerificationCode();
+
+        createVerificationToken(email, verficationCode);
+    }
+
+    private String generateVerificationCode() {
+        Random random = new Random();
+        return String.format("%06d", random.nextInt(1000000));
+    }
+
+    @Transactional
+    public VerficationResponse verifyEmail(String email, String code) {
+        VerificationToken verificationToken = tokenRepository.findByEmailAndToken(email,code);
+
+        if (verificationToken == null) {
+            return VerficationResponse.invalidCode();
+        }
+
+        Calendar calendar = Calendar.getInstance();
+        if (verificationToken.getExpiryDate().getTime() - calendar.getTime().getTime() <= 0) {
+            tokenRepository.delete(verificationToken);
+            return VerficationResponse.expired();
+        }
+
+        tokenRepository.delete(verificationToken);
+
+        return VerficationResponse.success();
+    }
+}
