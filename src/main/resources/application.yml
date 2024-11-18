@@ -37,6 +37,7 @@ spring:
           auth: true
           starttls:
             enable: true
+
   data:
     redis:
       host: test
@@ -47,4 +48,3 @@ springdoc:
     path: /api-docs
   swagger-ui:
     path: /swagger-ui.html
-
