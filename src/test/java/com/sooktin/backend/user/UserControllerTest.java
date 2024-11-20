@@ -2,6 +2,12 @@ package com.sooktin.backend.user;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sooktin.backend.auth.AuthenticationResult;
+import com.sooktin.backend.auth.AuthenticationStatus;
+import com.sooktin.backend.controller.UserController;
+import com.sooktin.backend.domain.User;
+import com.sooktin.backend.repository.UserRepository;
+import com.sooktin.backend.service.AuthenticationService;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

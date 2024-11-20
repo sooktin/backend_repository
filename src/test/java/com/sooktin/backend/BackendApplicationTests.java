@@ -1,5 +1,8 @@
 package com.sooktin.backend;
 
+import com.sooktin.backend.domain.User;
+import com.sooktin.backend.domain.UserRole;
+import com.sooktin.backend.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

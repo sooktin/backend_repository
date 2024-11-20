@@ -36,13 +36,6 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Set<UserRole> roles;
 
-    public void setIs2fa(boolean is2fa) {
-        this.is2fa = is2fa;
-    }
-
-    public boolean getIs2fa() {
-        return is2fa;
-    }
 
     public void setPassword(String password) {
         this.password = password;
