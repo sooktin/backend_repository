@@ -1,7 +1,6 @@
 package com.sooktin.backend.service;
 
 import com.sooktin.backend.auth.JwtUtil;
-import com.sooktin.backend.controller.UserController;
 import com.sooktin.backend.domain.User;
 import com.sooktin.backend.domain.UserRole;
 import com.sooktin.backend.domain.VerificationToken;
@@ -11,7 +10,6 @@ import com.sooktin.backend.dto.user.RegisterRequest;
 import com.sooktin.backend.dto.verification.VerficationResponse;
 import com.sooktin.backend.repository.UserRepository;
 import com.sooktin.backend.repository.VerificationRepository;
-import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Random;
-import java.util.UUID;
 
 @Service
 public class UserService {

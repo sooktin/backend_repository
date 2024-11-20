@@ -1,10 +1,8 @@
 package com.sooktin.backend.controller;
 
-import com.nimbusds.oauth2.sdk.Request;
 import com.sooktin.backend.auth.AuthResponse;
 import com.sooktin.backend.auth.AuthenticationResult;
 import com.sooktin.backend.auth.JwtUtil;
-import com.sooktin.backend.domain.User;
 
 import com.sooktin.backend.dto.email.EmailCheckRequest;
 import com.sooktin.backend.dto.email.EmailCheckResponse;
@@ -16,9 +14,6 @@ import com.sooktin.backend.service.AuthenticationService;
 import com.sooktin.backend.service.UserService;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +26,7 @@ import static com.sooktin.backend.auth.AuthenticationStatus.*;
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
-public class UserController {
+public class AuthController {
     private final AuthenticationService authenticationService;
     private final JwtUtil jwtUtil;
     private final UserService userService;
