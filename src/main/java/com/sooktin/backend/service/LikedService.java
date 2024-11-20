@@ -23,15 +23,12 @@ public class LikedService {
 
     @Autowired
     private LikedRepository likedRepository;
-
-    @Autowired
-    private UsernoteRepository usernoteRepository;
-
     @Autowired
     private CommentRepository commentRepository;
-
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private UsernoteRepository usernoteRepository;
 
     // C & D - 좋아요 및 좋아요 취소 - 토글 사용
     @Transactional
