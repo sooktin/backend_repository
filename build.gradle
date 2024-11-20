@@ -48,6 +48,9 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
     implementation 'mysql:mysql-connector-java:8.0.33' // 최신 버전으로 변경
     implementation('org.springframework.boot:spring-boot-starter-data-redis')
+    implementation 'io.swagger.core.v3:swagger-annotations:2.1.9'
+    implementation 'org.springdoc:springdoc-openapi-ui:1.5.9'
+
 }
 
 tasks.named('test') {
