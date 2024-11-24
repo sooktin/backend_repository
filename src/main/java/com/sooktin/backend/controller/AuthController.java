@@ -97,13 +97,13 @@ public class AuthController {
     }
 
     @PatchMapping("password")
-    public ResponseEntity<?> changePassword(@RequestHeader("Authorization") String token, @RequestBody ChangePasswordRequest request) {
+    public ResponseEntity<PasswordChangeResponse> changePassword(@RequestHeader("Authorization") String token, @RequestBody ChangePasswordRequest request) {
         PasswordChangeResponse response = userService.changeResponse(
                 token,
                 request.getOldPassword(),
                 request.getNewPassword()
         );
-        return response.getStatus() == 200
+        return response.getStatusCode() == 200
                 ? ResponseEntity.ok(response)
                 : ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
