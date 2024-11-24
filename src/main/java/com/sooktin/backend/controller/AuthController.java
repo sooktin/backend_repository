@@ -80,7 +80,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(LoginRequest loginRequest) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         AuthenticationResult result = authenticationService.authenticate(loginRequest.getEmail(), loginRequest.getPassword());
         if (result.getStatus() == AUTHENTICATED) {
             return ResponseEntity.ok(new AuthResponse(result.getAccessToken()));

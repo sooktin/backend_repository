@@ -1,4 +1,4 @@
-package com.sooktin.backend.user;
+package com.sooktin.backend.auth;
 
 
 import com.sooktin.backend.dto.user.LoginRequest;

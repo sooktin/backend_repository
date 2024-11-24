@@ -3,7 +3,7 @@ package com.sooktin.backend.domain;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.Comments;
+
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
@@ -24,7 +24,7 @@ public class Liked {
     //좋아요가 게시물에 속하는지 댓글에 속하는지 명확히 구분해야 하기 때문임
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "댓글 id", nullable = true)
-    private Comments comment_id;
+    private Comment comment_id;
 
     //노트 id
     @ManyToOne(fetch = FetchType.LAZY) // 게시물 외래키 - 다대일

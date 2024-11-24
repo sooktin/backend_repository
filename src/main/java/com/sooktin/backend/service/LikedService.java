@@ -62,7 +62,7 @@ public class LikedService {
                     .orElseThrow(() -> new EntityNotFoundException("Invalid user ID"));
 
             if (likedRepository.existsByCommentAndUserId(comment, userId)) {
-                Liked liked = likedRepository.findByCommentAndUserId(comment, userId);
+                Liked liked = likedRepository.findByComment_idAndUserId(comment, userId);
                 likedRepository.delete(liked);
                 return "좋아요 취소";
             } else {

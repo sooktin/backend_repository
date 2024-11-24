@@ -30,5 +30,5 @@ public interface LikedRepository extends JpaRepository<Liked, Long> {
     // 특정 댓글에 대해 좋아요를 누른 사용자 목록 조회
     List<Liked> findByComment(Long commentId);
 
-    Liked findByCommentAndUserId(Comment comment, Long userId);
+    Liked findByComment_idAndUserId(Comment comment, Long userId);
 }

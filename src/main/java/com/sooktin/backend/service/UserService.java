@@ -11,14 +11,14 @@ import com.sooktin.backend.dto.verification.VerficationResponse;
 import com.sooktin.backend.repository.UserRepository;
 import com.sooktin.backend.repository.VerificationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Random;
+import java.util.*;
 
 @Service
 public class UserService {
@@ -37,6 +37,9 @@ public class UserService {
 
     @Autowired
     private JwtUtil jwtUtil;
+    @Qualifier("redisTemplate")
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     @Transactional
     public void registerUser(RegisterRequest request) throws Exception {
@@ -122,5 +125,23 @@ public class UserService {
         tokenRepository.delete(verificationToken);
 
         return VerficationResponse.success();
+    }
+
+    public Optional<User> search(String nickname) {
+        return userRepository.findByNickname(nickname);
+    }
+
+    public void delete(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다."));
+
+        // 연관된 데이터 처리 (예: 게시글, 댓글 등)
+        // postRepository.deleteByUser(user);
+        // commentRepository.deleteByUser(user);
+
+        userRepository.delete(user);
+
+        String refreshtoken = "REFRESH_" + user.getEmail();
+        redisTemplate.delete(refreshtoken);
     }
 }

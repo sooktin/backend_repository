@@ -1,11 +1,10 @@
-package com.sooktin.backend.user;
+package com.sooktin.backend.auth;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sooktin.backend.auth.AuthenticationResult;
-import com.sooktin.backend.auth.AuthenticationStatus;
 import com.sooktin.backend.controller.AuthController;
 import com.sooktin.backend.domain.User;
+import com.sooktin.backend.domain.UserRole;
 import com.sooktin.backend.repository.UserRepository;
 import com.sooktin.backend.service.AuthenticationService;
 import org.hamcrest.Matchers;
@@ -91,7 +90,6 @@ public class AuthControllerTest {
                 .nickname("sk")
                 .password("12321")
                 .roles(Collections.singleton(UserRole.USER))
-                .is2fa(true)
                 .build();
 
         User user2=User.builder()
@@ -99,7 +97,6 @@ public class AuthControllerTest {
                 .nickname("ka")
                 .password("123")
                 .roles(Collections.singleton(UserRole.USER))
-                .is2fa(true)
                 .build();
 
         userRepository.saveAll(Arrays.asList(user1,user2));
