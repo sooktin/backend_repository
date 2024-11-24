@@ -12,7 +12,11 @@ java {
         languageVersion = JavaLanguageVersion.of(21)
     }
 }
-
+configurations.all {
+    resolutionStrategy {
+        force 'io.github.classgraph:classgraph:4.8.147'
+    }
+}
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
