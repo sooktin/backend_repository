@@ -12,11 +12,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class RegisterRequest {
-    @Email
+    @NotEmpty(message = "이메일은 공백일 수 없습니다.")
+    @Email(message = "이메일 형식을 지켜주세요.")
     private String email;
-    @NotEmpty
+    @NotEmpty(message = "비밀번호는 공백일 수 없습니다.")
     private String password;
-    @NotEmpty
+    @NotEmpty(message = "닉네임은 공백일 수 없습니다.")
     private String nickname;
 
 

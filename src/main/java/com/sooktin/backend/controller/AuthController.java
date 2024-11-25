@@ -14,6 +14,7 @@ import com.sooktin.backend.service.AuthenticationService;
 import com.sooktin.backend.service.UserService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,7 +38,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<RegisterResponse> registerUser(@RequestBody RegisterRequest request) {
+    public ResponseEntity<RegisterResponse> registerUser(@RequestBody @Valid RegisterRequest request) {
         try {
             userService.registerUser(request);
             return ResponseEntity.status(201).body(RegisterResponse.success());
@@ -58,7 +59,7 @@ public class AuthController {
     @Operation(summary = "이메일 인증 API", description = "해당되는 이메일로 초대장이 전달됩니다.")
     @PostMapping("/verify")
     public ResponseEntity<VerficationResponse> verifyEmail(@RequestBody VerificationRequest request) {
-        VerficationResponse response = userService.verifyEmail(request.getEmail(), request.getCode());
+        VerficationResponse response = userService.verifyEmail(request.getEmail(), request.getToken());
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
@@ -80,7 +81,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<?> login(@RequestBody @Valid LoginRequest loginRequest) {
         AuthenticationResult result = authenticationService.authenticate(loginRequest.getEmail(), loginRequest.getPassword());
         if (result.getStatus() == AUTHENTICATED) {
             return ResponseEntity.ok(new AuthResponse(result.getAccessToken()));
