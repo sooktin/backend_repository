@@ -64,4 +64,8 @@ public class UsernoteService {
             throw new IllegalArgumentException("해당 포스트가 존재하지 않습니다. id: " + id);
         }
     }
+    @Transactional
+    public List<Usernote> findByUserEmail(String email) {
+        return usernoteRepository.findByUser_Email(email);
+    }
 }
