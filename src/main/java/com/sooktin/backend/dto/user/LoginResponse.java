@@ -10,7 +10,7 @@ public class LoginResponse {
     @NotBlank
     private String message;
     @NotBlank
-    private Integer status;
+    private Integer statusCode;
     @NotBlank
     private String accessToken;
     @NotBlank

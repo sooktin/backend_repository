@@ -1,5 +1,8 @@
 package com.sooktin.backend.controller;
 
+import com.sooktin.backend.domain.User;
+import com.sooktin.backend.dto.usernote.CreateUserNoteRequestDto;
+import com.sooktin.backend.repository.UserRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -22,10 +25,12 @@ public class UsernoteController {
      **/
 
     private final UsernoteService usernoteService;
+    private final UserRepository userRepository;
 
     @Autowired
-    public UsernoteController(UsernoteService usernoteService) {
+    public UsernoteController(UsernoteService usernoteService, UserRepository userRepository) {
         this.usernoteService = usernoteService;
+        this.userRepository = userRepository;
     }
 
     // 포스트 목록 조회
@@ -54,13 +59,17 @@ public class UsernoteController {
 
     // 포스트 생성
     @PostMapping("/usernotes")
-    public ResponseEntity<?> createPost(@RequestBody Usernote usernote) {
+    public ResponseEntity<?> createPost(@RequestBody CreateUserNoteRequestDto userNoteRequest) {
         try {
+            Optional<User> user = userRepository.findById(userNoteRequest.getUserId());
+            if (user.isEmpty()) return ResponseEntity.notFound().build();
             Usernote newUsernote = new Usernote();
-            newUsernote.setTitle(usernote.getTitle());
-            newUsernote.setContent(usernote.getContent());
+            newUsernote.setTitle(userNoteRequest.getTitle());
+            newUsernote.setContent(userNoteRequest.getContent());
+            newUsernote.setLikes(userNoteRequest.getLikes() != null ? userNoteRequest.getLikes() : 0); //null일시 0으로 처리.
+            newUsernote.setUser(user.get());
             Usernote createdUsernote = usernoteService.createUsernote(newUsernote);
-            return ResponseEntity.ok(createdUsernote);
+            return ResponseEntity.status(201).body(createdUsernote);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("게시글 생성 중 오류가 발생했습니다: " + e.getMessage());
         }
