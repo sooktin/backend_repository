@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class CreateUserNoteRequestDto {
+public class CreateUsernoteRequest {
     private Long userId;
     private String title;
     private String content;

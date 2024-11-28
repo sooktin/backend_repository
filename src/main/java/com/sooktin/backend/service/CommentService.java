@@ -28,12 +28,20 @@ public class CommentService {
     // 대댓글 생성
     @Transactional
     public Comment createReply(Long parentId, Comment reply) {
-        Comment parentComment = commentRepository.findById(parentId)
-                .orElseThrow(() -> new IllegalArgumentException("부모 댓글이 존재하지 않습니다."));
+        Optional<Comment> parentComment = commentRepository.findById(parentId);
 
-        reply.setParent(parentComment); // 부모 댓글 설정
-        reply.setUsernote(parentComment.getUsernote()); // 동일한 게시글에 속하도록 설정
-        return commentRepository.save(reply); // 대댓글 저장
+        // 대댓글의 대댓글 작성 방지
+        if (parentComment.isPresent() && parentComment.get().getParentId() != null) {
+            throw new IllegalArgumentException("대댓글에는 대댓글을 작성할 수 없습니다.");
+        }
+
+        reply.setParentId(parentId);
+        return commentRepository.save(reply);
+    }
+
+    // 부모 댓글 id로 대댓글 조회
+    public List<Comment> findRepliesByParentId(Long parentId) {
+        return commentRepository.findByParentId(parentId);
     }
 
     // ID로 댓글 조회
@@ -83,16 +91,15 @@ public class CommentService {
     }
 
     // 댓글 삭제
+    @Transactional
     public boolean deleteById(Long id) {
-        if (commentRepository.existsById(id)) {
-            if (!isOwner(id)) {
-                throw new IllegalStateException("본인이 아닌 사용자는 이 댓글을 삭제할 수 없습니다.");
-            }
-            commentRepository.deleteById(id);
-            return true;
-        } else {
+        Optional<Comment> commentOptional = commentRepository.findById(id);
+        if (commentOptional.isEmpty()) {
             throw new IllegalArgumentException("해당 댓글이 존재하지 않습니다. id: " + id);
         }
+
+        commentRepository.deleteById(id);
+        return true;
     }
 
     // 유효성 검증 메소드

@@ -1,6 +1,13 @@
 package com.sooktin.backend.controller;
 
 import com.sooktin.backend.domain.Comment;
+import com.sooktin.backend.domain.User;
+import com.sooktin.backend.domain.Usernote;
+import com.sooktin.backend.dto.ResponseDto;
+import com.sooktin.backend.dto.comment.CreateCommentRequest;
+import com.sooktin.backend.dto.comment.CreateCommentResponse;
+import com.sooktin.backend.repository.UserRepository;
+import com.sooktin.backend.repository.UsernoteRepository;
 import com.sooktin.backend.service.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -8,123 +15,253 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/usernote/{noteId}/comments")
 public class CommentController {
 
     private final CommentService commentService;
+    private final UserRepository userRepository;
+    private final UsernoteRepository usernoteRepository;
 
     @Autowired
-    public CommentController(CommentService commentService) {
+    public CommentController(CommentService commentService, UserRepository userRepository, UsernoteRepository usernoteRepository) {
         this.commentService = commentService;
+        this.userRepository = userRepository;
+        this.usernoteRepository = usernoteRepository;
     }
 
-    // 특정 사용자(userId)의 모든 댓글 조회
+    // R - 특정 사용자가 작성한 댓글 목록 조회
     @GetMapping("/user/{userId}")
-    public ResponseEntity<?> getCommentsByUserId(@PathVariable Long userId) {
+    public ResponseEntity<ResponseDto<List<CreateCommentResponse>>> getCommentsByUserId(
+            @RequestHeader("Authorization") String accessToken,
+            @PathVariable Long userId) {
         try {
             List<Comment> comments = commentService.findByUserId(userId);
-            return ResponseEntity.ok(comments);
+            if (comments.isEmpty()) {
+                return ResponseEntity.status(404)
+                        .body(new ResponseDto<>(404, "사용자의 댓글이 존재하지 않습니다.", null));
+            }
+
+            List<CreateCommentResponse> responseDtos = comments.stream()
+                    .map(CreateCommentResponse::new)
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.status(200)
+                    .body(new ResponseDto<>(200, "사용자의 댓글 목록을 불러왔습니다.", responseDtos));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("사용자의 댓글을 불러오는 중 오류가 발생했습니다: " + e.getMessage());
+            return ResponseEntity.status(400)
+                    .body(new ResponseDto<>(400, "사용자의 댓글을 불러오는 중 오류가 발생했습니다: " + e.getMessage(), null));
         }
     }
 
-    // 특정 게시글에 대한 모든 댓글 조회
+    // R - 특정 노트에 작성된 댓글 목록 조회
     @GetMapping
-    public ResponseEntity<?> getCommentsByNoteId(@PathVariable Long noteId) {
+    public ResponseEntity<ResponseDto<List<CreateCommentResponse>>> getCommentsByNoteId(
+            @RequestHeader("Authorization") String accessToken,
+            @PathVariable Long noteId) {
         try {
             List<Comment> comments = commentService.findByUsernoteId(noteId);
-            return ResponseEntity.ok(comments);
+            if (comments.isEmpty()) {
+                return ResponseEntity.status(404)
+                        .body(new ResponseDto<>(404, "게시글에 댓글이 존재하지 않습니다.", null));
+            }
+
+            List<CreateCommentResponse> responseDtos = comments.stream()
+                    .map(CreateCommentResponse::new)
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.status(200)
+                    .body(new ResponseDto<>(200, "게시글의 댓글 목록을 불러왔습니다.", responseDtos));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("게시글의 댓글을 불러오는 중 오류가 발생했습니다: " + e.getMessage());
+            return ResponseEntity.status(400)
+                    .body(new ResponseDto<>(400, "게시글의 댓글을 불러오는 중 오류가 발생했습니다: " + e.getMessage(), null));
         }
     }
 
-    // 특정 게시글 내 특정 댓글 조회
+    // R - 댓글 ID로 해당 댓글 조회
     @GetMapping("/{commentId}")
-    public ResponseEntity<?> getCommentById(@PathVariable Long noteId, @PathVariable Long commentId) {
+    public ResponseEntity<ResponseDto<CreateCommentResponse>> getCommentById(
+            @RequestHeader("Authorization") String accessToken,
+            @PathVariable Long noteId,
+            @PathVariable Long commentId) {
         try {
-            Optional<Comment> comment = commentService.findById(commentId);
-            // comment 객체가 있고, 해당 코멘트가 달린 노트와 params에 입력한 노트가 동일하다면
-            if (comment.isPresent() && comment.get().getUsernote().getId().equals(noteId)) {
-                return ResponseEntity.ok(comment.get());
-            } else {
-                return ResponseEntity.notFound().build();
+            Optional<Comment> commentOptional = commentService.findById(commentId);
+            if (commentOptional.isEmpty() || !commentOptional.get().getUsernote().getId().equals(noteId)) {
+                return ResponseEntity.status(404)
+                        .body(new ResponseDto<>(404, "댓글을 찾을 수 없습니다.", null));
             }
+
+            CreateCommentResponse responseDto = new CreateCommentResponse(commentOptional.get());
+            return ResponseEntity.status(200)
+                    .body(new ResponseDto<>(200, "댓글을 조회했습니다.", responseDto));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("댓글을 조회하는 중 오류가 발생했습니다: " + e.getMessage());
+            return ResponseEntity.status(400)
+                    .body(new ResponseDto<>(400, "댓글을 조회하는 중 오류가 발생했습니다: " + e.getMessage(), null));
         }
     }
 
-    // 특정 댓글의 대댓글 목록 조회
+    // R - 대댓글 조회
     @GetMapping("/{parentId}/replies")
-    public ResponseEntity<?> getReplies(@PathVariable Long parentId) {
+    public ResponseEntity<ResponseDto<List<CreateCommentResponse>>> getReplies(
+            @RequestHeader("Authorization") String accessToken,
+            @PathVariable Long noteId,
+            @PathVariable Long parentId) {
         try {
-            List<Comment> replies = commentService.getReplies(parentId);
-            return ResponseEntity.ok(replies);
+            List<Comment> replies = commentService.findRepliesByParentId(parentId);
+            if (replies.isEmpty()) {
+                return ResponseEntity.status(404)
+                        .body(new ResponseDto<>(404, "대댓글이 존재하지 않습니다.", null));
+            }
+
+            List<CreateCommentResponse> responseDtos = replies.stream()
+                    .map(CreateCommentResponse::new)
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.status(200)
+                    .body(new ResponseDto<>(200, "대댓글 목록을 불러왔습니다.", responseDtos));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("대댓글 목록 조회 중 오류가 발생했습니다: " + e.getMessage());
+            return ResponseEntity.status(400)
+                    .body(new ResponseDto<>(400, "대댓글 목록을 불러오는 중 오류가 발생했습니다: " + e.getMessage(), null));
         }
     }
 
-
-    // 특정 게시글에 댓글 생성
+    // C - 댓글 작성
     @PostMapping
-    public ResponseEntity<?> createComment(@PathVariable Long noteId, @RequestBody Comment comment) {
+    public ResponseEntity<ResponseDto<CreateCommentResponse>> createComment(
+            @RequestHeader("Authorization") String accessToken,
+            @PathVariable Long noteId,
+            @RequestBody CreateCommentRequest commentRequest) {
         try {
-            // 게시글에 속하는 댓글로 설정
-            comment.getUsernote().setId(noteId);
-            Comment createdComment = commentService.createComment(comment);
-            return ResponseEntity.ok(createdComment);
+            Optional<Usernote> usernoteOptional = usernoteRepository.findById(noteId);
+            if (usernoteOptional.isEmpty()) {
+                return ResponseEntity.status(404)
+                        .body(new ResponseDto<>(404, "해당 게시글을 찾을 수 없습니다.", null));
+            }
+
+            Optional<User> userOptional = userRepository.findById(commentRequest.getUserId());
+            if (userOptional.isEmpty()) {
+                return ResponseEntity.status(404)
+                        .body(new ResponseDto<>(404, "해당 유저를 찾을 수 없습니다.", null));
+            }
+
+            Comment newComment = new Comment();
+            newComment.setContent(commentRequest.getContent());
+            newComment.setLikes(commentRequest.getLikes() != null ? commentRequest.getLikes() : 0);
+            newComment.setUser(userOptional.get());
+            newComment.setUsernote(usernoteOptional.get());
+
+            Comment createdComment = commentService.createComment(newComment);
+
+            CreateCommentResponse responseDto = new CreateCommentResponse(createdComment);
+            return ResponseEntity.status(201)
+                    .body(new ResponseDto<>(201, "댓글이 생성되었습니다.", responseDto));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("댓글을 생성하는 중 오류가 발생했습니다: " + e.getMessage());
+            return ResponseEntity.status(400)
+                    .body(new ResponseDto<>(400, "댓글을 생성하는 중 오류가 발생했습니다: " + e.getMessage(), null));
         }
     }
 
-    // 특정 댓글의 대댓글 생성
-    @PostMapping("/{parentId}/reply")
-    public ResponseEntity<?> createReply(@PathVariable Long parentId, @RequestBody Comment reply) {
+    // C - 대댓글 작성
+    @PostMapping("/{parentId}/replies")
+    public ResponseEntity<ResponseDto<CreateCommentResponse>> createReply(
+            @RequestHeader("Authorization") String accessToken,
+            @PathVariable Long noteId,
+            @PathVariable Long parentId,
+            @RequestBody CreateCommentRequest replyRequest) {
         try {
+            // 게시글 확인
+            Optional<Usernote> usernoteOptional = usernoteRepository.findById(noteId);
+            if (usernoteOptional.isEmpty()) {
+                return ResponseEntity.status(404)
+                        .body(new ResponseDto<>(404, "해당 게시글을 찾을 수 없습니다.", null));
+            }
+
+            // 유저 확인
+            Optional<User> userOptional = userRepository.findById(replyRequest.getUserId());
+            if (userOptional.isEmpty()) {
+                return ResponseEntity.status(404)
+                        .body(new ResponseDto<>(404, "해당 유저를 찾을 수 없습니다.", null));
+            }
+
+            // 부모 댓글 확인
+            Optional<Comment> parentCommentOptional = commentService.findById(parentId);
+            if (parentCommentOptional.isEmpty()) {
+                return ResponseEntity.status(404)
+                        .body(new ResponseDto<>(404, "부모 댓글을 찾을 수 없습니다.", null));
+            }
+
+            // 대댓글 생성
+            Comment reply = new Comment();
+            reply.setContent(replyRequest.getContent());
+            reply.setLikes(replyRequest.getLikes() != null ? replyRequest.getLikes() : 0);
+            reply.setUser(userOptional.get());
+            reply.setUsernote(usernoteOptional.get());
+
             Comment createdReply = commentService.createReply(parentId, reply);
-            return ResponseEntity.ok(createdReply);
+
+            CreateCommentResponse responseDto = new CreateCommentResponse(createdReply);
+
+            return ResponseEntity.status(201)
+                    .body(new ResponseDto<>(201, "대댓글이 생성되었습니다.", responseDto));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(400)
+                    .body(new ResponseDto<>(400, e.getMessage(), null));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("대댓글 생성 중 오류가 발생했습니다: " + e.getMessage());
+            return ResponseEntity.status(400)
+                    .body(new ResponseDto<>(400, "대댓글을 생성하는 중 오류가 발생했습니다: " + e.getMessage(), null));
         }
     }
 
-    // 특정 게시글 내 특정 댓글 수정
+    // U - 댓글 수정
     @PatchMapping("/{commentId}")
-    public ResponseEntity<?> updateComment(@PathVariable Long noteId, @PathVariable Long commentId, @RequestBody Comment commentDetails) {
+    public ResponseEntity<ResponseDto<CreateCommentResponse>> updateComment(
+            @RequestHeader("Authorization") String accessToken,
+            @PathVariable Long noteId,
+            @PathVariable Long commentId,
+            @RequestBody CreateCommentRequest commentRequest) {
         try {
-            Optional<Comment> comment = commentService.findById(commentId);
-            if (comment.isPresent() && comment.get().getUsernote().getId().equals(noteId)) {
-                Comment updatedComment = commentService.updateComment(commentId, commentDetails);
-                return ResponseEntity.ok(updatedComment);
-            } else {
-                return ResponseEntity.status(403).body("해당 게시글의 댓글만 수정할 수 있습니다.");
+            Optional<Comment> commentOptional = commentService.findById(commentId);
+            if (commentOptional.isEmpty() || !commentOptional.get().getUsernote().getId().equals(noteId)) {
+                return ResponseEntity.status(404)
+                        .body(new ResponseDto<>(404, "댓글을 찾을 수 없습니다.", null));
             }
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(403).body("해당 댓글을 수정할 권한이 없습니다.");
+
+            Comment updatedComment = commentOptional.get();
+            updatedComment.setContent(commentRequest.getContent());
+            if (commentRequest.getLikes() != null) {
+                updatedComment.setLikes(commentRequest.getLikes());
+            }
+
+            Comment result = commentService.updateComment(commentId, updatedComment);
+            CreateCommentResponse responseDto = new CreateCommentResponse(result);
+            return ResponseEntity.status(200)
+                    .body(new ResponseDto<>(200, "댓글이 수정되었습니다.", responseDto));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("댓글을 수정하는 중 오류가 발생했습니다: " + e.getMessage());
+            return ResponseEntity.status(400)
+                    .body(new ResponseDto<>(400, "댓글을 수정하는 중 오류가 발생했습니다: " + e.getMessage(), null));
         }
     }
 
-    // 특정 게시글 내 특정 댓글 삭제
+    // D - 댓글 삭제
     @DeleteMapping("/{commentId}")
-    public ResponseEntity<?> deleteComment(@PathVariable Long noteId, @PathVariable Long commentId) {
+    public ResponseEntity<ResponseDto<Void>> deleteComment(
+            @RequestHeader("Authorization") String accessToken,
+            @PathVariable Long noteId,
+            @PathVariable Long commentId) {
         try {
-            Optional<Comment> comment = commentService.findById(commentId);
-            if (comment.isPresent() && comment.get().getUsernote().getId().equals(noteId)) {
-                if (commentService.deleteById(commentId)) {
-                    return ResponseEntity.noContent().build();
-                }
+            Optional<Comment> commentOptional = commentService.findById(commentId);
+            if (commentOptional.isEmpty()) {
+                return ResponseEntity.status(404)
+                        .body(new ResponseDto<>(404, "댓글을 찾을 수 없습니다.", null));
             }
-            return ResponseEntity.badRequest().body("해당 게시글의 댓글만 삭제할 수 있습니다.");
+
+            commentService.deleteById(commentId);
+            return ResponseEntity.status(204).build();
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("댓글을 삭제하는 중 오류가 발생했습니다: " + e.getMessage());
+            return ResponseEntity.status(400)
+                    .body(new ResponseDto<>(400, "댓글을 삭제하는 중 오류가 발생했습니다: " + e.getMessage(), null));
         }
     }
 }
