@@ -4,9 +4,9 @@ import lombok.Getter;
 
 @Getter
 public class AuthResponse {
-    private String token;
+    private String AccessToken;
 
     public AuthResponse(String token) {
-        this.token = token;
+        this.AccessToken = token;
     }
 }
