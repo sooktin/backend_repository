@@ -7,6 +7,6 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PasswordChangeResponse {
-    private int status;
+    private int statusCode;
     private String message;
 }
