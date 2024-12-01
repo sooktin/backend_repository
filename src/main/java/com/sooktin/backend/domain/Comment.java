@@ -39,6 +39,9 @@ public class Comment {
     @Column(nullable = false, length = 300)
     private String content;
 
+    @Column(nullable = false)
+    private boolean deleted = false; // 댓글 삭제 여부
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -46,7 +49,8 @@ public class Comment {
     @UpdateTimestamp
     private LocalDateTime modifiedAt;
 
-    public Boolean isParent() {
-        return this.parentId == null;
+    public void markAsDeleted() {
+        this.deleted = true;
+        this.content = "삭제된 댓글입니다.";
     }
 }
