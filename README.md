@@ -13,6 +13,7 @@ Git branch 전략: GitHub Flow 방식
   - JWT token과 Spring Security 활용 인가 기능
   - Redis를 통한 빠른 refresh token 액세스
   - 회원은 USER, ADMIN 두 가지 역할 구분
+  - 추후 신고 기능을 넣기 위하여 회원 계정 상태 enum 
   
 - 커뮤니티 
   - 게시글에는 텍스트와 이미지 첨부 가능(AWS S3 활용한 이미지)
@@ -26,5 +27,13 @@ Git branch 전략: GitHub Flow 방식
 
 - 채팅, 알람
   - Spring WebSocket 활용 실시간  기능
+    
+- 회원 문의
+- 
+- 마이 페이지
 
 <h2>기술 스택</h2> 
+Front: React
+Server: Spring
+DB: MySQL,Redis
+Cloud/infra: Elasitc Cache, beanstalk, EC2, GitHub Actions, Docker
