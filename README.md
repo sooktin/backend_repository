@@ -1,7 +1,7 @@
 # backend_repository
 
-### Git branch 전략: GitHub Flow 방식
-### 추후 GitHub Actions를 통하여 AWS beanstalk EC2 배포 전략
+Git branch 전략: GitHub Flow 방식
+추후 GitHub Actions를 통하여 AWS beanstalk EC2 배포 전략
 
 <h2> ERD </h2>  </br>
 <img width="1336" alt="스크린샷 2024-12-14 오전 9 27 09" src="https://github.com/user-attachments/assets/94c1740a-dded-407b-bc61-44bd916fbdaf" />
@@ -26,3 +26,4 @@
 - 채팅, 알람
   - Spring WebSocket 활용 실시간  기능
 
+<h2>기술 스택</h2> 
