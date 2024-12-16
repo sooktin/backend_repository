@@ -3,6 +3,7 @@ package com.sooktin.backend.domain;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.util.Set;
@@ -27,6 +28,7 @@ public class User {
     private String email;
 
     @Column(nullable = false, unique = true)
+    @Size(min = 2, max = 10,message = "닉네임은 2~10자 제한합니다.")
     private String nickname;
 
     @Schema(description = "password", example = "jamone122@3")
@@ -41,6 +43,10 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
     }
 
 }

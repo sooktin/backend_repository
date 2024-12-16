@@ -5,6 +5,7 @@ import com.sooktin.backend.domain.User;
 import com.sooktin.backend.domain.UserRole;
 import com.sooktin.backend.domain.VerificationToken;
 import com.sooktin.backend.dto.email.EmailCheckResponse;
+import com.sooktin.backend.dto.user.NicknameResponse;
 import com.sooktin.backend.dto.user.PasswordChangeResponse;
 import com.sooktin.backend.dto.user.RegisterRequest;
 import com.sooktin.backend.dto.verification.VerficationResponse;
@@ -61,7 +62,7 @@ public class UserService {
     }
 
     @Transactional
-    public PasswordChangeResponse changeResponse(String token, String oldPassword, String newPassword) {
+    public PasswordChangeResponse changePassword(String token, String oldPassword, String newPassword) {
         Long userId = jwtUtil.getUserIdFromToken(token);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UsernameNotFoundException("user not found!"));
@@ -73,6 +74,23 @@ public class UserService {
         userRepository.save(user);
 
         return new PasswordChangeResponse(200, "비밀번호가 변경되었습니다");
+    }
+
+    @Transactional
+    public NicknameResponse changeNickname(String currentNickname, String newNickname) {
+        User user = userRepository.findByNickname(currentNickname)
+                .orElseThrow(() -> new UsernameNotFoundException("없는 회원입니다"));
+
+        if (user.getNickname().equals(newNickname)){
+            throw new IllegalArgumentException("중복 닉네임입니다.");
+        }
+        if (userRepository.existsByNickname(newNickname)) {
+            throw new IllegalArgumentException("다른 닉네임을 입력해주세요");
+        }
+        user.setNickname(newNickname);
+        userRepository.save(user);
+
+        return new NicknameResponse(200,"닉네임이 변경되었습니다.", user);
     }
 
     @Transactional
