@@ -1,5 +1,6 @@
 package com.sooktin.backend.repository;
 
+import com.sooktin.backend.domain.User;
 import com.sooktin.backend.domain.Usernote;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -16,4 +17,5 @@ public interface UsernoteRepository extends JpaRepository<Usernote, Long> {
     List<Usernote> findAll(); // 모든 Usernote 엔터티 리스트로 가져오기
     @Override
     void deleteById(Long id);  // ID로 Usernote 삭제
+    List<Usernote> findByUser_Email(String email);
 }
