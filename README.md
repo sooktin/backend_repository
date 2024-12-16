@@ -29,8 +29,11 @@ Git branch 전략: GitHub Flow 방식
   - Spring WebSocket 활용 실시간  기능
     
 - 회원 문의
+  - 고객 문의함 기능
   
 - 마이 페이지
+  - 비밀번호 변경, 회원 탈퇴 등의 계정 관리
+  - 내가 쓴 커리어카드 및 커뮤니티 활동 표시
 
 <h2>기술 스택</h2> 
 Front: React
