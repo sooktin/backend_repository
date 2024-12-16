@@ -1,6 +1,10 @@
 package com.sooktin.backend.controller;
 
 import com.sooktin.backend.domain.User;
+import com.sooktin.backend.repository.UserRepository;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.sooktin.backend.domain.Usernote;
 import com.sooktin.backend.dto.usernote.CreateUsernoteRequest;
 import com.sooktin.backend.dto.usernote.CreateUsernoteResponse;
@@ -18,6 +22,11 @@ import java.util.stream.Collectors;
 @RequestMapping
 public class UsernoteController {
 
+    /**
+     * 클라이언트(우리는 리액트)에게 전달합니다.
+     *  controller에서 @GetMapping() { } 등등이 쓰임
+     **/
+
     private final UsernoteService usernoteService;
     private final UserRepository userRepository;
 
@@ -32,10 +41,7 @@ public class UsernoteController {
     public ResponseEntity<?> getAllUsernotes() {
         try {
             List<Usernote> usernotes = usernoteService.findAll();
-            List<CreateUsernoteResponse> usernoteDtos = usernotes.stream()
-                    .map(CreateUsernoteResponse::new)
-                    .collect(Collectors.toList());
-            return ResponseEntity.ok(usernoteDtos);
+            return ResponseEntity.ok(usernotes);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("게시글 목록을 불러오는 중 오류가 발생했습니다: " + e.getMessage());
         }
@@ -45,37 +51,32 @@ public class UsernoteController {
     @GetMapping("/usernote/{id}")
     public ResponseEntity<?> getUsernoteById(@PathVariable Long id) {
         try {
-            Optional<Usernote> usernoteOptional = usernoteService.findById(id);
-            if (usernoteOptional.isEmpty()) {
-                return ResponseEntity.notFound().build();
-            }
-            CreateUsernoteResponse usernoteDto = new CreateUsernoteResponse(usernoteOptional.get());
-            return ResponseEntity.ok(usernoteDto);
+            Optional<Usernote> usernote = usernoteService.findById(id);
+            return usernote.map(ResponseEntity::ok)
+                    .orElseGet(() -> ResponseEntity.notFound().build()); // 아 이거 오류메세지 적으면 오류뜨는거 왜그러지
+            // ResponseEntity.badRequest().body("해당 게시글을 찾을 수 없습니다."));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("게시글 조회 중 오류가 발생했습니다: " + e.getMessage());
         }
     }
 
     // 포스트 생성
+    /* -> 추후에 파라미터로 @AuthenticationPrincipal UserDetails userDetails 넣고
+          user 찾을 때 Optional<User> user = userRepository.findByEmail(userDetails.getUsername())도 고려해주세욤
+    from 경민 to 수진
+    */
     @PostMapping("/usernotes")
     public ResponseEntity<?> createPost(@RequestBody CreateUsernoteRequest userNoteRequest) {
         try {
-            Optional<User> userOptional = userRepository.findById(userNoteRequest.getUserId());
-            if (userOptional.isEmpty()) {
-                return ResponseEntity.notFound().build();
-            }
-            User user = userOptional.get();
-
+            Optional<User> user = userRepository.findById(userNoteRequest.getUserId());
+            if (user.isEmpty()) return ResponseEntity.notFound().build();
             Usernote newUsernote = new Usernote();
             newUsernote.setTitle(userNoteRequest.getTitle());
             newUsernote.setContent(userNoteRequest.getContent());
-            newUsernote.setLikes(userNoteRequest.getLikes() != null ? userNoteRequest.getLikes() : 0);
-            newUsernote.setUser(user);
-
+            newUsernote.setLikes(userNoteRequest.getLikes() != null ? userNoteRequest.getLikes() : 0); //null일시 0으로 처리.
+            newUsernote.setUser(user.get());
             Usernote createdUsernote = usernoteService.createUsernote(newUsernote);
-            CreateUsernoteResponse usernoteDto = new CreateUsernoteResponse(createdUsernote);
-
-            return ResponseEntity.status(201).body(usernoteDto);
+            return ResponseEntity.status(201).body(createdUsernote);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("게시글 생성 중 오류가 발생했습니다: " + e.getMessage());
         }
@@ -86,8 +87,7 @@ public class UsernoteController {
     public ResponseEntity<?> updateUsernote(@PathVariable Long id, @RequestBody Usernote usernoteDetails) {
         try {
             Usernote updatedUsernote = usernoteService.updateUsernote(id, usernoteDetails);
-            CreateUsernoteResponse usernoteDto = new CreateUsernoteResponse(updatedUsernote);
-            return ResponseEntity.ok(usernoteDto);
+            return ResponseEntity.ok(updatedUsernote);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("게시글 수정 중 오류가 발생했습니다: " + e.getMessage());
         }
@@ -97,9 +97,10 @@ public class UsernoteController {
     @DeleteMapping("/usernote/{id}")
     public ResponseEntity<?> deleteUsernote(@PathVariable Long id) {
         try {
-            if (usernoteService.deleteById(id)) {
+            if (usernoteService.deleteById(id)) { // 삭제 성공
                 return ResponseEntity.noContent().build();
-            } else {
+            } else { // 삭제 실패
+                // return ResponseEntity.notFound().build();
                 return ResponseEntity.badRequest().body("해당 게시글을 찾을 수 없습니다.");
             }
         } catch (Exception e) {
