@@ -61,8 +61,12 @@ public class UsernoteController {
     }
 
     // 포스트 생성
+    /* -> 추후에 파라미터로 @AuthenticationPrincipal UserDetails userDetails 넣고
+          user 찾을 때 Optional<User> user = userRepository.findByEmail(userDetails.getUsername())도 고려해주세욤
+    from 경민 to 수진
+    */
     @PostMapping("/usernotes")
-    public ResponseEntity<?> createPost(@RequestBody CreateUserNoteRequestDto userNoteRequest) {
+    public ResponseEntity<?> createPost(@RequestBody CreateUsernoteRequest userNoteRequest) {
         try {
             Optional<User> user = userRepository.findById(userNoteRequest.getUserId());
             if (user.isEmpty()) return ResponseEntity.notFound().build();
