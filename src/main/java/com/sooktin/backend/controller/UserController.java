@@ -1,14 +1,17 @@
 package com.sooktin.backend.controller;
 
 import com.sooktin.backend.auth.JwtUtil;
+import com.sooktin.backend.domain.CareerCard;
 import com.sooktin.backend.domain.User;
 import com.sooktin.backend.dto.user.NicknameRequest;
 import com.sooktin.backend.dto.user.NicknameResponse;
 import com.sooktin.backend.dto.user.UserGetResponse;
 import com.sooktin.backend.repository.UserRepository;
 import com.sooktin.backend.service.CustomUserDetails;
+import com.sooktin.backend.service.StorageService;
 import com.sooktin.backend.service.UserService;
 import com.sooktin.backend.service.UsernoteService;
+import io.micrometer.core.annotation.Timed;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +22,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -29,6 +33,7 @@ public class UserController {
     private final JwtUtil jwtUtil;
     private final UsernoteService usernoteService;
     private final UserRepository userRepository;
+    private final StorageService storageService;
 
     //delete되는지 가라 기능 작업 수행임
     @GetMapping("/search")
@@ -73,6 +78,21 @@ public class UserController {
     public ResponseEntity<NicknameResponse> chacngeNickname(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody @Valid NicknameRequest nicknameRequest) {
         NicknameResponse response = userService.changeNickname(userDetails.getNickname(), nicknameRequest.getNickname());
         return ResponseEntity.ok(response);
+    }
+
+
+    //CCS를 반환하면 id,userID등불필요한 데이터도 반환하기에 리스트형태의 CC 반환
+    @Timed(
+            value = "get.user.cardstorage",
+            description = "Time taken to get user's card storage",
+            percentiles = {0.5, 0.95, 0.99},
+            histogram = true
+    )
+    @GetMapping("/card-storage")
+    public ResponseEntity<List<CareerCard>> getUserCardStorage(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        List<CareerCard> careerCards = storageService.getCardsFromStorage(userDetails.getUserId());
+
+        return ResponseEntity.ok(careerCards);
     }
 
 }

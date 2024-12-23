@@ -6,6 +6,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -41,6 +43,13 @@ public class User {
     private Set<UserRole> roles;
 
 
+    @OneToOne(mappedBy = "user")
+    private CareerCard careerCard;   //my CC
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private CareerCardStorage careerCardStorage;  //my CC's storage..
+
+
     public void setPassword(String password) {
         this.password = password;
     }
@@ -49,4 +58,7 @@ public class User {
         this.nickname = nickname;
     }
 
+    public void setCareerCardStorage(CareerCardStorage storage) {
+        this.careerCardStorage = storage;
+    }
 }

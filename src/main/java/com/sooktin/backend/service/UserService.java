@@ -1,6 +1,7 @@
 package com.sooktin.backend.service;
 
 import com.sooktin.backend.auth.JwtUtil;
+import com.sooktin.backend.domain.CareerCardStorage;
 import com.sooktin.backend.domain.User;
 import com.sooktin.backend.domain.UserRole;
 import com.sooktin.backend.domain.VerificationToken;
@@ -9,6 +10,8 @@ import com.sooktin.backend.dto.user.NicknameResponse;
 import com.sooktin.backend.dto.user.PasswordChangeResponse;
 import com.sooktin.backend.dto.user.RegisterRequest;
 import com.sooktin.backend.dto.verification.VerficationResponse;
+import com.sooktin.backend.repository.CareerCardRepository;
+import com.sooktin.backend.repository.StorageRepository;
 import com.sooktin.backend.repository.UserRepository;
 import com.sooktin.backend.repository.VerificationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +34,8 @@ public class UserService {
     private VerificationRepository tokenRepository;
 
     @Autowired
+    private StorageRepository storageRepository;
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Autowired
@@ -51,12 +56,18 @@ public class UserService {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new Exception("이메일이 이미 존재합니다.");
         }
+
         User newUser = User.builder()
                 .email(request.getEmail())
                 .nickname(request.getNickname())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .roles(Collections.singleton(UserRole.USER))
                 .build();
+        CareerCardStorage storage = CareerCardStorage.builder()
+                .user(newUser)
+                .build();
+
+        newUser.setCareerCardStorage(storage);
 
         userRepository.save(newUser);
     }

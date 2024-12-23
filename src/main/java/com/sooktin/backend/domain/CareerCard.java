@@ -7,6 +7,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -63,6 +65,10 @@ public class CareerCard {
     private String skills; // 기술
 
     @Column(length = 10, nullable = false)
-    private String nickname; // 닉네임 - 회원 엔티티에 있을 것!
+    private String nickname; // 닉네임 - 회원 엔티티에 있어서 중복됨! user.getNickname()으로 접근*/
+
+    @ManyToOne
+    @JoinColumn(name = "card_storage_id")
+    private CareerCardStorage careerCardStorage;
 
 }
