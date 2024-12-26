@@ -56,7 +56,7 @@ public class AuthController {
     }
 
 
-    @Operation(summary = "이메일 인증 API", description = "해당되는 이메일로 초대장이 전달됩니다.")
+
     @PostMapping("/verify")
     public ResponseEntity<VerficationResponse> verifyEmail(@RequestBody VerificationRequest request) {
         VerficationResponse response = userService.verifyEmail(request.getEmail(), request.getToken());
@@ -84,7 +84,7 @@ public class AuthController {
     public ResponseEntity<?> login(@RequestBody @Valid LoginRequest loginRequest) {
         AuthenticationResult result = authenticationService.authenticate(loginRequest.getEmail(), loginRequest.getPassword());
         if (result.getStatus() == AUTHENTICATED) {
-            return ResponseEntity.ok(new AuthResponse(result.getAccessToken()));
+            return ResponseEntity.ok(new AuthResponse(200,result.getMessage(),result.getAccessToken()));
         } else {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("다시 접속해주세요.");
         }
