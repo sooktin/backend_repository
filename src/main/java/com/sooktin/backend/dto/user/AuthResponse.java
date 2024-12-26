@@ -1,4 +1,4 @@
-package com.sooktin.backend.auth;
+package com.sooktin.backend.dto.user;
 
 import com.sooktin.backend.dto.ResponseDto;
 import lombok.Getter;

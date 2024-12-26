@@ -1,6 +1,6 @@
 package com.sooktin.backend.controller;
 
-import com.sooktin.backend.auth.AuthResponse;
+import com.sooktin.backend.dto.user.AuthResponse;
 import com.sooktin.backend.auth.AuthenticationResult;
 import com.sooktin.backend.auth.JwtUtil;
 
@@ -13,7 +13,6 @@ import com.sooktin.backend.dto.verification.VerificationRequest;
 import com.sooktin.backend.service.AuthenticationService;
 import com.sooktin.backend.service.UserService;
 
-import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
