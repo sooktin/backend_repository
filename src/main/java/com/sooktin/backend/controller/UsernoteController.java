@@ -6,6 +6,7 @@ import com.sooktin.backend.dto.ResponseDto;
 import com.sooktin.backend.dto.usernote.CreateUsernoteRequest;
 import com.sooktin.backend.dto.usernote.CreateUsernoteResponse;
 import com.sooktin.backend.repository.UserRepository;
+import com.sooktin.backend.service.CustomUserDetails;
 import com.sooktin.backend.service.UsernoteService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,7 +80,7 @@ public class UsernoteController {
     @PostMapping("/usernotes")
     public ResponseEntity<ResponseDto<CreateUsernoteResponse>> createPost(
             @Valid @RequestBody CreateUsernoteRequest userNoteRequest, // 유효성 검사를 추가
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
         try {
             // 사용자 인증 확인
             if (userDetails == null) {
@@ -113,7 +114,7 @@ public class UsernoteController {
     public ResponseEntity<ResponseDto<CreateUsernoteResponse>> updateUsernote(
             @PathVariable Long id,
             @RequestBody CreateUsernoteRequest userNoteRequest,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
         try {
 
             if (userDetails == null) {
@@ -147,7 +148,7 @@ public class UsernoteController {
     @DeleteMapping("/usernote/{id}")
     public ResponseEntity<ResponseDto<Void>> deleteUsernote(
             @PathVariable Long id,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
         try {
             if (userDetails == null) {
                 return buildResponse(401, "인증 정보가 유효하지 않습니다. 다시 로그인해주세요.", null);
