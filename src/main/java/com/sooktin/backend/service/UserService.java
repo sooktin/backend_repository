@@ -73,18 +73,18 @@ public class UserService {
     }
 
     @Transactional
-    public PasswordChangeResponse changePassword(String token, String oldPassword, String newPassword) {
-        Long userId = jwtUtil.getUserIdFromToken(token);
+    public PasswordChangeResponse changePassword(Long userId, String oldPassword, String newPassword) {
+
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UsernameNotFoundException("user not found!"));
+                .orElseThrow(() -> new UsernameNotFoundException("없는 회원입니다!"));
 
         if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
-            return new PasswordChangeResponse(400, "current password not matches");
+            return new PasswordChangeResponse(400, "비밀번호를 제대로 입력해주세요",null);
         }
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
 
-        return new PasswordChangeResponse(200, "비밀번호가 변경되었습니다");
+        return new PasswordChangeResponse(200, "비밀번호가 변경되었습니다",null);
     }
 
     @Transactional

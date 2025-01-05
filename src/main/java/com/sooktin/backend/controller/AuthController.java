@@ -11,6 +11,7 @@ import com.sooktin.backend.dto.user.*;
 import com.sooktin.backend.dto.verification.VerficationResponse;
 import com.sooktin.backend.dto.verification.VerificationRequest;
 import com.sooktin.backend.service.AuthenticationService;
+import com.sooktin.backend.service.CustomUserDetails;
 import com.sooktin.backend.service.UserService;
 
 import jakarta.validation.Valid;
@@ -19,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import static com.sooktin.backend.auth.AuthenticationStatus.*;
@@ -98,9 +100,9 @@ public class AuthController {
     }
 
     @PatchMapping("password")
-    public ResponseEntity<PasswordChangeResponse> changePassword(@RequestHeader("Authorization") String token, @RequestBody PasswordChangeRequest request) {
+    public ResponseEntity<PasswordChangeResponse> changePassword(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody PasswordChangeRequest request) {
         PasswordChangeResponse response = userService.changePassword(
-                token,
+                userDetails.getUserId(),
                 request.getOldPassword(),
                 request.getNewPassword()
         );
