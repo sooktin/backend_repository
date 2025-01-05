@@ -1,12 +1,42 @@
 # backend_repository
 
-### 우리 팀은 지속적 배포와 직관적인 이해를 위하여 GitHub Flow 방식을 활용합니다.
-</br>
-</br>
-GitHub Flow란?  </br> 
-- main 브랜치를 중심으로 하고, 새로운 기능을 추가하기 위해서는 main 브랜치 외에 새로운 브랜치를 생성해서 해당 기능을 구현 후에 작업 완료시 main 브랜치로 PR을 날립니다. </br>
-</br>PR에서는 변경사항을 설명하고 리뷰를 요청합니다. 
-</br>보통 PR 승인 전, 스테이징 환경에 배포하여 테스트합니다.
-</br>리뷰 완료 및 모든 조건 충족 시에 병합합니다. 
-</br>병합 후에는 해당 기능 브랜치는 삭제해주세요.
-</br>기능 브랜치의 경우 "feature/기능명"으로 브랜치명을 생성해주세요.
+Git branch 전략: GitHub Flow 방식
+추후 GitHub Actions를 통하여 AWS beanstalk EC2 배포 전략
+
+<h2> ERD </h2>  </br>
+<img width="1336" alt="스크린샷 2024-12-14 오전 9 27 09" src="https://github.com/user-attachments/assets/94c1740a-dded-407b-bc61-44bd916fbdaf" />
+
+<h2>주요 기능</h2> 
+
+- 회원 
+  - smtp 이메일 인증(java mailsender)을 통한 숙명여대 도메인 검증 기능
+  - JWT token과 Spring Security 활용 인가 기능
+  - Redis를 통한 빠른 refresh token 액세스
+  - 회원은 USER, ADMIN 두 가지 역할 구분
+  - 추후 신고 기능을 넣기 위하여 회원 계정 상태 enum 
+  
+- 커뮤니티 
+  - 게시글에는 텍스트와 이미지 첨부 가능(AWS S3 활용한 이미지)
+  - 댓글과 대댓글 기능
+  - 각 게시글과 댓글은 좋아요 기능 
+
+- 커리어 카드
+  - 커피챗을 위한 각 회원의 소개 카드
+  - 카드를 스와이프하며 채팅 혹은 보관하기(커리어카드 보관함)
+  - 첫 회원 가입 시 커리어카드는 생성 필수
+
+- 채팅, 알람
+  - Spring WebSocket 활용 실시간  기능
+    
+- 회원 문의
+  - 고객 문의함 기능
+  
+- 마이 페이지
+  - 비밀번호 변경, 회원 탈퇴 등의 계정 관리
+  - 내가 쓴 커리어카드 및 커뮤니티 활동 표시
+
+<h2>기술 스택</h2> 
+Front: React
+Server: Spring
+DB: MySQL,Redis
+Cloud/infra: Elasitc Cache, beanstalk, EC2, GitHub Actions, Docker

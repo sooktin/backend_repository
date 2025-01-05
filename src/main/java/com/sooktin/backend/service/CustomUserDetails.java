@@ -20,9 +20,6 @@ public class CustomUserDetails implements UserDetails {
 
     private final User user;
 
-    public boolean is2faEnabled() {
-        return user.getIs2fa();
-    }
 
     public boolean isEmailNull() {
         return user.getEmail().isEmpty();
@@ -40,6 +37,8 @@ public class CustomUserDetails implements UserDetails {
     public String getPassword() {
         return user.getPassword();
     }
+
+    public Long getUserId() {return user.getId(); }
 
     @Override
     public String getUsername() {

@@ -1,5 +1,6 @@
 package com.sooktin.backend.service;
 
+import com.sooktin.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.sooktin.backend.domain.Usernote;
@@ -12,8 +13,10 @@ import java.util.Optional;
 @Service
 public class UsernoteService {
 
-    private final UsernoteRepository usernoteRepository;
-
+    @Autowired
+    private UsernoteRepository usernoteRepository;
+    @Autowired
+    private UserRepository userRepository;
     @Autowired
     public UsernoteService(UsernoteRepository usernoteRepository) {
         this.usernoteRepository = usernoteRepository;
@@ -60,5 +63,9 @@ public class UsernoteService {
         } else {
             throw new IllegalArgumentException("해당 포스트가 존재하지 않습니다. id: " + id);
         }
+    }
+    @Transactional
+    public List<Usernote> findByUserEmail(String email) {
+        return usernoteRepository.findByUser_Email(email);
     }
 }

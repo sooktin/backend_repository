@@ -1,46 +1,21 @@
-package com.sooktin.backend.user;
+package com.sooktin.backend.auth;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sooktin.backend.auth.AuthenticationResult;
-import com.sooktin.backend.auth.AuthenticationStatus;
-import com.sooktin.backend.controller.UserController;
+import com.sooktin.backend.controller.AuthController;
 import com.sooktin.backend.domain.User;
 import com.sooktin.backend.domain.UserRole;
 import com.sooktin.backend.repository.UserRepository;
 import com.sooktin.backend.service.AuthenticationService;
-import com.sooktin.backend.service.UserService;
-import jakarta.persistence.Table;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sooktin.backend.auth.AuthenticationResult;
-import com.sooktin.backend.auth.AuthenticationStatus;
-import com.sooktin.backend.controller.UserController;
-import com.sooktin.backend.domain.User;
-import com.sooktin.backend.domain.UserRole;
-import com.sooktin.backend.repository.UserRepository;
-import com.sooktin.backend.service.AuthenticationService;
-import com.sooktin.backend.service.UserService;
-import jakarta.persistence.Table;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.Rollback;
@@ -49,7 +24,6 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -63,7 +37,7 @@ import static org.mockito.Mockito.when;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public class UserControllerTest {
+public class AuthControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -74,7 +48,7 @@ public class UserControllerTest {
     @MockBean
     private AuthenticationService authenticationService;
     @InjectMocks
-    private UserController userController;
+    private AuthController authController;
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -116,7 +90,6 @@ public class UserControllerTest {
                 .nickname("sk")
                 .password("12321")
                 .roles(Collections.singleton(UserRole.USER))
-                .is2fa(true)
                 .build();
 
         User user2=User.builder()
@@ -124,7 +97,6 @@ public class UserControllerTest {
                 .nickname("ka")
                 .password("123")
                 .roles(Collections.singleton(UserRole.USER))
-                .is2fa(true)
                 .build();
 
         userRepository.saveAll(Arrays.asList(user1,user2));

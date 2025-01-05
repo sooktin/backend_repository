@@ -1,7 +1,7 @@
-package com.sooktin.backend.user;
+package com.sooktin.backend.auth;
 
 
-import com.sooktin.backend.dto.user.LoginRequestDto;
+import com.sooktin.backend.dto.user.LoginRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -30,22 +30,22 @@ public class loginTest {
     @Test
     @DisplayName("로그인리퀘스트 validation피하나요")
     void testValidLoginReqDto(){
-        LoginRequestDto dto = new LoginRequestDto();
+        LoginRequest dto = new LoginRequest();
         dto.setEmail("foo@ex.com");
         dto.setPassword("pa2");
 
-        Set<ConstraintViolation<LoginRequestDto>> violations = validator.validate(dto);
+        Set<ConstraintViolation<LoginRequest>> violations = validator.validate(dto);
         assertTrue(violations.isEmpty());
     }
 
     @Test
     @DisplayName("로그인리퀘스트 invalid email")
     void testInvalidEmailLoginReqDto(){
-        LoginRequestDto dto = new LoginRequestDto();
+        LoginRequest dto = new LoginRequest();
         dto.setEmail("invalid");
         dto.setPassword("pa2");
 
-        Set<ConstraintViolation<LoginRequestDto>> violations = validator.validate(dto);
+        Set<ConstraintViolation<LoginRequest>> violations = validator.validate(dto);
         assertEquals(1, violations.size());
         assertEquals("이메일 형식이 맞지 않아요",violations.iterator().next().getMessage());
     }

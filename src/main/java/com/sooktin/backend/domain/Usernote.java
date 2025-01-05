@@ -40,3 +40,4 @@ public class Usernote {
     @JoinColumn(name = "user_id", nullable = false) // 외래키 선언
     private User user; // 회원 정보 (User 엔티티와 연결)
 }
+
