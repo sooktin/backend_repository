@@ -50,7 +50,7 @@ public class AuthController {
                 return ResponseEntity.badRequest().body(RegisterResponse.duplicateEmail());
             }
             return ResponseEntity.badRequest()
-                    .body(new RegisterResponse(false, e.getMessage(), 400));
+                    .body(new RegisterResponse(400, e.getMessage(), false));
         }
     }
 
@@ -80,13 +80,14 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody @Valid LoginRequest loginRequest) {
+    public ResponseEntity<LoginResponse> login(@RequestBody @Valid LoginRequest loginRequest) {
         AuthenticationResult result = authenticationService.authenticate(loginRequest.getEmail(), loginRequest.getPassword());
-        if (result.getStatus() == AUTHENTICATED) {
-            return ResponseEntity.ok(new AuthResponse(200,result.getMessage(),result.getAccessToken()));
-        } else {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("다시 접속해주세요.");
-        }
+
+        LoginResponse response =  result.getStatus() == AUTHENTICATED
+                ? LoginResponse.success(result.getAccessToken())
+                : LoginResponse.fail();
+
+        return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
 
