@@ -2,12 +2,14 @@ package com.sooktin.backend.dto.user;
 
 import com.sooktin.backend.dto.ResponseDto;
 import jakarta.validation.constraints.NotBlank;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 public class LoginResponse extends ResponseDto<LoginResponse.TokenDto> {
+    @Data
     public static class TokenDto {
         private String accessToken;
         private Integer expiresIn;
