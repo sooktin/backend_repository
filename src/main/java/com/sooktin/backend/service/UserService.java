@@ -1,13 +1,17 @@
 package com.sooktin.backend.service;
 
 import com.sooktin.backend.auth.JwtUtil;
+import com.sooktin.backend.domain.CareerCardStorage;
 import com.sooktin.backend.domain.User;
 import com.sooktin.backend.domain.UserRole;
 import com.sooktin.backend.domain.VerificationToken;
 import com.sooktin.backend.dto.email.EmailCheckResponse;
+import com.sooktin.backend.dto.user.NicknameResponse;
 import com.sooktin.backend.dto.user.PasswordChangeResponse;
 import com.sooktin.backend.dto.user.RegisterRequest;
 import com.sooktin.backend.dto.verification.VerficationResponse;
+import com.sooktin.backend.repository.CareerCardRepository;
+import com.sooktin.backend.repository.StorageRepository;
 import com.sooktin.backend.repository.UserRepository;
 import com.sooktin.backend.repository.VerificationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +34,8 @@ public class UserService {
     private VerificationRepository tokenRepository;
 
     @Autowired
+    private StorageRepository storageRepository;
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Autowired
@@ -50,29 +56,52 @@ public class UserService {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new Exception("이메일이 이미 존재합니다.");
         }
+
         User newUser = User.builder()
                 .email(request.getEmail())
                 .nickname(request.getNickname())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .roles(Collections.singleton(UserRole.USER))
                 .build();
+        CareerCardStorage storage = CareerCardStorage.builder()
+                .user(newUser)
+                .build();
+
+        newUser.setCareerCardStorage(storage);
 
         userRepository.save(newUser);
     }
 
     @Transactional
-    public PasswordChangeResponse changeResponse(String token, String oldPassword, String newPassword) {
-        Long userId = jwtUtil.getUserIdFromToken(token);
+    public PasswordChangeResponse changePassword(Long userId, String oldPassword, String newPassword) {
+
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UsernameNotFoundException("user not found!"));
+                .orElseThrow(() -> new UsernameNotFoundException("없는 회원입니다!"));
 
         if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
-            return new PasswordChangeResponse(400, "current password not matches");
+            return new PasswordChangeResponse(400, "비밀번호를 제대로 입력해주세요",null);
         }
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
 
-        return new PasswordChangeResponse(200, "비밀번호가 변경되었습니다");
+        return new PasswordChangeResponse(200, "비밀번호가 변경되었습니다",null);
+    }
+
+    @Transactional
+    public NicknameResponse changeNickname(String currentNickname, String newNickname) {
+        User user = userRepository.findByNickname(currentNickname)
+                .orElseThrow(() -> new UsernameNotFoundException("없는 회원입니다"));
+
+        if (user.getNickname().equals(newNickname)){
+            throw new IllegalArgumentException("중복 닉네임입니다.");
+        }
+        if (userRepository.existsByNickname(newNickname)) {
+            throw new IllegalArgumentException("다른 닉네임을 입력해주세요");
+        }
+        user.setNickname(newNickname);
+        userRepository.save(user);
+
+        return new NicknameResponse(200,"닉네임이 변경되었습니다.", user);
     }
 
     @Transactional

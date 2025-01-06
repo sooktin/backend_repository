@@ -11,7 +11,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class AuthenticationResult {
     private AuthenticationStatus status;
+    private String message;
     private String AccessToken;
-
 
 }
