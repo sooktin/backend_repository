@@ -1,12 +1,13 @@
 package com.sooktin.backend.dto.user;
 
+import com.sooktin.backend.dto.ResponseDto;
 import lombok.*;
 
 @Getter
 @Setter
-@AllArgsConstructor
-@NoArgsConstructor
-public class PasswordChangeResponse {
-    private int statusCode;
-    private String message;
+public class PasswordChangeResponse extends ResponseDto {
+
+    public PasswordChangeResponse(int statusCode, String message, Object data) {
+        super(statusCode, message, data);
+    }
 }

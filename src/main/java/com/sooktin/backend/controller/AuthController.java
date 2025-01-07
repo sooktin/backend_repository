@@ -1,6 +1,6 @@
 package com.sooktin.backend.controller;
 
-import com.sooktin.backend.auth.AuthResponse;
+import com.sooktin.backend.dto.user.AuthResponse;
 import com.sooktin.backend.auth.AuthenticationResult;
 import com.sooktin.backend.auth.JwtUtil;
 
@@ -11,15 +11,16 @@ import com.sooktin.backend.dto.user.*;
 import com.sooktin.backend.dto.verification.VerficationResponse;
 import com.sooktin.backend.dto.verification.VerificationRequest;
 import com.sooktin.backend.service.AuthenticationService;
+import com.sooktin.backend.service.CustomUserDetails;
 import com.sooktin.backend.service.UserService;
 
-import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import static com.sooktin.backend.auth.AuthenticationStatus.*;
@@ -51,12 +52,12 @@ public class AuthController {
                 return ResponseEntity.badRequest().body(RegisterResponse.duplicateEmail());
             }
             return ResponseEntity.badRequest()
-                    .body(new RegisterResponse(false, e.getMessage(), 400));
+                    .body(new RegisterResponse(400, e.getMessage(), false));
         }
     }
 
 
-    @Operation(summary = "이메일 인증 API", description = "해당되는 이메일로 초대장이 전달됩니다.")
+
     @PostMapping("/verify")
     public ResponseEntity<VerficationResponse> verifyEmail(@RequestBody VerificationRequest request) {
         VerficationResponse response = userService.verifyEmail(request.getEmail(), request.getToken());
@@ -81,13 +82,14 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody @Valid LoginRequest loginRequest) {
+    public ResponseEntity<LoginResponse> login(@RequestBody @Valid LoginRequest loginRequest) {
         AuthenticationResult result = authenticationService.authenticate(loginRequest.getEmail(), loginRequest.getPassword());
-        if (result.getStatus() == AUTHENTICATED) {
-            return ResponseEntity.ok(new AuthResponse(result.getAccessToken()));
-        } else {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("다시 접속해주세요.");
-        }
+
+        LoginResponse response =  result.getStatus() == AUTHENTICATED
+                ? LoginResponse.success(result.getAccessToken())
+                : LoginResponse.fail();
+
+        return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
 
@@ -98,9 +100,9 @@ public class AuthController {
     }
 
     @PatchMapping("password")
-    public ResponseEntity<PasswordChangeResponse> changePassword(@RequestHeader("Authorization") String token, @RequestBody PasswordChangeRequest request) {
-        PasswordChangeResponse response = userService.changeResponse(
-                token,
+    public ResponseEntity<PasswordChangeResponse> changePassword(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody PasswordChangeRequest request) {
+        PasswordChangeResponse response = userService.changePassword(
+                userDetails.getUserId(),
                 request.getOldPassword(),
                 request.getNewPassword()
         );

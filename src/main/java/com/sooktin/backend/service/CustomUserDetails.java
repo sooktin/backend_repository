@@ -40,6 +40,8 @@ public class CustomUserDetails implements UserDetails {
 
     public Long getUserId() {return user.getId(); }
 
+    public String getNickname() {return user.getNickname(); }
+
     @Override
     public String getUsername() {
         return user.getEmail(); //email 기본 식별자 사용 시 쿼리 성능에 영향을 줄수있기때문이며 이메일은 변경 가능. 또한보안 문제로
