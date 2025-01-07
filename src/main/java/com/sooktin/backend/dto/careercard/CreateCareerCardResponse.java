@@ -27,7 +27,7 @@ public class CreateCareerCardResponse {
 
     public CreateCareerCardResponse(CareerCard careerCard) {
         this.cardId = careerCard.getId();
-        this.nickname = careerCard.getNickname();
+        this.nickname = careerCard.getUser().getNickname();
         this.major = careerCard.getMajor();
         this.studentStatus = careerCard.getStudent_status();
         this.grade = careerCard.getGrade();

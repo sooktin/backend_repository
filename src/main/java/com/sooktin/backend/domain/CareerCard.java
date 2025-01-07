@@ -72,9 +72,6 @@ public class CareerCard {
     @Column(name = "skill", length = 100)
     private List<String> skills = new ArrayList<>(); // 기술
 
-    @Column(length = 10, nullable = false)
-    private String nickname; // 닉네임 - 회원 엔티티에 있을 것!
-
     // 나중에 user 수가 증가하면  @ElementCollection -> 별도 엔티티 분리로 리팩토링 해야합니다!
 
 }

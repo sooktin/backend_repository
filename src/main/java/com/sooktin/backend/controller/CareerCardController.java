@@ -176,7 +176,6 @@ public class CareerCardController {
         careerCard.setExperiences(request.getExperiences());
         careerCard.setSkills(request.getSkills());
         careerCard.setImageUrls(request.getImageUrls());
-        careerCard.setNickname(request.getNickname());
         return careerCard;
     }
 }

@@ -90,10 +90,6 @@ public class CareerCardService {
     }
 
     private void validateCareerCard(CareerCard careerCard) {
-        // 닉네임 검증
-        if (careerCard.getNickname() == null || careerCard.getNickname().isEmpty()) {
-            throw new IllegalArgumentException("닉네임은 비워둘 수 없습니다.");
-        }
 
         // 재학 여부 검증
         validateStudentStatus(careerCard.getStudent_status());
@@ -173,7 +169,6 @@ public class CareerCardService {
 
     // Update existing CareerCard fields
     private void updateCardFields(CareerCard existingCard, CareerCard updatedCard) {
-        existingCard.setNickname(updatedCard.getNickname());
         existingCard.setMajor(updatedCard.getMajor());
         existingCard.setStudent_status(updatedCard.getStudent_status());
         existingCard.setGrade(updatedCard.getGrade());
