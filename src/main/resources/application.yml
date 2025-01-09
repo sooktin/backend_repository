@@ -1,0 +1,76 @@
+jwt:
+    issuer: sooktin
+    access-expiration: 3600000  # 1시간
+    refresh-expiration: 1209600000  # 14일
+    secret-key: cThIIoDvwdueQB468K5xDc5633seEFoqwxjF_xSJyQQ
+server:
+  error:
+    include-binding-errors: always
+    include-message: always
+  address: 0.0.0.0
+  port: 8080
+spring:
+  application:
+    name: sooktin
+  datasource:
+    url: jdbc:mysql://localhost:3306/sooktin?allowPublicKeyRetrieval=true&useSSL=false
+    username: admin
+    password: sooktin0000
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+    show-sql: true
+  security:
+    user:
+      name: admin
+      password: sooktin0908
+      roles: ADMIN
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: dudghkrkwhgek@gmail.com
+    password: mwbu meie oonk rdba
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus, metrics, health
+      base-path: /actuator
+  endpoint:
+    prometheus:
+      enabled: true
+    health:
+      show-details: always
+    metrics:
+      enabled: true
+  metrics:
+    enable:
+      all: true
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+

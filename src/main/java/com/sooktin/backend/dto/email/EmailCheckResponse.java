@@ -11,7 +11,8 @@ import lombok.Setter;
 public class EmailCheckResponse extends ResponseDto<Boolean> {
 
 
-    public EmailCheckResponse(int statusCode, String message, boolean exists) {
+
+  public EmailCheckResponse(int statusCode, String message, boolean exists) {
         super(statusCode, message, exists);
     }
 
