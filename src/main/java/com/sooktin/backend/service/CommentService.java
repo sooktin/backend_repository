@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class CommentService {
@@ -25,48 +26,63 @@ public class CommentService {
         return commentRepository.save(comment);
     }
 
+    // 삭제 여부에 상관없이 댓글 조회
+    @Transactional(readOnly = true)
+    public Optional<Comment> findDeletedOrActiveById(Long id) {
+        return commentRepository.findById(id); // 삭제 여부를 무시하고 댓글 반환
+    }
+
     // 대댓글 생성
     @Transactional
     public Comment createReply(Long parentId, Comment reply) {
-        Comment parentComment = commentRepository.findById(parentId)
-                .orElseThrow(() -> new IllegalArgumentException("부모 댓글이 존재하지 않습니다."));
+        Comment parentComment = findDeletedOrActiveById(parentId)
+                .orElseThrow(() -> new IllegalArgumentException("부모 댓글을 찾을 수 없습니다."));
 
-        reply.setParent(parentComment); // 부모 댓글 설정
-        reply.setUsernote(parentComment.getUsernote()); // 동일한 게시글에 속하도록 설정
-        return commentRepository.save(reply); // 대댓글 저장
+
+        // 대댓글인지 확인
+        if (parentComment.getParentId() != null) {
+            throw new IllegalArgumentException("대댓글에 대댓글을 작성할 수 없습니다.");
+        }
+
+        reply.setParentId(parentId);
+        return commentRepository.save(reply);
+    }
+    /* 모든 조회 기능에서 삭제된 댓글은 필터링됨 */
+
+    // 삭제된 댓글 필터링 메소드
+    private boolean isNotDeleted(Comment comment) {
+        return !comment.isDeleted();
+    }
+
+    // 부모 댓글 id로 대댓글 조회
+    @Transactional(readOnly = true)
+    public List<Comment> findRepliesByParentId(Long parentId) {
+        return commentRepository.findByParentId(parentId); // 부모 댓글 삭제 여부에 관계없이 반환
     }
 
     // ID로 댓글 조회
     @Transactional(readOnly = true)
     public Optional<Comment> findById(Long id) {
-        return commentRepository.findById(id);
+        return commentRepository.findById(id)
+                .filter(this::isNotDeleted);
     }
 
     // 특정 사용자의 모든 댓글 조회
     @Transactional(readOnly = true)
     public List<Comment> findByUserId(Long userId) {
-        return commentRepository.findByUserId(userId);
+        return commentRepository.findByUserId(userId).stream()
+                .filter(this::isNotDeleted)
+                .collect(Collectors.toList());
     }
 
     // 특정 노트의 모든 댓글 조회
     @Transactional(readOnly = true)
     public List<Comment> findByUsernoteId(Long usernoteId) {
-        return commentRepository.findByUsernoteId(usernoteId);
+        return commentRepository.findByUsernoteId(usernoteId).stream()
+                .filter(this::isNotDeleted)
+                .collect(Collectors.toList());
     }
 
-    // 특정 사용자와 특정 노트에 대한 댓글 조회
-    @Transactional(readOnly = true)
-    public Optional<Comment> findByUserIdAndUsernoteId(Long userId, Long usernoteId) {
-        return commentRepository.findByUserIdAndUsernoteId(userId, usernoteId);
-    }
-
-    // 특정 댓글의 대댓글 목록 조회
-    @Transactional(readOnly = true)
-    public List<Comment> getReplies(Long parentId) {
-        Comment parentComment = commentRepository.findById(parentId)
-                .orElseThrow(() -> new IllegalArgumentException("부모 댓글이 존재하지 않습니다."));
-        return parentComment.getReplies();
-    }
 
     // 댓글 업데이트
     @Transactional
@@ -78,21 +94,32 @@ public class CommentService {
                 () -> new IllegalArgumentException("해당 댓글이 존재하지 않습니다. id: " + id)
         );
 
+        if (comment.isDeleted()) {
+            throw new IllegalStateException("삭제된 댓글은 수정할 수 없습니다.");
+        }
+
         comment.setContent(updatedComment.getContent());
+        comment.setLikes(updatedComment.getLikes());
         return commentRepository.save(comment);
     }
 
-    // 댓글 삭제
+    // 댓글 삭제 - 실제론 삭제되지 않았음
+    @Transactional
     public boolean deleteById(Long id) {
-        if (commentRepository.existsById(id)) {
-            if (!isOwner(id)) {
-                throw new IllegalStateException("본인이 아닌 사용자는 이 댓글을 삭제할 수 없습니다.");
-            }
-            commentRepository.deleteById(id);
-            return true;
-        } else {
+        Optional<Comment> commentOptional = commentRepository.findById(id);
+        if (commentOptional.isEmpty()) {
             throw new IllegalArgumentException("해당 댓글이 존재하지 않습니다. id: " + id);
         }
+
+        Comment comment = commentOptional.get();
+        if (comment.isDeleted()) {
+            throw new IllegalStateException("이미 삭제된 댓글입니다.");
+        }
+
+        // 삭제 상태로 표시
+        comment.markAsDeleted();
+        commentRepository.save(comment);
+        return true;
     }
 
     // 유효성 검증 메소드

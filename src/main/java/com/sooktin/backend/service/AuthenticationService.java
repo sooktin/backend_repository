@@ -34,7 +34,7 @@ public class AuthenticationService {
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
         if (!userDetails.isEnabled()) {
-            return new AuthenticationResult(AuthenticationStatus.ACCOUNT_DISABLED, null);
+            return new AuthenticationResult(AuthenticationStatus.ACCOUNT_DISABLED,null, null);
         }
         String accessToken = jwtUtil.generateAccessToken(userDetails);
         String refreshToken = jwtUtil.generateRefreshToken(userDetails);
@@ -44,7 +44,7 @@ public class AuthenticationService {
                 refreshToken,
                 Duration.ofMillis(jwtUtil.getRefresh_expiration())
         );
-        return new AuthenticationResult(AuthenticationStatus.AUTHENTICATED, accessToken);
+        return new AuthenticationResult(AuthenticationStatus.AUTHENTICATED,"로그인 되었습니다.", accessToken);
     }
 
     public String refreshAccessToken(String expiredAccessToken) {

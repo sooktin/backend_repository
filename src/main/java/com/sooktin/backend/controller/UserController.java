@@ -1,127 +1,98 @@
 package com.sooktin.backend.controller;
 
-import com.nimbusds.oauth2.sdk.Request;
-import com.sooktin.backend.auth.AuthResponse;
-import com.sooktin.backend.auth.AuthenticationResult;
 import com.sooktin.backend.auth.JwtUtil;
+import com.sooktin.backend.domain.CareerCard;
 import com.sooktin.backend.domain.User;
-
-import com.sooktin.backend.dto.email.EmailCheckRequest;
-import com.sooktin.backend.dto.email.EmailCheckResponse;
-
-import com.sooktin.backend.dto.user.*;
-import com.sooktin.backend.dto.verification.VerficationResponse;
-import com.sooktin.backend.dto.verification.VerificationRequest;
-import com.sooktin.backend.service.AuthenticationService;
+import com.sooktin.backend.dto.user.NicknameRequest;
+import com.sooktin.backend.dto.user.NicknameResponse;
+import com.sooktin.backend.dto.user.UserGetResponse;
+import com.sooktin.backend.repository.UserRepository;
+import com.sooktin.backend.service.CustomUserDetails;
+import com.sooktin.backend.service.StorageService;
 import com.sooktin.backend.service.UserService;
-
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Getter;
+import com.sooktin.backend.service.UsernoteService;
+import io.micrometer.core.annotation.Timed;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
-
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import static com.sooktin.backend.auth.AuthenticationStatus.*;
+import java.util.List;
+import java.util.Optional;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/users")
 @RequiredArgsConstructor
 public class UserController {
-    private final AuthenticationService authenticationService;
-    private final JwtUtil jwtUtil;
     private final UserService userService;
+    private final JwtUtil jwtUtil;
+    private final UsernoteService usernoteService;
+    private final UserRepository userRepository;
+    private final StorageService storageService;
 
-    @GetMapping("/id")
-    public String id() {
-        return "hey 나연";
+    //delete되는지 가라 기능 작업 수행임
+    @GetMapping("/search")
+    public ResponseEntity<Optional<User>> searchUsers(@RequestParam String nickname) {
+        return ResponseEntity.ok((userService.search(nickname)));
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<RegisterResponse> registerUser(@RequestBody RegisterRequest request) {
+    @GetMapping
+    public ResponseEntity<?> getUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        Optional<User> user = userRepository.findById(userDetails.getUserId());
+        return user.map(u -> ResponseEntity.ok(UserGetResponse.from(u)))
+                .orElseGet(() -> ResponseEntity.notFound().build()); //elseget은 매개값이 필요할때만
+    }
+
+    @DeleteMapping
+    public ResponseEntity<?> deleteUser(HttpServletRequest request) {
         try {
-            userService.registerUser(request);
-            return ResponseEntity.status(201).body(RegisterResponse.success());
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(RegisterResponse.passwordMismatch());
-        } catch (Exception e) {
-            if (e.getMessage().contains("닉네임")) {
-                return ResponseEntity.badRequest().body(RegisterResponse.duplicateNickname());
-            } else if (e.getMessage().contains("이메일")) {
-                return ResponseEntity.badRequest().body(RegisterResponse.duplicateEmail());
+            String token = request.getHeader("Authorization");
+            if (token != null && token.startsWith("Bearer ")) {
+                token = token.substring(7);
             }
-            return ResponseEntity.badRequest()
-                    .body(new RegisterResponse(false, e.getMessage(), 400));
-        }
-    }
 
+            if (!jwtUtil.validateToken(token)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 토큰입니다.");
+            }
 
-    @Operation(summary = "이메일 인증 API", description = "해당되는 이메일로 초대장이 전달됩니다.")
-    @PostMapping("/verify")
-    public ResponseEntity<VerficationResponse> verifyEmail(@RequestBody VerificationRequest request) {
-        VerficationResponse response = userService.verifyEmail(request.getEmail(), request.getCode());
-        return ResponseEntity.status(response.getStatusCode()).body(response);
-    }
-
-    @PostMapping("/send-verification")
-    public ResponseEntity<?> sendVerificationCode(@RequestBody SendVerificationRequest request) {
-        try {
-            userService.sendVerificationCode(request.getEmail());
-            return ResponseEntity.ok("인증 코드가 발송되었습니다.");
+            String userEmail = jwtUtil.getEmailFromToken(token);
+            ;
+            userService.delete(userEmail);
+            return ResponseEntity.ok().body("회원탈퇴성공");
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("인증 코드 발송에 실패했습니다.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 
-    @PostMapping("/check-email")
-    public ResponseEntity<EmailCheckResponse> checkEmail(@RequestBody EmailCheckRequest request) {
-        EmailCheckResponse response = userService.checkEmail(request.getEmail());
-        return ResponseEntity.status(response.getStatusCode()).body(response);
-
+    @GetMapping("/usernotes")
+    public ResponseEntity<?> getUserNotes(@AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(usernoteService.findByUserEmail(userDetails.getUsername()));
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<?> login(LoginRequest loginRequest) {
-        AuthenticationResult result = authenticationService.authenticate(loginRequest.getEmail(), loginRequest.getPassword());
-        if (result.getStatus() == AUTHENTICATED) {
-            return ResponseEntity.ok(new AuthResponse(result.getAccessToken()));
-        } else {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("다시 접속해주세요.");
-        }
+    @PatchMapping("/nickname")
+    public ResponseEntity<NicknameResponse> chacngeNickname(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody @Valid NicknameRequest nicknameRequest) {
+        NicknameResponse response = userService.changeNickname(userDetails.getNickname(), nicknameRequest.getNickname());
+        return ResponseEntity.ok(response);
     }
 
 
-    @PostMapping("/logout")
-    public ResponseEntity<?> logout(@RequestBody LogoutRequest logoutRequestDto) {
-        authenticationService.logout(logoutRequestDto.getEmail());
-        return ResponseEntity.ok().build();
+    //CCS를 반환하면 id,userID등불필요한 데이터도 반환하기에 리스트형태의 CC 반환
+    @Timed(
+            value = "get.user.cardstorage",
+            description = "Time taken to get user's card storage",
+            percentiles = {0.5, 0.95, 0.99},
+            histogram = true
+    )
+    @GetMapping("/card-storage")
+    public ResponseEntity<List<CareerCard>> getUserCardStorage(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        List<CareerCard> careerCards = storageService.getCardsFromStorage(userDetails.getUserId());
+
+        return ResponseEntity.ok(careerCards);
     }
 
-    @PatchMapping("password")
-    public ResponseEntity<?> changePassword(@RequestHeader("Authorization") String token, @RequestBody ChangePasswordRequest request) {
-        PasswordChangeResponse response = userService.changeResponse(
-                token,
-                request.getOldPassword(),
-                request.getNewPassword()
-        );
-        return response.getStatus() == 200
-                ? ResponseEntity.ok(response)
-                : ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-    }
-
-    @PostMapping("/refresh-token")
-    public ResponseEntity<RefreshTokenResponse> refreshToken(@RequestHeader("Authorization") String expiredAccessToken) {
-        try {
-            String newAccessToken = authenticationService.refreshAccessToken(expiredAccessToken);
-            return ResponseEntity.ok(RefreshTokenResponse.success(newAccessToken));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(RefreshTokenResponse.fail());
-        }
-    }
 }
-

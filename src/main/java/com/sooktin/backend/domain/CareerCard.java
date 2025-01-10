@@ -7,6 +7,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -26,9 +28,9 @@ public class CareerCard {
     @JoinColumn(name = "user_id", nullable = false) // 외래키 선언
     private User user; // 회원 정보 (User 엔티티와 연결)
 
-    @ManyToOne(fetch = FetchType.LAZY) // 보관Id 외래키 - 다대일
+  /*  @ManyToOne(fetch = FetchType.LAZY) // 보관Id 외래키 - 다대일
     @JoinColumn(name = "storage_id", nullable = false) // 외래키 선언
-    private CareerCard_store careerCardStore; // CareerCard_store 엔티티와 연결
+    private CareerCard_store careerCardStore; // CareerCard_store 엔티티와 연결*/
 
     @Column(length = 10, nullable = false)
     private String major; // 전공
@@ -63,6 +65,10 @@ public class CareerCard {
     private String skills; // 기술
 
     @Column(length = 10, nullable = false)
-    private String nickname; // 닉네임 - 회원 엔티티에 있을 것!
+    private String nickname; // 닉네임 - 회원 엔티티에 있어서 중복됨! user.getNickname()으로 접근*/
+
+    @ManyToOne
+    @JoinColumn(name = "card_storage_id")
+    private CareerCardStorage careerCardStorage;
 
 }

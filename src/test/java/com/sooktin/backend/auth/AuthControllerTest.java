@@ -1,7 +1,12 @@
-package com.sooktin.backend.user;
+package com.sooktin.backend.auth;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sooktin.backend.controller.AuthController;
+import com.sooktin.backend.domain.User;
+import com.sooktin.backend.domain.UserRole;
+import com.sooktin.backend.repository.UserRepository;
+import com.sooktin.backend.service.AuthenticationService;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,7 +37,7 @@ import static org.mockito.Mockito.when;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public class UserControllerTest {
+public class AuthControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -43,7 +48,7 @@ public class UserControllerTest {
     @MockBean
     private AuthenticationService authenticationService;
     @InjectMocks
-    private UserController userController;
+    private AuthController authController;
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -85,7 +90,6 @@ public class UserControllerTest {
                 .nickname("sk")
                 .password("12321")
                 .roles(Collections.singleton(UserRole.USER))
-                .is2fa(true)
                 .build();
 
         User user2=User.builder()
@@ -93,7 +97,6 @@ public class UserControllerTest {
                 .nickname("ka")
                 .password("123")
                 .roles(Collections.singleton(UserRole.USER))
-                .is2fa(true)
                 .build();
 
         userRepository.saveAll(Arrays.asList(user1,user2));
