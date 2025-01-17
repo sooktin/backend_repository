@@ -116,8 +116,6 @@ public class CareerCardService {
         // 기술 검증 (기술 정보가 비어 있을 수 있음)
         validateSkills(careerCard.getSkills());
 
-        // 소속 검증 (소속 정보가 비어 있을 수 있음)
-        validateDepartments(careerCard.getDepartments());
     }
 
     private void validateStudentStatus(String studentStatus) {
@@ -161,11 +159,6 @@ public class CareerCardService {
         }
     }
 
-    private void validateDepartments(List<String> departments) {
-        if (departments != null && departments.size() > 5) {
-            throw new IllegalArgumentException("소속 정보는 최대 5개까지 입력 가능합니다.");
-        }
-    }
 
     // Update existing CareerCard fields
     private void updateCardFields(CareerCard existingCard, CareerCard updatedCard) {
@@ -173,7 +166,7 @@ public class CareerCardService {
         existingCard.setStudent_status(updatedCard.getStudent_status());
         existingCard.setGrade(updatedCard.getGrade());
         existingCard.setStudent_num(updatedCard.getStudent_num());
-        existingCard.setDepartments(updatedCard.getDepartments());
+        existingCard.setDepartment(updatedCard.getDepartment());
         existingCard.setExperiences(updatedCard.getExperiences());
         existingCard.setSkills(updatedCard.getSkills());
         existingCard.setImageUrls(updatedCard.getImageUrls());

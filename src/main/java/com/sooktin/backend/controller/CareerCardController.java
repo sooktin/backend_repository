@@ -172,10 +172,11 @@ public class CareerCardController {
         careerCard.setStudent_status(request.getStudentStatus());
         careerCard.setGrade(request.getGrade());
         careerCard.setStudent_num(request.getStudentNum());
-        careerCard.setDepartments(request.getDepartments());
+        careerCard.setDepartment(request.getDepartment());
         careerCard.setExperiences(request.getExperiences());
         careerCard.setSkills(request.getSkills());
         careerCard.setImageUrls(request.getImageUrls());
+        careerCard.setJob(request.getJob());
         return careerCard;
     }
 }

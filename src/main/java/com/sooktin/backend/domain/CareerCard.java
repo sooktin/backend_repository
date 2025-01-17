@@ -57,10 +57,11 @@ public class CareerCard {
     @Column(length = 3, nullable = false)
     private String student_num; // 학번 (앞 두 자리만)
 
-    @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(name = "career_card_departments", joinColumns = @JoinColumn(name = "career_card_id"))
     @Column(name = "department", length = 30)
-    private List<String> departments = new ArrayList<>(); // 소속
+    private String department; // 소속
+
+    @Column(length = 20, nullable = false) // 직업 필드 추가
+    private String job; // 직업 (최대 20자)
 
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "career_card_experiences", joinColumns = @JoinColumn(name = "career_card_id"))
@@ -73,9 +74,6 @@ public class CareerCard {
     private List<String> skills = new ArrayList<>(); // 기술
 
     // 나중에 user 수가 증가하면  @ElementCollection -> 별도 엔티티 분리로 리팩토링 해야합니다!
-  
-    @Column(length = 10, nullable = false)
-    private String nickname; // 닉네임 - 회원 엔티티에 있어서 중복됨! user.getNickname()으로 접근*/
 
     @ManyToOne
     @JoinColumn(name = "card_storage_id")
