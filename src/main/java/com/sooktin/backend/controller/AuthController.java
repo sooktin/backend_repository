@@ -44,12 +44,12 @@ public class AuthController {
             userService.registerUser(request);
             return ResponseEntity.status(201).body(RegisterResponse.success());
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(RegisterResponse.passwordMismatch());
+            return ResponseEntity.badRequest().body(RegisterResponse.passwordMismatch());
         } catch (Exception e) {
             if (e.getMessage().contains("닉네임")) {
-                return ResponseEntity.badRequest().body(RegisterResponse.duplicateNickname());
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(RegisterResponse.duplicateNickname());
             } else if (e.getMessage().contains("이메일")) {
-                return ResponseEntity.badRequest().body(RegisterResponse.duplicateEmail());
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(RegisterResponse.duplicateEmail());
             }
             return ResponseEntity.badRequest()
                     .body(new RegisterResponse(400, e.getMessage(), false));

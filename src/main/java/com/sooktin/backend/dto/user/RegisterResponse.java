@@ -25,6 +25,6 @@ public class RegisterResponse extends ResponseDto<Boolean> {
     }
 
     public static RegisterResponse passwordMismatch() {
-        return new RegisterResponse(401, "비밀번호가 일치하지 않습니다.", false);
+        return new RegisterResponse(400, "비밀번호가 일치하지 않습니다.", false);
     }
 }
