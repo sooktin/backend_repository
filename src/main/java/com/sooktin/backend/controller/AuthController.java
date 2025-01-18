@@ -44,7 +44,7 @@ public class AuthController {
             userService.registerUser(request);
             return ResponseEntity.status(201).body(RegisterResponse.success());
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(RegisterResponse.passwordMismatch());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(RegisterResponse.passwordMismatch());
         } catch (Exception e) {
             if (e.getMessage().contains("닉네임")) {
                 return ResponseEntity.badRequest().body(RegisterResponse.duplicateNickname());

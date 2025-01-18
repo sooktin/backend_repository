@@ -34,7 +34,7 @@ public class User {
     private String nickname;
 
     @Schema(description = "password", example = "jamone122@3")
-    @Column(nullable = false)
+    @Column(nullable = false,length = 128) //비번 해시로 인한 최대 128로 저장해놓을게요
     private String password;
 
     @ElementCollection(fetch = FetchType.EAGER)

@@ -17,14 +17,14 @@ public class RegisterResponse extends ResponseDto<Boolean> {
     }
 
     public static RegisterResponse duplicateNickname() {
-        return new RegisterResponse(400, "닉네임이 이미 존재합니다.", false);
+        return new RegisterResponse(409, "닉네임이 이미 존재합니다.", false);
     }
 
     public static RegisterResponse duplicateEmail() {
-        return new RegisterResponse(400, "이메일이 이미 존재합니다.", false);
+        return new RegisterResponse(409, "이메일이 이미 존재합니다.", false);
     }
 
     public static RegisterResponse passwordMismatch() {
-        return new RegisterResponse(400, "비밀번호가 일치하지 않습니다.", false);
+        return new RegisterResponse(401, "비밀번호가 일치하지 않습니다.", false);
     }
 }
