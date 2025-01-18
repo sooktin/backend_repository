@@ -75,7 +75,7 @@ public class AuthController {
     }
 
     @PostMapping("/check-email")
-    public ResponseEntity<EmailCheckResponse> checkEmail(@RequestBody EmailCheckRequest request) {
+    public ResponseEntity<EmailCheckResponse> checkEmail(@RequestBody @Valid EmailCheckRequest request) {
         EmailCheckResponse response = userService.checkEmail(request.getEmail());
         return ResponseEntity.status(response.getStatusCode()).body(response);
 
