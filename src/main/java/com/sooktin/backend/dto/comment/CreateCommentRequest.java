@@ -8,8 +8,6 @@ import lombok.RequiredArgsConstructor;
 @AllArgsConstructor
 @RequiredArgsConstructor
 public class CreateCommentRequest {
-    private Long userId;
-    private Long usernoteId;
     private String content;
     private Integer likes; // 좋아요 수 (Optional)
 
