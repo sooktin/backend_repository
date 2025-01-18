@@ -22,6 +22,10 @@ public class RegisterRequest {
             message = "비밀번호는 8~20자리이면서 1개 이상의 알파벳, 숫자, 특수문자를 포함해야합니다."
     )
     private String password;
+
+    @NotEmpty
+    private String confirmPassword;
+
     @NotEmpty(message = "닉네임은 공백일 수 없습니다.")
     private String nickname;
 
