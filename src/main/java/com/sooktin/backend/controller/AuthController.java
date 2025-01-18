@@ -98,7 +98,7 @@ public class AuthController {
     }
 
     @PatchMapping("password")
-    public ResponseEntity<PasswordChangeResponse> changePassword(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody PasswordChangeRequest request) {
+    public ResponseEntity<PasswordChangeResponse> changePassword(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody @Valid PasswordChangeRequest request) {
         PasswordChangeResponse response = userService.changePassword(
                 userDetails.getUserId(),
                 request.getOldPassword(),
