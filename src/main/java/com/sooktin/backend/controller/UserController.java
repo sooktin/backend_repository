@@ -3,6 +3,7 @@ package com.sooktin.backend.controller;
 import com.sooktin.backend.auth.JwtUtil;
 import com.sooktin.backend.domain.CareerCard;
 import com.sooktin.backend.domain.User;
+import com.sooktin.backend.dto.ResponseDto;
 import com.sooktin.backend.dto.user.NicknameRequest;
 import com.sooktin.backend.dto.user.NicknameResponse;
 import com.sooktin.backend.dto.user.UserGetResponse;
@@ -23,6 +24,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -72,6 +74,24 @@ public class UserController {
     @GetMapping("/usernotes")
     public ResponseEntity<?> getUserNotes(@AuthenticationPrincipal UserDetails userDetails) {
         return ResponseEntity.ok(usernoteService.findByUserEmail(userDetails.getUsername()));
+    }
+
+    @GetMapping("/nickname")
+    public ResponseEntity<ResponseDto<String>> getNickname(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        try {
+            if (userDetails == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new ResponseDto<>(401, "인증 정보가 유효하지 않습니다. 다시 로그인해주세요.", null));
+            }
+
+            String nickname = userDetails.getNickname();
+
+            // 정상 응답 반환
+            return ResponseEntity.ok(new ResponseDto<>(200, "닉네임 조회 성공", nickname));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ResponseDto<>(500, "서버 내부 오류가 발생했습니다. 다시 시도해주세요.", null));
+        }
     }
 
     @PatchMapping("/nickname")
