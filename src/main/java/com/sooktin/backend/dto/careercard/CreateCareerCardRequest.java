@@ -19,7 +19,7 @@ public class CreateCareerCardRequest {
     @Size(max = 30, message = "소속은 최대 30자까지 입력 가능합니다.")
     private String department; // 단일 소속
 
-    @Size(max = 20, message = "직업은 최대 20자까지 입력 가능합니다.") // 직업 필드 추가
+    @Size(max = 30, message = "직업은 최대 30자까지 입력 가능합니다.") // 직업 필드 추가
     private String job;
 
     private List<@Size(max = 100, message = "각 경력은 최대 100자까지 입력 가능합니다.") String> experiences; // 경력 리스트

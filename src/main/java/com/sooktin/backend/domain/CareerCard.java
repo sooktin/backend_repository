@@ -32,7 +32,7 @@ public class CareerCard {
     @JoinColumn(name = "storage_id", nullable = false) // 외래키 선언
     private CareerCard_store careerCardStore; // CareerCard_store 엔티티와 연결*/
 
-    @Column(length = 10, nullable = false)
+    @Column(length = 20, nullable = false)
     private String major; // 전공
 
     @CreationTimestamp
@@ -57,10 +57,10 @@ public class CareerCard {
     @Column(length = 3, nullable = false)
     private String student_num; // 학번 (앞 두 자리만)
 
-    @Column(name = "department", length = 30)
+    @Column(length = 30)
     private String department; // 소속
 
-    @Column(length = 20, nullable = false) // 직업 필드 추가
+    @Column(length = 30)
     private String job; // 직업 (최대 20자)
 
     @ElementCollection(fetch = FetchType.LAZY)
