@@ -29,9 +29,11 @@ public class User {
     @Schema(description = "email", example = "foo@sookmyung.ac.kr")
     private String email;
 
+    @Builder.Default()
     @Column(nullable = false, unique = true)
     @Size(min = 2, max = 10,message = "닉네임은 2~10자 제한합니다.")
-    private String nickname;
+    private String nickname="foo";
+
 
     @Schema(description = "password", example = "jamone122@3")
     @Column(nullable = false,length = 128) //비번 해시로 인한 최대 128로 저장해놓을게요

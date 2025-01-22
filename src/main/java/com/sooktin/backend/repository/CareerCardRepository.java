@@ -12,6 +12,7 @@ public interface CareerCardRepository extends JpaRepository<CareerCard, Long> {
     CareerCard save(CareerCard community);
     Optional<CareerCard> findById(long id);
     List<CareerCard> findAll();
+    Optional<CareerCard> findByUserId(Long userId);
 
 
 }

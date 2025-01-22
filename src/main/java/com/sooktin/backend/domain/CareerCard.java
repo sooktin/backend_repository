@@ -32,7 +32,7 @@ public class CareerCard {
     @JoinColumn(name = "storage_id", nullable = false) // 외래키 선언
     private CareerCard_store careerCardStore; // CareerCard_store 엔티티와 연결*/
 
-    @Column(length = 10, nullable = false)
+    @Column(length = 20, nullable = false)
     private String major; // 전공
 
     @CreationTimestamp
@@ -43,8 +43,10 @@ public class CareerCard {
     @Column(nullable = false)
     private LocalDateTime modified_at; // 수정일시
 
-    @Column(length = 255)
-    private String image_url; // 이미지(s3에서 업로드)
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "career_card_images", joinColumns = @JoinColumn(name = "career_card_id"))
+    @Column(name = "image_url", length = 255)
+    private List<String> imageUrls = new ArrayList<>(); // 이미지
 
     @Column(length = 10, nullable = false)
     private String student_status; // 재학여부(휴학/재학/졸업)
@@ -55,17 +57,23 @@ public class CareerCard {
     @Column(length = 3, nullable = false)
     private String student_num; // 학번 (앞 두 자리만)
 
-    @Column(length = 20)
-    private String department; // 소속 (학과 또는 회사)
+    @Column(length = 30)
+    private String department; // 소속
 
-    @Column(columnDefinition = "TEXT")
-    private String experience; // 경력 (길이 제한X)
+    @Column(length = 30)
+    private String job; // 직업 (최대 20자)
 
-    @Column(length = 100)
-    private String skills; // 기술
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "career_card_experiences", joinColumns = @JoinColumn(name = "career_card_id"))
+    @Column(name = "experience", length = 100)
+    private List<String> experiences = new ArrayList<>(); // 경력
 
-    @Column(length = 10, nullable = false)
-    private String nickname; // 닉네임 - 회원 엔티티에 있어서 중복됨! user.getNickname()으로 접근*/
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "career_card_skills", joinColumns = @JoinColumn(name = "career_card_id"))
+    @Column(name = "skill", length = 100)
+    private List<String> skills = new ArrayList<>(); // 기술
+
+    // 나중에 user 수가 증가하면  @ElementCollection -> 별도 엔티티 분리로 리팩토링 해야합니다!
 
     @ManyToOne
     @JoinColumn(name = "card_storage_id")
