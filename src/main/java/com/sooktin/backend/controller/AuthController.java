@@ -10,6 +10,10 @@ import com.sooktin.backend.dto.email.EmailCheckResponse;
 import com.sooktin.backend.dto.user.*;
 import com.sooktin.backend.dto.verification.VerficationResponse;
 import com.sooktin.backend.dto.verification.VerificationRequest;
+import com.sooktin.backend.global.exception.auth.DuplicateEmailException;
+import com.sooktin.backend.global.exception.auth.DuplicateNicknameException;
+import com.sooktin.backend.global.exception.auth.DuplicateResourceException;
+import com.sooktin.backend.global.exception.auth.PasswordMismatchException;
 import com.sooktin.backend.service.AuthenticationService;
 import com.sooktin.backend.service.CustomUserDetails;
 import com.sooktin.backend.service.UserService;
@@ -43,20 +47,14 @@ public class AuthController {
         try {
             userService.registerUser(request);
             return ResponseEntity.status(201).body(RegisterResponse.success());
-        } catch (IllegalArgumentException e) {
+        } catch (PasswordMismatchException e) {
             return ResponseEntity.badRequest().body(RegisterResponse.passwordMismatch());
-        } catch (Exception e) {
-            if (e.getMessage().contains("닉네임")) {
-                return ResponseEntity.badRequest().body(RegisterResponse.duplicateNickname());
-            } else if (e.getMessage().contains("이메일")) {
-                return ResponseEntity.badRequest().body(RegisterResponse.duplicateEmail());
-            }
-            return ResponseEntity.badRequest()
-                    .body(new RegisterResponse(400, e.getMessage(), false));
+        } catch (DuplicateNicknameException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(RegisterResponse.duplicateNickname());
+        } catch (DuplicateEmailException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(RegisterResponse.duplicateEmail());
         }
     }
-
-
 
     @PostMapping("/verify")
     public ResponseEntity<VerficationResponse> verifyEmail(@RequestBody VerificationRequest request) {
@@ -75,7 +73,7 @@ public class AuthController {
     }
 
     @PostMapping("/check-email")
-    public ResponseEntity<EmailCheckResponse> checkEmail(@RequestBody EmailCheckRequest request) {
+    public ResponseEntity<EmailCheckResponse> checkEmail(@RequestBody @Valid EmailCheckRequest request) {
         EmailCheckResponse response = userService.checkEmail(request.getEmail());
         return ResponseEntity.status(response.getStatusCode()).body(response);
 
@@ -100,7 +98,7 @@ public class AuthController {
     }
 
     @PatchMapping("password")
-    public ResponseEntity<PasswordChangeResponse> changePassword(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody PasswordChangeRequest request) {
+    public ResponseEntity<PasswordChangeResponse> changePassword(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody @Valid PasswordChangeRequest request) {
         PasswordChangeResponse response = userService.changePassword(
                 userDetails.getUserId(),
                 request.getOldPassword(),

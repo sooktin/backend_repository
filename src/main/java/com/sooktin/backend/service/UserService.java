@@ -10,7 +10,9 @@ import com.sooktin.backend.dto.user.NicknameResponse;
 import com.sooktin.backend.dto.user.PasswordChangeResponse;
 import com.sooktin.backend.dto.user.RegisterRequest;
 import com.sooktin.backend.dto.verification.VerficationResponse;
-import com.sooktin.backend.repository.CareerCardRepository;
+import com.sooktin.backend.global.exception.auth.DuplicateEmailException;
+import com.sooktin.backend.global.exception.auth.DuplicateNicknameException;
+import com.sooktin.backend.global.exception.auth.PasswordMismatchException;
 import com.sooktin.backend.repository.StorageRepository;
 import com.sooktin.backend.repository.UserRepository;
 import com.sooktin.backend.repository.VerificationRepository;
@@ -48,13 +50,16 @@ public class UserService {
     private RedisTemplate redisTemplate;
 
     @Transactional
-    public void registerUser(RegisterRequest request) throws Exception {
+    public void registerUser(RegisterRequest request) {
 
+        if (!request.getPassword().equals(request.getConfirmPassword())) {
+            throw new PasswordMismatchException("비밀번호가 일치하지 않습니다.");
+        }
         if (userRepository.existsByNickname(request.getNickname())) {
-            throw new Exception("닉네임이 이미 존재합니다.");
+            throw new DuplicateEmailException();
         }
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new Exception("이메일이 이미 존재합니다.");
+            throw new DuplicateNicknameException();
         }
 
         User newUser = User.builder()
