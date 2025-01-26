@@ -80,6 +80,28 @@ class EmailCheckTest {
 
     }
 
+    @Test
+    void should400ErwithIllegalArgu() throws Exception{
+        //EmailCheckResponse badresponse = new EmailCheckResponse(400,"잘못된 요청입니다.",false);
+        Mockito.when(userService.checkEmail(anyString())).thenThrow(new IllegalArgumentException());
+        //Mockito.when(validator.validate(any())).thenReturn(Collections.emptySet());
+
+        EmailCheckRequest request = new EmailCheckRequest("bad@sookmyung.ac.kr");
+        String json = objectMapper.writeValueAsString(request);
+
+        ResultActions result = mockMvc.perform(post("/auth/check-email")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json));
+        String responsejson = result.andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        System.out.println(responsejson);
+        //assert
+        result.andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.statusCode").value("400"))
+                .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+                .andExpect(jsonPath("$.data").isEmpty());
+
+    }
 
     @Test
     void shouldReturn401WhenUnauthorized() throws Exception {
@@ -105,6 +127,7 @@ class EmailCheckTest {
         result.andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.statusCode").value(401))
                 .andExpect(jsonPath("$.message").value("계정이 정지되었습니다. 고객센터에 문의해주세요."));
+
     }
 
     @Test

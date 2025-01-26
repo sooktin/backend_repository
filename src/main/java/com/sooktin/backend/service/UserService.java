@@ -111,15 +111,13 @@ public class UserService {
 
     @Transactional
     public EmailCheckResponse checkEmail(String email) {
-        try {
+
             if (userRepository.existsByEmail(email)) {
                 return EmailCheckResponse.loginRequired();
             }
             return EmailCheckResponse.registerRequired();
 
-        } catch (IllegalArgumentException e) {
-            return EmailCheckResponse.badRequestRequired();
-        }
+
     }
 
     @Transactional

@@ -23,8 +23,6 @@ public class EmailCheckResponse extends ResponseDto<Boolean> {
     public static EmailCheckResponse accountRequired() {
         return new EmailCheckResponse(401,"계정이 정지되었습니다. 고객센터에 문의해주세요.",false);
     }
-    public static EmailCheckResponse badRequestRequired() {
-        return new EmailCheckResponse(400,"잘못된 요청입니다.",false);
-    }
+
 
 }
