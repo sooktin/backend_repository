@@ -16,6 +16,7 @@ import com.sooktin.backend.global.exception.auth.PasswordMismatchException;
 import com.sooktin.backend.repository.StorageRepository;
 import com.sooktin.backend.repository.UserRepository;
 import com.sooktin.backend.repository.VerificationRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -27,27 +28,14 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private VerificationRepository tokenRepository;
-
-    @Autowired
-    private StorageRepository storageRepository;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private EmailService emailService;
-
-    @Autowired
-    private JwtUtil jwtUtil;
+    private final UserRepository userRepository;
+    private final VerificationRepository tokenRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
     @Qualifier("redisTemplate")
-    @Autowired
-    private RedisTemplate redisTemplate;
+    private final RedisTemplate redisTemplate;
 
     @Transactional
     public void registerUser(RegisterRequest request) {
@@ -109,7 +97,7 @@ public class UserService {
         return new NicknameResponse(200,"닉네임이 변경되었습니다.", user);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public EmailCheckResponse checkEmail(String email) {
 
             if (userRepository.existsByEmail(email)) {
@@ -158,10 +146,12 @@ public class UserService {
         return VerficationResponse.success();
     }
 
+    @Transactional(readOnly = true)
     public Optional<User> search(String nickname) {
         return userRepository.findByNickname(nickname);
     }
 
+    @Transactional(readOnly = true)
     public void delete(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다."));
