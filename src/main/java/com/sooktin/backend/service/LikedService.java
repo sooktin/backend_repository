@@ -1,10 +1,14 @@
 package com.sooktin.backend.service;
 
+import com.sooktin.backend.domain.Comment;
 import com.sooktin.backend.domain.Liked;
 import com.sooktin.backend.domain.User;
 import com.sooktin.backend.domain.Usernote;
+import com.sooktin.backend.repository.CommentRepository;
 import com.sooktin.backend.repository.LikedRepository;
+import com.sooktin.backend.repository.UserRepository;
 import com.sooktin.backend.repository.UsernoteRepository;
+import org.hibernate.annotations.Comments;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +27,12 @@ public class LikedService {
 
     @Autowired
     private UsernoteRepository usernoteRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private CommentRepository commentRepository;
 
     // C & D - 좋아요 및 좋아요 취소 - 토글 사용
     @Transactional
@@ -49,7 +59,7 @@ public class LikedService {
         }
         // 댓글에 대한 좋아요 처리
         else if (commentId != null) {
-            Comments comment = commentsRepository.findById(commentId)
+            Comment comment = commentRepository.findById(commentId)
                     .orElseThrow(() -> new EntityNotFoundException("Invalid comment ID"));
 
             User user = userRepository.findById(userId)
