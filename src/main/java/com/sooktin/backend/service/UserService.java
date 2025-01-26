@@ -116,10 +116,9 @@ public class UserService {
                 return EmailCheckResponse.loginRequired();
             }
             return EmailCheckResponse.registerRequired();
+
         } catch (IllegalArgumentException e) {
             return EmailCheckResponse.badRequestRequired();
-        } catch (Exception e) {
-            return EmailCheckResponse.serverRequired();
         }
     }
 

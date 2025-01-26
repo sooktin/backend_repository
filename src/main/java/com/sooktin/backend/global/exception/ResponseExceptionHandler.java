@@ -25,4 +25,24 @@ public class ResponseExceptionHandler {
         );
         return ResponseEntity.badRequest().body(response);
     }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ResponseDto<Object>> handleIllegalArgumentException(IllegalArgumentException ex) {
+        ResponseDto<Object> response = new ResponseDto<>(
+                400,
+                "잘못된 요청입니다.",
+                null
+        );
+        return ResponseEntity.badRequest().body(response);
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ResponseDto<Object>> handleRuntimeException(RuntimeException ex) {
+        ResponseDto<Object> response = new ResponseDto<>(
+                500,
+                "내부 서버 오류입니다. 다시 접속해주세요.",
+                null
+        );
+        return ResponseEntity.internalServerError().body(response);
+    }
 }
