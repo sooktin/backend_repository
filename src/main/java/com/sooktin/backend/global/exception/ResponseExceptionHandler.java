@@ -1,11 +1,13 @@
 package com.sooktin.backend.global.exception;
 
 import com.sooktin.backend.dto.ResponseDto;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import javax.naming.AuthenticationException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,5 +26,37 @@ public class ResponseExceptionHandler {
                 errors
         );
         return ResponseEntity.badRequest().body(response);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ResponseDto<Object>> handleIllegalArgumentException(IllegalArgumentException ex) {
+
+
+        ResponseDto<Object> response = new ResponseDto<>(
+                400,
+                "잘못된 요청입니다.",
+                null
+        );
+        return ResponseEntity.badRequest().body(response);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<ResponseDto<Object>> handleAuthenticationException(AuthenticationException ex) {
+        ResponseDto<Object> response = new ResponseDto<>(
+                401,
+                ex.getMessage(),
+                null
+        );
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ResponseDto<Object>> handleRuntimeException(RuntimeException ex) {
+        ResponseDto<Object> response = new ResponseDto<>(
+                500,
+                "내부 서버 오류입니다. 다시 접속해주세요.",
+                null
+        );
+        return ResponseEntity.internalServerError().body(response);
     }
 }

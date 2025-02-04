@@ -1,9 +1,12 @@
 package com.sooktin.backend.global;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sooktin.backend.auth.JwtAuthenticationFilter;
 import com.sooktin.backend.auth.JwtUtil;
+import com.sooktin.backend.dto.ResponseDto;
 import com.sooktin.backend.service.AuthenticationService;
 import com.sooktin.backend.service.CustomUserDetailsService;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -63,6 +66,18 @@ public class SecurityConfig {
                         .requestMatchers("/","/**", "/home", "/register", "/auth/**").permitAll()
                         .requestMatchers("/users/**").authenticated()
                         .anyRequest().authenticated()
+                )
+                .exceptionHandling(handling -> handling
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            ResponseDto<Object> errorResponse = new ResponseDto<>(
+                                    401,
+                                    "인증 정보가 유효하지 않습니다. 다시 로그인해주세요",
+                                    null
+                            );
+                            response.setContentType("application/json");
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.getWriter().write(new ObjectMapper().writeValueAsString(errorResponse));
+                        })
                 )
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class) //jwt 토큰 필터 확인 후 보냄
                 .sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

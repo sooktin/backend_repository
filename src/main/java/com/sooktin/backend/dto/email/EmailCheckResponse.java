@@ -10,8 +10,6 @@ import lombok.Setter;
 @Getter @Setter
 public class EmailCheckResponse extends ResponseDto<Boolean> {
 
-
-
   public EmailCheckResponse(int statusCode, String message, boolean exists) {
         super(statusCode, message, exists);
     }
@@ -25,10 +23,6 @@ public class EmailCheckResponse extends ResponseDto<Boolean> {
     public static EmailCheckResponse accountRequired() {
         return new EmailCheckResponse(401,"계정이 정지되었습니다. 고객센터에 문의해주세요.",false);
     }
-    public static EmailCheckResponse badRequestRequired() {
-        return new EmailCheckResponse(404,"잘못된 요청입니다.",false);
-    }
-    public static EmailCheckResponse serverRequired() {
-        return new EmailCheckResponse(500,"내부 서버 오류입니다. 다시 접속해주세요.",false);
-    }
+
+
 }
