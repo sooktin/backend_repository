@@ -1,6 +1,7 @@
 package com.sooktin.backend.controller;
 
 import com.sooktin.backend.domain.CareerCard;
+import com.sooktin.backend.domain.Experience;
 import com.sooktin.backend.domain.User;
 import com.sooktin.backend.dto.ResponseDto;
 import com.sooktin.backend.dto.careercard.CreateCareerCardRequest;
@@ -173,7 +174,12 @@ public class CareerCardController {
         careerCard.setGrade(request.getGrade());
         careerCard.setStudent_num(request.getStudentNum());
         careerCard.setDepartment(request.getDepartment());
-        careerCard.setExperiences(request.getExperiences());
+
+        List<Experience> experiences = request.getExperiences().stream()
+                .map(exp -> new Experience(exp.getCompany(), exp.getPeriod())) // DTO → 엔티티
+                .collect(Collectors.toList());
+        careerCard.setExperiences(experiences);
+
         careerCard.setSkills(request.getSkills());
         careerCard.setImageUrls(request.getImageUrls());
         careerCard.setJob(request.getJob());
