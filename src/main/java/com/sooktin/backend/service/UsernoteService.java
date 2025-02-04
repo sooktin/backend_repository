@@ -27,9 +27,6 @@ public class UsernoteService {
         if (usernote.getContent().length() > 300) {
             throw new IllegalArgumentException("내용은 300자를 초과할 수 없습니다.");
         }
-        if (usernote.getTitle() == null || usernote.getTitle().isEmpty()) {
-            throw new IllegalArgumentException("제목은 비워둘 수 없습니다.");
-        }
         return usernoteRepository.save(usernote);
     }
 
@@ -49,7 +46,6 @@ public class UsernoteService {
         Usernote usernote = usernoteRepository.findById(id).orElseThrow(
                 () -> new IllegalArgumentException("해당 포스트가 존재하지 않습니다. id: " + id)
         );
-        usernote.setTitle(updatedUsernote.getTitle());
         usernote.setContent(updatedUsernote.getContent());
         usernote.setLikes(updatedUsernote.getLikes());
         return usernote;

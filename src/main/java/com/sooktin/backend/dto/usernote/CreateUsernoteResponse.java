@@ -8,7 +8,6 @@ import lombok.Setter;
 @Setter
 public class CreateUsernoteResponse {
     private Long id;            // 게시글 ID
-    private String title;       // 제목
     private String content;     // 내용
     private Integer likes;      // 좋아요 수
     private String createdAt;   // 생성일
@@ -19,7 +18,6 @@ public class CreateUsernoteResponse {
 
     public CreateUsernoteResponse(Usernote usernote) {
         this.id = usernote.getId();
-        this.title = usernote.getTitle();
         this.content = usernote.getContent();
         this.likes = usernote.getLikes();
         this.createdAt = usernote.getCreated_at().toString();
