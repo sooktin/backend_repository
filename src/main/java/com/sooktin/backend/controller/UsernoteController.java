@@ -93,7 +93,6 @@ public class UsernoteController {
 
             // 게시글 생성
             Usernote newUsernote = new Usernote();
-            newUsernote.setTitle(userNoteRequest.getTitle());
             newUsernote.setContent(userNoteRequest.getContent());
             newUsernote.setLikes(0); // 기본값 처리
             newUsernote.setUser(user);
@@ -130,7 +129,6 @@ public class UsernoteController {
                 return buildResponse(403, "권한이 없습니다.", null);
             }
 
-            existingUsernote.setTitle(userNoteRequest.getTitle());
             existingUsernote.setContent(userNoteRequest.getContent());
 
             // 업데이트

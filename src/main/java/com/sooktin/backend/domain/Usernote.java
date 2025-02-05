@@ -19,9 +19,6 @@ public class Usernote {
     @Column(name = "post_id")
     private Long id; // 노트id
 
-    @Column(length = 25, nullable = false)
-    private String title; // 제목
-
     @Column(length = 300, nullable = false)
     private String content; // 내용
 

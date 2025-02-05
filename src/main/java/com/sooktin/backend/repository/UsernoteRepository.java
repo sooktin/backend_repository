@@ -12,7 +12,6 @@ import java.util.Optional;
 public interface UsernoteRepository extends JpaRepository<Usernote, Long> {
 
     Usernote save(Usernote usernote);
-    Optional<Usernote> findByTitle(String title); // 제목으로 Usernote 엔터티 찾기
     Optional<Usernote> findById(long id);
     List<Usernote> findAll(); // 모든 Usernote 엔터티 리스트로 가져오기
     @Override
