@@ -21,7 +21,7 @@ public class CreateCommentResponse {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Long parentId; // 부모 댓글 ID (대댓글일 경우)
 
-    private Integer likes; // 좋아요 수
+    //private Integer likes; // 좋아요 수
 
     private LocalDateTime createdAt; // 생성 일시
     private LocalDateTime modifiedAt; // 수정 일시
@@ -37,7 +37,7 @@ public class CreateCommentResponse {
         this.content = comment.isDeleted() ? "삭제된 댓글입니다." : comment.getContent();
         this.isParent = comment.getParentId() == null; // parentId가 null이면 부모 댓글
         this.parentId = this.isParent ? null : comment.getParentId(); // 부모 댓글일 경우 null
-        this.likes = comment.getLikes();
+        //this.likes = comment.getLikes();
         this.createdAt = comment.getCreatedAt();
         this.modifiedAt = comment.getModifiedAt();
     }

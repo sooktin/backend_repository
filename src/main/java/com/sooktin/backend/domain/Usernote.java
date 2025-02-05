@@ -22,8 +22,10 @@ public class Usernote {
     @Column(length = 300, nullable = false)
     private String content; // 내용
 
+/*
     @Column(nullable = false)
     private Integer likes = 0; // 기본값 설정
+*/
 
     @CreationTimestamp
     @Column(nullable = false)

@@ -49,7 +49,7 @@ public class UsernoteService {
                 () -> new IllegalArgumentException("해당 포스트가 존재하지 않습니다. id: " + id)
         );
         usernote.setContent(updatedUsernote.getContent());
-        usernote.setLikes(updatedUsernote.getLikes());
+        //usernote.setLikes(updatedUsernote.getLikes());
         return usernote;
     }
 
@@ -70,9 +70,9 @@ public class UsernoteService {
                 .map(usernote -> {
                     FindMyUsernoteWithJWTResponse.FindMyUsernoteDto dto = new FindMyUsernoteWithJWTResponse.FindMyUsernoteDto();
                     dto.setId(usernote.getId());
-                    dto.setTitle(usernote.getTitle());
+                    //dto.setTitle(usernote.getTitle());
                     dto.setContent(usernote.getContent());
-                    dto.setLikes(usernote.getLikes());
+                    //dto.setLikes(usernote.getLikes());
                     dto.setCreatedAt(usernote.getCreated_at());
                     dto.setModifiedAt(usernote.getModified_at());
                     return new FindMyUsernoteWithJWTResponse(

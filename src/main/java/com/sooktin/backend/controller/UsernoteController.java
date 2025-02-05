@@ -94,7 +94,7 @@ public class UsernoteController {
             // 게시글 생성
             Usernote newUsernote = new Usernote();
             newUsernote.setContent(userNoteRequest.getContent());
-            newUsernote.setLikes(0); // 기본값 처리
+            //newUsernote.setLikes(0); // 기본값 처리
             newUsernote.setUser(user);
 
             Usernote createdUsernote = usernoteService.createUsernote(newUsernote);

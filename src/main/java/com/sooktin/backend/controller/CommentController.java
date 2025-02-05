@@ -167,7 +167,7 @@ public class CommentController {
 
             Comment newComment = new Comment();
             newComment.setContent(commentRequest.getContent());
-            newComment.setLikes(Optional.ofNullable(commentRequest.getLikes()).orElse(0));
+            //newComment.setLikes(Optional.ofNullable(commentRequest.getLikes()).orElse(0));
             newComment.setUser(user);
             newComment.setUsernote(usernote);
 
@@ -208,7 +208,7 @@ public class CommentController {
             // 대댓글 생성
             Comment reply = new Comment();
             reply.setContent(replyRequest.getContent());
-            reply.setLikes(Optional.ofNullable(replyRequest.getLikes()).orElse(0));
+            //reply.setLikes(Optional.ofNullable(replyRequest.getLikes()).orElse(0));
             reply.setUser(user);
             reply.setUsernote(usernote);
 
@@ -242,7 +242,7 @@ public class CommentController {
 
             // 댓글 수정
             comment.setContent(commentRequest.getContent());
-            comment.setLikes(Optional.ofNullable(commentRequest.getLikes()).orElse(0));
+            //comment.setLikes(Optional.ofNullable(commentRequest.getLikes()).orElse(0));
             Comment updatedComment = commentService.updateComment(commentId, comment);
 
             return buildResponse(200, "댓글이 수정되었습니다.", new CreateCommentResponse(updatedComment));
