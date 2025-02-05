@@ -65,8 +65,7 @@ public class CareerCard {
 
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "career_card_experiences", joinColumns = @JoinColumn(name = "career_card_id"))
-    @Column(name = "experience", length = 100)
-    private List<String> experiences = new ArrayList<>(); // 경력
+    private List<Experience> experiences = new ArrayList<>(); // 경력 (회사 + 기간)
 
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "career_card_skills", joinColumns = @JoinColumn(name = "career_card_id"))
