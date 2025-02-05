@@ -25,6 +25,7 @@ import org.springframework.http.ResponseEntity;
 
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 import static com.sooktin.backend.auth.AuthenticationStatus.*;
@@ -76,7 +77,6 @@ public class AuthController {
     public ResponseEntity<EmailCheckResponse> checkEmail(@RequestBody @Valid EmailCheckRequest request) {
         EmailCheckResponse response = userService.checkEmail(request.getEmail());
         return ResponseEntity.status(response.getStatusCode()).body(response);
-
     }
 
     @PostMapping("/login")

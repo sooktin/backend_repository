@@ -9,13 +9,24 @@ server:
     include-message: always
   address: 0.0.0.0
   port: 8080
+cloud:
+  aws:
+    credentials:
+      access-key: AKIA3FLD3UNUJIUZXIHM
+      secret-key: 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
+    region:
+      static: ap-northeast-2
+    stack:
+      auto: false
+    s3:
+      bucket: sooktin-storage
 spring:
   application:
     name: sooktin
   datasource:
-    url: jdbc:mysql://localhost:3306/sooktin_liked?allowPublicKeyRetrieval=true&useSSL=false
-    username: root
-    password: chaemindorothy
+    url: jdbc:mysql://sooktin-db.cj4ey4aiefr4.ap-northeast-2.rds.amazonaws.com:3306/sooktin?serverTimezone=UTC
+    username: admin
+    password: dbcoals!47
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
@@ -73,4 +84,8 @@ management:
     distribution:
       percentiles-histogram:
         http.server.requests: true
-
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG

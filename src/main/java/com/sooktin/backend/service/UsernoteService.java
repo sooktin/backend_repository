@@ -1,5 +1,6 @@
 package com.sooktin.backend.service;
 
+import com.sooktin.backend.dto.usernote.FindMyUsernoteWithJWTResponse;
 import com.sooktin.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -9,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UsernoteService {
@@ -65,7 +67,25 @@ public class UsernoteService {
         }
     }
     @Transactional
-    public List<Usernote> findByUserEmail(String email) {
-        return usernoteRepository.findByUser_Email(email);
+    public List<FindMyUsernoteWithJWTResponse> findByUserEmail(String email) {
+        List<Usernote> usernotes = usernoteRepository.findByUser_Email(email);
+
+        return usernotes.stream()
+                .map(usernote -> {
+                    FindMyUsernoteWithJWTResponse.FindMyUsernoteDto dto = new FindMyUsernoteWithJWTResponse.FindMyUsernoteDto();
+                    dto.setId(usernote.getId());
+                    dto.setTitle(usernote.getTitle());
+                    dto.setContent(usernote.getContent());
+                    dto.setLikes(usernote.getLikes());
+                    dto.setCreatedAt(usernote.getCreated_at());
+                    dto.setModifiedAt(usernote.getModified_at());
+                    return new FindMyUsernoteWithJWTResponse(
+                            200,
+                            "내 유저노트 갖고 오기 성공",
+                                    dto
+                    );
+                })
+                .collect(Collectors.toList());
+
     }
 }

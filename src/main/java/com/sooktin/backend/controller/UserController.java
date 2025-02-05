@@ -7,6 +7,7 @@ import com.sooktin.backend.dto.ResponseDto;
 import com.sooktin.backend.dto.user.NicknameRequest;
 import com.sooktin.backend.dto.user.NicknameResponse;
 import com.sooktin.backend.dto.user.UserGetResponse;
+import com.sooktin.backend.dto.usernote.FindMyUsernoteWithJWTResponse;
 import com.sooktin.backend.repository.UserRepository;
 import com.sooktin.backend.service.CustomUserDetails;
 import com.sooktin.backend.service.StorageService;
@@ -63,7 +64,7 @@ public class UserController {
             }
 
             String userEmail = jwtUtil.getEmailFromToken(token);
-            ;
+
             userService.delete(userEmail);
             return ResponseEntity.ok().body("회원탈퇴성공");
         } catch (Exception e) {
@@ -72,8 +73,9 @@ public class UserController {
     }
 
     @GetMapping("/usernotes")
-    public ResponseEntity<?> getUserNotes(@AuthenticationPrincipal UserDetails userDetails) {
-        return ResponseEntity.ok(usernoteService.findByUserEmail(userDetails.getUsername()));
+    public ResponseEntity<List<FindMyUsernoteWithJWTResponse>> getUserNotes(@AuthenticationPrincipal UserDetails userDetails) {
+        List<FindMyUsernoteWithJWTResponse> responseList = usernoteService.findByUserEmail(userDetails.getUsername());
+        return ResponseEntity.ok(responseList);
     }
 
     @GetMapping("/nickname")
