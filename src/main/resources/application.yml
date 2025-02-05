@@ -13,9 +13,9 @@ spring:
   application:
     name: sooktin
   datasource:
-    url: jdbc:mysql://localhost:3306/sooktin?allowPublicKeyRetrieval=true&useSSL=false
-    username: admin
-    password: sooktin0000
+    url: jdbc:mysql://localhost:3306/sooktin_liked?allowPublicKeyRetrieval=true&useSSL=false
+    username: root
+    password: chaemindorothy
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:

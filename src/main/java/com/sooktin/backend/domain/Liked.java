@@ -30,9 +30,9 @@ public class Liked {
     private Usernote post; // Usernote 엔티티와 연결
 
     // TODO : 유저 id는 토큰에서 추출하는 방식으로 할지 결정
-//    @ManyToOne(fetch = FetchType.LAZY) // 사용자 외래키 - 다대일
-//    @JoinColumn(name = "user_id")
-//    private User user; // User 엔티티와 연결
+    @ManyToOne(fetch = FetchType.LAZY) // 사용자 외래키 - 다대일
+    @JoinColumn(name = "user_id")
+    private User user; // User 엔티티와 연결
 
     //좋아요 생성일시
     @CreationTimestamp

@@ -2,33 +2,29 @@ package com.sooktin.backend.repository;
 
 import com.sooktin.backend.domain.Comment;
 import com.sooktin.backend.domain.Liked;
+import com.sooktin.backend.domain.Usernote;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-
-//comments import 필요
+import java.util.Optional;
 
 @Repository
 public interface LikedRepository extends JpaRepository<Liked, Long> {
+    // 게시글 좋아요 관련
+    Optional<Liked> findByPostAndUser_Id(Usernote post, Long userId);
+    boolean existsByPostIdAndUser_Id(Long postId, Long user);
+    Long countByPostId(Long postId);
 
-    // 특정 게시물에 특정 사용자의 좋아요 여부 확인
-    boolean existsByPostAndUserId(Long postId, Long userId);
-    // 특정 댓글에 특정 사용자의 좋아요 여부 확인
-    boolean existsByCommentAndUserId(Comment comment, Long userId);
+    // 댓글 좋아요 관련
+    Optional<Liked> findByCommentAndUser_Id(Comment comment, Long userId);
+    boolean existsByCommentIdAndUser_Id(Long commentId, Long userId);
+    Long countByCommentId(Long commentId);
 
-    // 특정 게시물에 대한 좋아요 개수
-    Long countByPost(Long postId);
-    // 특정 댓글에 대한 좋아요 개수
-    Long countByComment(Long commentId);
+    // 특정 사용자의 모든 좋아요 조회
+    List<Liked> findAllByUser_Id(Long userId);
 
-    //findBy-----
-    Liked findByPostAndUserId(Long postId, Long userId);
-
-    // 특정 게시물에 대해 좋아요를 누른 사용자 목록 조회
-    List<Liked> findByPost(Long postId);
-    // 특정 댓글에 대해 좋아요를 누른 사용자 목록 조회
-    List<Liked> findByComment(Long commentId);
-
-    Liked findByCommentAndUserId(Comment comment, Long userId);
+    // 게시글/댓글 삭제 시 연관된 좋아요도 삭제하기 위한 메서드
+    void deleteAllByPostId(Long postId);
+    void deleteAllByCommentId(Long commentId);
 }

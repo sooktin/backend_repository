@@ -1,46 +1,77 @@
 package com.sooktin.backend.controller;
 
+import com.sooktin.backend.dto.liked.LikedResponse;
+import com.sooktin.backend.service.CustomUserDetails;
 import com.sooktin.backend.service.LikedService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/likes")
 public class LikedController {
 
+    private final LikedService likedService;
+
     @Autowired
-    private LikedService likedService;
-
-    // /likes/toggle 엔드포인트에서 togglelike 수행
-    @PostMapping("/toggle")
-    public String toggleLike(@RequestParam(required = false) Long postId,
-                             @RequestParam(required = false) Long commentId,
-                             @RequestParam Long userId) {
-        if (postId == null && commentId == null) {
-            throw new IllegalArgumentException("Either postId or commentId must be provided.");
-        }
-        return likedService.toggleLike(postId, commentId, userId);
+    public LikedController(LikedService likedService) {
+        this.likedService = likedService;
     }
 
-
-    @GetMapping("/usernotes/{postId}/likes")
-    public Long countLikesByPost(@PathVariable Long postId) {
-        return likedService.countLikesByPost(postId);
-    }
-    @GetMapping("/comment/{commentId}/likes")
-    public Long countLikesByComment(@PathVariable Long commentId) {
-        return likedService.countLikesByComment(commentId);
-    }
-
-    //comment와 usernote 여부 확인
-    @GetMapping("/exist")
-    public boolean existsLikeByUser(@RequestParam(required = false) Long postId,
-                                    @RequestParam(required = false) Long commentId,
-                                    @RequestParam Long userId) {
-        if (postId == null && commentId == null) {
-            throw new IllegalArgumentException("Either postId or commentId must be provided.");
-        }
-        return likedService.existsLikeByUser(postId, commentId, userId);
+    // 게시글 좋아요/취소
+    @PostMapping("/usernotes/{noteId}/likes")
+    public ResponseEntity<?> toggleNoteLike(
+            @PathVariable Long noteId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        LikedResponse response = likedService.toggleNoteLike(noteId, userDetails.getUserId());
+        return ResponseEntity.ok(response);
     }
 
+    // 댓글 좋아요/취소
+    @PostMapping("/comments/{commentId}/likes")
+    public ResponseEntity<?> toggleCommentLike(
+            @PathVariable Long commentId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        LikedResponse response = likedService.toggleCommentLike(commentId, userDetails.getUserId());
+        return ResponseEntity.ok(response);
+    }
+
+    // 게시글의 좋아요 수 조회
+    @GetMapping("/usernotes/{noteId}/likes/count")
+    public ResponseEntity<Long> getNoteLikeCount(@PathVariable Long noteId) {
+        Long count = likedService.getNoteLikeCount(noteId);
+        return ResponseEntity.ok(count);
+    }
+
+    // 댓글의 좋아요 수 조회
+    @GetMapping("/comments/{commentId}/likes/count")
+    public ResponseEntity<Long> getCommentLikeCount(@PathVariable Long commentId) {
+        Long count = likedService.getCommentLikeCount(commentId);
+        return ResponseEntity.ok(count);
+    }
+
+    // 사용자가 게시글에 좋아요를 눌렀는지 확인
+    @GetMapping("/usernotes/{noteId}/likes/status")
+    public ResponseEntity<Boolean> checkNoteLikeStatus(
+            @PathVariable Long noteId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        boolean isLiked = likedService.isPostLikedByUser(noteId, userDetails.getUserId());
+        return ResponseEntity.ok(isLiked);
+    }
+
+    // 사용자가 댓글에 좋아요를 눌렀는지 확인
+    @GetMapping("/comments/{commentId}/likes/status")
+    public ResponseEntity<Boolean> checkCommentLikeStatus(
+            @PathVariable Long commentId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        boolean isLiked = likedService.isCommentLikedByUser(commentId, userDetails.getUserId());
+        return ResponseEntity.ok(isLiked);
+    }
 }
