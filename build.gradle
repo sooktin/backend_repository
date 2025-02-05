@@ -63,6 +63,9 @@ dependencies {
     implementation('org.springframework.boot:spring-boot-starter-data-redis')
     implementation 'io.swagger.core.v3:swagger-annotations:2.1.9'
     implementation 'org.springdoc:springdoc-openapi-ui:1.5.9'
+    // AWS 서비스
+    implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+    implementation 'com.amazonaws:aws-java-sdk-s3'
 
 }
 
