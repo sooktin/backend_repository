@@ -2,6 +2,7 @@ package com.sooktin.backend.repository;
 
 import com.sooktin.backend.domain.Comment;
 import com.sooktin.backend.domain.Liked;
+import com.sooktin.backend.domain.User;
 import com.sooktin.backend.domain.Usernote;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -11,6 +12,9 @@ import java.util.Optional;
 
 @Repository
 public interface LikedRepository extends JpaRepository<Liked, Long> {
+    Optional<Liked> findByPostAndUser(Usernote post, User user);
+    boolean existsByPostAndUser(Usernote post, User user);
+    Long countByPost(Usernote post);
     // 게시글 좋아요 관련
     Optional<Liked> findByPostAndUser_Id(Usernote post, Long userId);
     boolean existsByPostIdAndUser_Id(Long postId, Long user);
