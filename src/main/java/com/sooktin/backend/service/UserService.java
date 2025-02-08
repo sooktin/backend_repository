@@ -127,6 +127,16 @@ public class UserService {
         return String.format("%06d", random.nextInt(1000000));
     }
 
+    @Transactional(readOnly = true)
+    public Optional<User> findUserById(Long id) {
+        return userRepository.findById(id);
+    }
+    
+    @Transactional(readOnly = true)
+    public Optional<User> findUserByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
     @Transactional
     public VerficationResponse verifyEmail(String email, String code) {
         VerificationToken verificationToken = tokenRepository.findByEmailAndToken(email,code);

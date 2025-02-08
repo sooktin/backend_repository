@@ -1,6 +1,7 @@
 package com.sooktin.backend.dto.careercard;
 
 import com.sooktin.backend.domain.CareerCard;
+import com.sooktin.backend.domain.Experience;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -21,7 +22,7 @@ public class CreateCareerCardResponse {
     private String job; // 직업
     private String department; // 소속
 
-    private List<String> experiences; // 경력 리스트
+    private List<Experience> experiences; // 경력 리스트
     private List<String> skills;      // 기술 리스트
     private List<String> imageUrls;   // 이미지 리스트
 

@@ -19,14 +19,13 @@ public class Usernote {
     @Column(name = "post_id")
     private Long id; // 노트id
 
-    @Column(length = 25, nullable = false)
-    private String title; // 제목
-
     @Column(length = 300, nullable = false)
     private String content; // 내용
 
+/*
     @Column(nullable = false)
     private Integer likes = 0; // 기본값 설정
+*/
 
     @CreationTimestamp
     @Column(nullable = false)
