@@ -17,7 +17,7 @@ public class CreateCareerCardResponse {
     private String major;          // 전공
     private String studentNum;     // 학번
     private String studentStatus;  // 재학 상태
-    private byte grade;            // 학년
+    private Integer grade;            // 학년
 
     private String job; // 직업
     private String department; // 소속

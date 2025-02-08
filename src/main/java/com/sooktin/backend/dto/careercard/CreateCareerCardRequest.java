@@ -1,5 +1,6 @@
 package com.sooktin.backend.dto.careercard;
 
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,6 +14,7 @@ import java.util.List;
 public class CreateCareerCardRequest {
     private String major;
     private String studentStatus;
+    @NotNull(message = "학년(grade)은 필수 입력값입니다.")
     private Byte grade;
     private String studentNum;
 

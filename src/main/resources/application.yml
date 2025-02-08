@@ -1,6 +1,6 @@
 jwt:
     issuer: sooktin
-    access-expiration: 3600000  # 1시간
+    access-expiration: 1209600000  # 1시간
     refresh-expiration: 1209600000  # 14일
     secret-key: cThIIoDvwdueQB468K5xDc5633seEFoqwxjF_xSJyQQ
 server:
@@ -21,6 +21,11 @@ cloud:
     s3:
       bucket: sooktin-storage
 spring:
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 50MB
   application:
     name: sooktin
   datasource:
