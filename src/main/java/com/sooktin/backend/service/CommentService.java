@@ -99,7 +99,7 @@ public class CommentService {
         }
 
         comment.setContent(updatedComment.getContent());
-        comment.setLikes(updatedComment.getLikes());
+        //comment.setLikes(updatedComment.getLikes());
         return commentRepository.save(comment);
     }
 

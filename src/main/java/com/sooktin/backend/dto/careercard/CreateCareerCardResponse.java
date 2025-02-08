@@ -1,6 +1,7 @@
 package com.sooktin.backend.dto.careercard;
 
 import com.sooktin.backend.domain.CareerCard;
+import com.sooktin.backend.domain.Experience;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,7 +13,7 @@ public class CreateCareerCardResponse {
     private Long cardId; // 카드 ID
     private Long userId;         // 사용자 ID
 
-    private String nickname;       // 닉네임
+    //private String nickname;       // 닉네임
     private String major;          // 전공
     private String studentNum;     // 학번
     private String studentStatus;  // 재학 상태
@@ -21,7 +22,7 @@ public class CreateCareerCardResponse {
     private String job; // 직업
     private String department; // 소속
 
-    private List<String> experiences; // 경력 리스트
+    private List<Experience> experiences; // 경력 리스트
     private List<String> skills;      // 기술 리스트
     private List<String> imageUrls;   // 이미지 리스트
 
@@ -31,7 +32,7 @@ public class CreateCareerCardResponse {
 
     public CreateCareerCardResponse(CareerCard careerCard) {
         this.cardId = careerCard.getId();
-        this.nickname = careerCard.getUser().getNickname(); // User에서 가져옴
+        //this.nickname = careerCard.getUser().getNickname(); // User에서 가져옴
         this.major = careerCard.getMajor();
         this.studentStatus = careerCard.getStudent_status();
         this.grade = careerCard.getGrade();

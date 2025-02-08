@@ -29,6 +29,7 @@ import java.util.*;
 
 @Service
 @RequiredArgsConstructor
+
 public class UserService {
     private final UserRepository userRepository;
     private final VerificationRepository tokenRepository;
@@ -125,6 +126,16 @@ public class UserService {
     private String generateVerificationCode() {
         Random random = new Random();
         return String.format("%06d", random.nextInt(1000000));
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<User> findUserById(Long id) {
+        return userRepository.findById(id);
+    }
+    
+    @Transactional(readOnly = true)
+    public Optional<User> findUserByEmail(String email) {
+        return userRepository.findByEmail(email);
     }
 
     @Transactional

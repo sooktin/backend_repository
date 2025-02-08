@@ -24,7 +24,7 @@ public class Comment {
     @JoinColumn(name = "user_id", nullable = false) // 외래키 설정
     private User user; // 행위자
 
-    private Integer likes; // 좋아요
+    /*private Integer likes; // 좋아요*/
 
     @ManyToOne(fetch = FetchType.LAZY) // 노트ID 외래키 - 다대일
     @JoinColumn(name = "usernote_id", nullable = false) // 외래키 설정

@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CreateCommentRequest {
     private String content;
-    private Integer likes; // 좋아요 수 (Optional)
+    //private Integer likes; // 좋아요 수 (Optional)
 
     // Getter, Setter
 }

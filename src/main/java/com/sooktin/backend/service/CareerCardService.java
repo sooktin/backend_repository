@@ -1,6 +1,7 @@
 package com.sooktin.backend.service;
 
 import com.sooktin.backend.domain.CareerCard;
+import com.sooktin.backend.domain.Experience;
 import com.sooktin.backend.repository.CareerCardRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -139,12 +140,23 @@ public class CareerCardService {
         }
     }
 
-    private void validateExperiences(List<String> experiences) {
-        if (experiences != null) {
-            for (String experience : experiences) {
-                if (experience.length() > 1000) {
-                    throw new IllegalArgumentException("각 경력 정보는 최대 1000자까지 입력 가능합니다.");
-                }
+    private void validateExperiences(List<Experience> experiences) {
+        if (experiences == null || experiences.isEmpty()) {
+            throw new IllegalArgumentException("경력 목록은 최소 1개 이상 입력해야 합니다.");
+        }
+
+        for (Experience exp : experiences) {
+            if (exp.getCompany() == null || exp.getCompany().trim().isEmpty()) {
+                throw new IllegalArgumentException("경력 회사명은 필수 입력값입니다.");
+            }
+            if (exp.getPeriod() == null || exp.getPeriod().trim().isEmpty()) {
+                throw new IllegalArgumentException("경력 기간은 필수 입력값입니다.");
+            }
+            if (exp.getCompany().length() > 50) {
+                throw new IllegalArgumentException("회사명은 최대 50자까지 입력 가능합니다.");
+            }
+            if (exp.getPeriod().length() > 20) {
+                throw new IllegalArgumentException("기간은 최대 20자까지 입력 가능합니다.");
             }
         }
     }
