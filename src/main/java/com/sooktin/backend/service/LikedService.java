@@ -49,14 +49,14 @@ public class LikedService {
         if (existingLike.isPresent()) {
             // 좋아요가 있으면 삭제
             likedRepository.delete(existingLike.get());
-            return new LikedResponse(false, "좋아요가 취소되었습니다.");
+            return LikedResponse.unliked();
         } else {
             // 좋아요가 없으면 생성
             Liked newLike = new Liked();
             newLike.setPost(note);
             newLike.setUser(user);
             likedRepository.save(newLike);
-            return new LikedResponse(true, "좋아요가 추가되었습니다.");
+            return LikedResponse.liked();
         }
     }
 
@@ -69,12 +69,12 @@ public class LikedService {
 
         if (existingLike.isPresent()) {
             likedRepository.delete(existingLike.get());
-            return new LikedResponse(false, "좋아요 취소되었습니다.");
+            return LikedResponse.unliked();
         } else {
             Liked newLike = new Liked();
             newLike.setComment(comment);
             likedRepository.save(newLike);
-            return new LikedResponse(true, "좋아요 추가되었습니다.");
+            return LikedResponse.liked();
         }
     }
 

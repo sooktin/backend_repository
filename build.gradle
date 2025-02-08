@@ -34,6 +34,8 @@ ext {
 }
 repositories {
     mavenCentral()
+    maven { url 'https://repo.spring.io/release' }
+    maven { url 'https://repo.spring.io/milestone' }
 }
 
 dependencies {
@@ -64,8 +66,14 @@ dependencies {
     implementation 'io.swagger.core.v3:swagger-annotations:2.1.9'
     implementation 'org.springdoc:springdoc-openapi-ui:1.5.9'
     // AWS 서비스
-    implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
-    implementation 'com.amazonaws:aws-java-sdk-s3'
+//    implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+//    implementation 'com.amazonaws:aws-java-sdk-s3'
+//    implementation 'io.awspring.cloud:spring-cloud-aws-starter-parameter-store:2.4.2'
+    // AWS 의존성 수정
+    implementation platform('io.awspring.cloud:spring-cloud-aws-dependencies:3.1.0')
+    implementation 'io.awspring.cloud:spring-cloud-aws-starter'
+    implementation 'io.awspring.cloud:spring-cloud-aws-starter-s3'
+    implementation 'software.amazon.awssdk:ssm' // AWS Systems Manager Parameter Store에 접근
 
 }
 

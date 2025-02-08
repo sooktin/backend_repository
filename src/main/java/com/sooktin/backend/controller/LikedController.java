@@ -23,20 +23,26 @@ public class LikedController {
 
     // 게시글 좋아요/취소
     @PostMapping("/usernotes/{noteId}/likes")
-    public ResponseEntity<?> toggleNoteLike(
+    public ResponseEntity<LikedResponse> toggleNoteLike(
             @PathVariable Long noteId,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        /*if (userDetails == null) {
+            return ResponseEntity.status(401).body(LikedResponse.unauthorized());
+        }*/
         LikedResponse response = likedService.toggleNoteLike(noteId, userDetails.getUserId());
         return ResponseEntity.ok(response);
     }
 
     // 댓글 좋아요/취소
     @PostMapping("/comments/{commentId}/likes")
-    public ResponseEntity<?> toggleCommentLike(
+    public ResponseEntity<LikedResponse> toggleCommentLike(
             @PathVariable Long commentId,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+//        if (userDetails == null) {
+//            return ResponseEntity.status(401).body(LikedResponse.unauthorized());
+//        }
         LikedResponse response = likedService.toggleCommentLike(commentId, userDetails.getUserId());
         return ResponseEntity.ok(response);
     }
