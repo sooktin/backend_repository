@@ -1,0 +1,88 @@
+jwt:
+  issuer: ${/sooktin/prod/jwt/issuer}
+  access-expiration: ${/sooktin/prod/jwt/access-expiration}
+  refresh-expiration: ${/sooktin/prod/jwt/refresh-expiration}
+  secret-key: ${/sooktin/prod/jwt/secret-key}
+
+server:
+  error:
+    include-binding-errors: always
+    include-message: always
+  address: 0.0.0.0
+  port: 8080
+
+cloud:
+  aws:
+    credentials:
+      access-key: ${/sooktin/prod/aws/access-key}
+      secret-key: ${/sooktin/prod/aws/secret-key}
+    region:
+      static: ap-northeast-2
+    stack:
+      auto: false
+    s3:
+      bucket: ${/sooktin/prod/aws/s3-bucket}
+
+spring:
+  application:
+    name: sooktin
+  datasource:
+    url: ${/sooktin/prod/db/url}
+    username: ${/sooktin/prod/db/username}
+    password: ${/sooktin/prod/db/password}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+    show-sql: true
+  security:
+    user:
+      name: ${/sooktin/prod/security/user/name}
+      password: ${/sooktin/prod/security/user/password}
+      roles: ADMIN
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${/sooktin/prod/smtp/username}
+    password: ${/sooktin/prod/smtp/password}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+  data:
+    redis:
+      host: redis
+      port: 6379
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus, metrics, health
+      base-path: /actuator
+  endpoint:
+    prometheus:
+      enabled: true
+    health:
+      show-details: always
+    metrics:
+      enabled: true
+  metrics:
+    enable:
+      all: true
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG
