@@ -37,6 +37,7 @@ public class ResponseExceptionHandler {
                 "잘못된 요청입니다.",
                 null
         );
+
         return ResponseEntity.badRequest().body(response);
     }
 
