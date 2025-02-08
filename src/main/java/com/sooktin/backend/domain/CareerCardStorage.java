@@ -22,8 +22,9 @@ public class CareerCardStorage  {
     @JoinColumn(name = "user_id",nullable = false)
     private User user;
 
-    @OneToMany(mappedBy = "careerCardStorage")
+    @OneToMany(mappedBy = "careerCardStorage", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CareerCard> careerCards = new ArrayList<>();
+
 
 
 

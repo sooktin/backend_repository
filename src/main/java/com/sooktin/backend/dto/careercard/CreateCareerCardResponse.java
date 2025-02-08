@@ -13,7 +13,7 @@ public class CreateCareerCardResponse {
     private Long cardId; // 카드 ID
     private Long userId;         // 사용자 ID
 
-    private String nickname;       // 닉네임
+    //private String nickname;       // 닉네임
     private String major;          // 전공
     private String studentNum;     // 학번
     private String studentStatus;  // 재학 상태
@@ -32,7 +32,7 @@ public class CreateCareerCardResponse {
 
     public CreateCareerCardResponse(CareerCard careerCard) {
         this.cardId = careerCard.getId();
-        this.nickname = careerCard.getUser().getNickname(); // User에서 가져옴
+        //this.nickname = careerCard.getUser().getNickname(); // User에서 가져옴
         this.major = careerCard.getMajor();
         this.studentStatus = careerCard.getStudent_status();
         this.grade = careerCard.getGrade();

@@ -29,10 +29,10 @@ public class User {
     @Schema(description = "email", example = "foo@sookmyung.ac.kr")
     private String email;
 
-    @Builder.Default()
+
     @Column(nullable = false, unique = true)
     @Size(min = 2, max = 10,message = "닉네임은 2~10자 제한합니다.")
-    private String nickname="foo";
+    private String nickname;
 
 
     @Schema(description = "password", example = "jamone122@3")

@@ -4,6 +4,7 @@ import com.sooktin.backend.auth.JwtUtil;
 import com.sooktin.backend.domain.CareerCard;
 import com.sooktin.backend.domain.User;
 import com.sooktin.backend.dto.ResponseDto;
+import com.sooktin.backend.dto.careercard.storage.GetStorageResponse;
 import com.sooktin.backend.dto.user.NicknameRequest;
 import com.sooktin.backend.dto.user.NicknameResponse;
 import com.sooktin.backend.dto.user.UserGetResponse;
@@ -110,10 +111,10 @@ public class UserController {
             histogram = true
     )
     @GetMapping("/card-storage")
-    public ResponseEntity<List<CareerCard>> getUserCardStorage(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        List<CareerCard> careerCards = storageService.getCardsFromStorage(userDetails.getUserId());
+    public ResponseEntity<GetStorageResponse> getUserCardStorage(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        GetStorageResponse response = storageService.getCardsFromStorage(userDetails.getUserId());
 
-        return ResponseEntity.ok(careerCards);
+        return ResponseEntity.ok(response);
     }
 
 }
