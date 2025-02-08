@@ -1,24 +1,30 @@
 package com.sooktin.backend.global.exception;
 
 import com.sooktin.backend.dto.ResponseDto;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import javax.naming.AuthenticationException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class ResponseExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ResponseDto<Object>> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
-        Map<String,String> errors = new HashMap<>();
+        Map<String,List<String>> errors = new HashMap<>();
         ex.getBindingResult().getFieldErrors().forEach(error -> {
-            errors.put(error.getField(), error.getDefaultMessage());
+            errors.computeIfAbsent(error.getField(), key -> new ArrayList<>()).add(error.getDefaultMessage());
         });
+
 
         ResponseDto<Object> response = new ResponseDto<>(
                 400,
@@ -41,6 +47,25 @@ public class ResponseExceptionHandler {
         return ResponseEntity.badRequest().body(response);
     }
 
+    @ExceptionHandler
+    public ResponseEntity<ResponseDto<Object>> handleConstraintViolation(ConstraintViolationException ex) {
+        Map<String, String> errors = new HashMap<>();
+
+        ex.getConstraintViolations().forEach(violation -> {
+            String fieldName = violation.getPropertyPath().toString();
+            String errorMessage = violation.getMessage();
+            errors.put(fieldName, errorMessage);  // 같은 필드에서 발생한 오류가 덮어써질 수 있음
+        });
+
+
+        ResponseDto<Object> response = new ResponseDto<>(
+                400,
+                "잘못된 접근입니다.",
+                errors
+
+        );
+        return ResponseEntity.badRequest().body(response);
+    }
     @ExceptionHandler
     public ResponseEntity<ResponseDto<Object>> handleAuthenticationException(AuthenticationException ex) {
         ResponseDto<Object> response = new ResponseDto<>(
