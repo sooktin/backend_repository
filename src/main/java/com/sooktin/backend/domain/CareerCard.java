@@ -52,7 +52,7 @@ public class CareerCard {
     private String student_status; // 재학여부(휴학/재학/졸업)
 
     @Column(nullable = false)
-    private byte grade; // 학년 (1 ,2, 3 ..etc.)
+    private Integer grade; // 학년 (1 ,2, 3 ..etc.)
 
     @Column(length = 3, nullable = false)
     private String student_num; // 학번 (앞 두 자리만)

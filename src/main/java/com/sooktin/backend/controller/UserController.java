@@ -8,11 +8,9 @@ import com.sooktin.backend.dto.user.NicknameRequest;
 import com.sooktin.backend.dto.user.NicknameResponse;
 import com.sooktin.backend.dto.user.UserGetResponse;
 import com.sooktin.backend.dto.usernote.FindMyUsernoteWithJWTResponse;
+import com.sooktin.backend.global.util.ResponseUtil;
 import com.sooktin.backend.repository.UserRepository;
-import com.sooktin.backend.service.CustomUserDetails;
-import com.sooktin.backend.service.StorageService;
-import com.sooktin.backend.service.UserService;
-import com.sooktin.backend.service.UsernoteService;
+import com.sooktin.backend.service.*;
 import io.micrometer.core.annotation.Timed;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -36,6 +34,7 @@ public class UserController {
     private final JwtUtil jwtUtil;
     private final UsernoteService usernoteService;
     private final StorageService storageService;
+    private final CareerCardService careerCardService;
 
     //delete되는지 가라 기능 작업 수행임
     @GetMapping("/search")
@@ -92,6 +91,57 @@ public class UserController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ResponseDto<>(500, "서버 내부 오류가 발생했습니다. 다시 시도해주세요.", null));
+        }
+    }
+
+    // R - 로그인된 사용자의 메인 이미지(커리어카드 첫 번째 이미지) 반환
+    @GetMapping("/main-image")
+    public ResponseEntity<ResponseDto<String>> getMyMainImage(
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        try {
+            if (userDetails == null) {
+                return ResponseUtil.buildResponse(401, "인증 정보가 유효하지 않습니다. 다시 로그인해주세요.", null);
+            }
+
+            CareerCard careerCard = careerCardService.findByUserId(userDetails.getUserId())
+                    .orElseThrow(() -> new IllegalArgumentException("현재 로그인된 사용자의 커리어카드를 찾을 수 없습니다."));
+
+            List<String> imageUrls = careerCard.getImageUrls();
+
+            if (imageUrls.isEmpty()) {
+                return ResponseUtil.buildResponse(404, "로그인된 사용자의 프로필 이미지가 없습니다.", null);
+            }
+
+            String profileImage = imageUrls.get(0); // 첫 번째 이미지 선택
+            return ResponseUtil.buildResponse(200, "로그인된 사용자의 프로필 이미지 조회 성공", profileImage);
+
+        } catch (IllegalArgumentException e) {
+            return ResponseUtil.buildResponse(404, e.getMessage(), null);
+        } catch (Exception e) {
+            return ResponseUtil.buildResponse(500, "로그인된 사용자의 프로필 이미지를 조회하는 중 오류가 발생했습니다.", null);
+        }
+    }
+
+    // R - 특정 사용자의 메인 이미지(커리어카드 첫 번째 이미지) 반환
+    @GetMapping("/{userId}/main-image")
+    public ResponseEntity<ResponseDto<String>> getUserMainImage(@PathVariable Long userId) {
+        try {
+            CareerCard careerCard = careerCardService.findByUserId(userId)
+                    .orElseThrow(() -> new IllegalArgumentException("해당 사용자의 커리어카드를 찾을 수 없습니다."));
+
+            List<String> imageUrls = careerCard.getImageUrls();
+
+            if (imageUrls.isEmpty()) {
+                return ResponseUtil.buildResponse(404, "해당 사용자의 프로필 이미지가 없습니다.", null);
+            }
+
+            String profileImage = imageUrls.get(0); // 첫 번째 이미지 선택
+            return ResponseUtil.buildResponse(200, "해당 사용자의 프로필 이미지 조회 성공", profileImage);
+
+        } catch (IllegalArgumentException e) {
+            return ResponseUtil.buildResponse(404, e.getMessage(), null);
+        } catch (Exception e) {
+            return ResponseUtil.buildResponse(500, "해당 사용자의 프로필 이미지를 조회하는 중 오류가 발생했습니다.", null);
         }
     }
 
