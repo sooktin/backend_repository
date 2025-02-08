@@ -35,7 +35,6 @@ public class UserController {
     private final UserService userService;
     private final JwtUtil jwtUtil;
     private final UsernoteService usernoteService;
-    private final UserRepository userRepository;
     private final StorageService storageService;
 
     //delete되는지 가라 기능 작업 수행임
@@ -46,7 +45,7 @@ public class UserController {
 
     @GetMapping
     public ResponseEntity<?> getUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        Optional<User> user = userRepository.findById(userDetails.getUserId());
+        Optional<User> user = userService.findUserById(userDetails.getUserId());
         return user.map(u -> ResponseEntity.ok(UserGetResponse.from(u)))
                 .orElseGet(() -> ResponseEntity.notFound().build()); //elseget은 매개값이 필요할때만
     }

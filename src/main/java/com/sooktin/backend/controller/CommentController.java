@@ -6,11 +6,12 @@ import com.sooktin.backend.domain.Usernote;
 import com.sooktin.backend.dto.ResponseDto;
 import com.sooktin.backend.dto.comment.CreateCommentRequest;
 import com.sooktin.backend.dto.comment.CreateCommentResponse;
-import com.sooktin.backend.repository.UserRepository;
-import com.sooktin.backend.repository.UsernoteRepository;
+import com.sooktin.backend.global.util.ResponseUtil;
+import com.sooktin.backend.service.UserService;
+import com.sooktin.backend.service.UsernoteService;
 import com.sooktin.backend.service.CommentService;
 import com.sooktin.backend.service.CustomUserDetails;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -20,30 +21,19 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/usernote/{noteId}/comments")
 public class CommentController {
 
     private final CommentService commentService;
-    private final UserRepository userRepository;
-    private final UsernoteRepository usernoteRepository;
-
-    @Autowired
-    public CommentController(CommentService commentService, UserRepository userRepository, UsernoteRepository usernoteRepository) {
-        this.commentService = commentService;
-        this.userRepository = userRepository;
-        this.usernoteRepository = usernoteRepository;
-    }
+    private final UserService userService;
+    private final UsernoteService usernoteService;
 
     // 공통 엔티티 조회 메서드
     private <T> T findEntityById(Optional<T> entityOptional, String errorMessage) {
         return entityOptional.orElseThrow(() -> new IllegalArgumentException(errorMessage));
     }
 
-    // 공통 응답 생성 메서드
-    private <T> ResponseEntity<ResponseDto<T>> buildResponse(int statusCode, String message, T data) {
-        return ResponseEntity.status(statusCode)
-                .body(new ResponseDto<>(statusCode, message, data));
-    }
 
     private void validateOwnership(Comment comment, Long userId) {
         if (!comment.getUser().getId().equals(userId)) {
@@ -64,20 +54,20 @@ public class CommentController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         try {
             if (userDetails == null) {
-                return buildResponse(401, "인증 정보가 유효하지 않습니다. 다시 로그인해주세요.", null);
+                return ResponseUtil.buildResponse(401, "인증 정보가 유효하지 않습니다. 다시 로그인해주세요.", null);
             }
 
             List<Comment> comments = commentService.findByUserId(userDetails.getUserId());
             if (comments.isEmpty()) {
-                return buildResponse(404, "사용자의 댓글이 존재하지 않습니다.", null);
+                return ResponseUtil.buildResponse(404, "사용자의 댓글이 존재하지 않습니다.", null);
             }
 
             List<CreateCommentResponse> responseDtos = comments.stream()
                     .map(CreateCommentResponse::new)
                     .collect(Collectors.toList());
-            return buildResponse(200, "사용자의 댓글 목록을 불러왔습니다.", responseDtos);
+            return ResponseUtil.buildResponse(200, "사용자의 댓글 목록을 불러왔습니다.", responseDtos);
         } catch (Exception e) {
-            return buildResponse(500, "사용자의 댓글을 불러오는 중 오류가 발생했습니다.", null);
+            return ResponseUtil.buildResponse(500, "사용자의 댓글을 불러오는 중 오류가 발생했습니다.", null);
         }
     }
 
@@ -89,15 +79,15 @@ public class CommentController {
         try {
             List<Comment> comments = commentService.findByUsernoteId(noteId);
             if (comments.isEmpty()) {
-                return buildResponse(404, "게시글에 댓글이 존재하지 않습니다.", null);
+                return ResponseUtil.buildResponse(404, "게시글에 댓글이 존재하지 않습니다.", null);
             }
 
             List<CreateCommentResponse> responseDtos = comments.stream()
                     .map(CreateCommentResponse::new)
                     .collect(Collectors.toList());
-            return buildResponse(200, "게시글의 댓글 목록을 불러왔습니다.", responseDtos);
+            return ResponseUtil.buildResponse(200, "게시글의 댓글 목록을 불러왔습니다.", responseDtos);
         } catch (Exception e) {
-            return buildResponse(500, "게시글의 댓글을 불러오는 중 오류가 발생했습니다.", null);
+            return ResponseUtil.buildResponse(500, "게시글의 댓글을 불러오는 중 오류가 발생했습니다.", null);
         }
     }
 
@@ -109,17 +99,17 @@ public class CommentController {
             @PathVariable Long commentId) {
         try {
             if (userDetails == null) {
-                return buildResponse(401, "인증 정보가 유효하지 않습니다. 다시 로그인해주세요.", null);
+                return ResponseUtil.buildResponse(401, "인증 정보가 유효하지 않습니다. 다시 로그인해주세요.", null);
             }
 
             Comment comment = findEntityById(commentService.findById(commentId), "댓글을 찾을 수 없습니다.");
             validateCommentBelongsToNote(comment, noteId);
 
-            return buildResponse(200, "댓글을 조회했습니다.", new CreateCommentResponse(comment));
+            return ResponseUtil.buildResponse(200, "댓글을 조회했습니다.", new CreateCommentResponse(comment));
         } catch (IllegalArgumentException e) {
-            return buildResponse(404, e.getMessage(), null);
+            return ResponseUtil.buildResponse(404, e.getMessage(), null);
         } catch (Exception e) {
-            return buildResponse(500, "댓글 조회 중 오류가 발생했습니다.", null);
+            return ResponseUtil.buildResponse(500, "댓글 조회 중 오류가 발생했습니다.", null);
         }
     }
 
@@ -135,16 +125,16 @@ public class CommentController {
                     .toList();
 
             if (replies.isEmpty()) {
-                return buildResponse(404, "대댓글이 존재하지 않습니다.", null);
+                return ResponseUtil.buildResponse(404, "대댓글이 존재하지 않습니다.", null);
             }
 
             List<CreateCommentResponse> responseDtos = replies.stream()
                     .map(CreateCommentResponse::new)
                     .collect(Collectors.toList());
 
-            return buildResponse(200, "대댓글 목록을 불러왔습니다.", responseDtos);
+            return ResponseUtil.buildResponse(200, "대댓글 목록을 불러왔습니다.", responseDtos);
         } catch (Exception e) {
-            return buildResponse(500, "대댓글 조회 중 서버 오류가 발생했습니다.", null);
+            return ResponseUtil.buildResponse(500, "대댓글 조회 중 서버 오류가 발생했습니다.", null);
         }
     }
 
@@ -156,13 +146,13 @@ public class CommentController {
             @RequestBody CreateCommentRequest commentRequest) {
         try {
             if (userDetails == null) {
-                return buildResponse(401, "인증 정보가 유효하지 않습니다. 다시 로그인해주세요.", null);
+                return ResponseUtil.buildResponse(401, "인증 정보가 유효하지 않습니다. 다시 로그인해주세요.", null);
             }
 
-            Usernote usernote = usernoteRepository.findById(noteId)
+            Usernote usernote = usernoteService.findById(noteId)
                     .orElseThrow(() -> new IllegalArgumentException("해당 게시글을 찾을 수 없습니다."));
 
-            User user = userRepository.findByEmail(userDetails.getUsername())
+            User user = userService.findUserByEmail(userDetails.getUsername())
                     .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
             Comment newComment = new Comment();
@@ -172,11 +162,11 @@ public class CommentController {
             newComment.setUsernote(usernote);
 
             Comment createdComment = commentService.createComment(newComment);
-            return buildResponse(201, "댓글이 생성되었습니다.", new CreateCommentResponse(createdComment));
+            return ResponseUtil.buildResponse(201, "댓글이 생성되었습니다.", new CreateCommentResponse(createdComment));
         } catch (IllegalArgumentException e) {
-            return buildResponse(400, "댓글을 생성하는 중 오류가 발생했습니다: " + e.getMessage(), null);
+            return ResponseUtil.buildResponse(400, "댓글을 생성하는 중 오류가 발생했습니다: " + e.getMessage(), null);
         } catch (Exception e) {
-            return buildResponse(500, "서버 내부 오류가 발생했습니다.", null);
+            return ResponseUtil.buildResponse(500, "서버 내부 오류가 발생했습니다.", null);
         }
     }
 
@@ -190,15 +180,15 @@ public class CommentController {
         try {
             // 인증된 사용자 확인
             if (userDetails == null) {
-                return buildResponse(401, "인증 정보가 유효하지 않습니다. 다시 로그인해주세요.", null);
+                return ResponseUtil.buildResponse(401, "인증 정보가 유효하지 않습니다. 다시 로그인해주세요.", null);
             }
 
             // 게시글 존재 여부 확인
-            Usernote usernote = usernoteRepository.findById(noteId)
+            Usernote usernote = usernoteService.findById(noteId)
                     .orElseThrow(() -> new IllegalArgumentException("해당 게시글을 찾을 수 없습니다."));
 
             // 사용자 정보 조회
-            User user = userRepository.findByEmail(userDetails.getUsername())
+            User user = userService.findUserByEmail(userDetails.getUsername())
                     .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
             // 부모 댓글 존재 여부 확인
@@ -213,11 +203,11 @@ public class CommentController {
             reply.setUsernote(usernote);
 
             Comment createdReply = commentService.createReply(parentId, reply);
-            return buildResponse(201, "대댓글이 생성되었습니다.", new CreateCommentResponse(createdReply));
+            return ResponseUtil.buildResponse(201, "대댓글이 생성되었습니다.", new CreateCommentResponse(createdReply));
         } catch (IllegalArgumentException e) {
-            return buildResponse(400, "대댓글 생성 중 오류가 발생했습니다: " + e.getMessage(), null);
+            return ResponseUtil.buildResponse(400, "대댓글 생성 중 오류가 발생했습니다: " + e.getMessage(), null);
         } catch (Exception e) {
-            return buildResponse(500, "대댓글 생성 중 서버 오류가 발생했습니다: " + e.getMessage(), null);
+            return ResponseUtil.buildResponse(500, "대댓글 생성 중 서버 오류가 발생했습니다: " + e.getMessage(), null);
         }
     }
 
@@ -230,7 +220,7 @@ public class CommentController {
             @RequestBody CreateCommentRequest commentRequest) {
         try {
             if (userDetails == null) {
-                return buildResponse(401, "인증 정보가 유효하지 않습니다. 다시 로그인해주세요.", null);
+                return ResponseUtil.buildResponse(401, "인증 정보가 유효하지 않습니다. 다시 로그인해주세요.", null);
             }
 
             // 댓글 조회
@@ -245,14 +235,14 @@ public class CommentController {
             //comment.setLikes(Optional.ofNullable(commentRequest.getLikes()).orElse(0));
             Comment updatedComment = commentService.updateComment(commentId, comment);
 
-            return buildResponse(200, "댓글이 수정되었습니다.", new CreateCommentResponse(updatedComment));
+            return ResponseUtil.buildResponse(200, "댓글이 수정되었습니다.", new CreateCommentResponse(updatedComment));
         } catch (IllegalArgumentException e) {
             if (e.getMessage().equals("댓글을 찾을 수 없습니다.")) {
-                return buildResponse(404, e.getMessage(), null);
+                return ResponseUtil.buildResponse(404, e.getMessage(), null);
             }
-            return buildResponse(400, "댓글을 수정하는 중 오류가 발생했습니다: " + e.getMessage(), null);
+            return ResponseUtil.buildResponse(400, "댓글을 수정하는 중 오류가 발생했습니다: " + e.getMessage(), null);
         } catch (Exception e) {
-            return buildResponse(500, "댓글을 수정하는 중 서버 내부 오류가 발생했습니다.", null);
+            return ResponseUtil.buildResponse(500, "댓글을 수정하는 중 서버 내부 오류가 발생했습니다.", null);
         }
     }
 
@@ -265,7 +255,7 @@ public class CommentController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         try {
             if (userDetails == null) {
-                return buildResponse(401, "인증 정보가 유효하지 않습니다. 다시 로그인해주세요.", null);
+                return ResponseUtil.buildResponse(401, "인증 정보가 유효하지 않습니다. 다시 로그인해주세요.", null);
             }
 
             Comment comment = commentService.findById(commentId)
@@ -278,13 +268,13 @@ public class CommentController {
             validateOwnership(comment, userDetails.getUserId());
 
             commentService.deleteById(commentId);
-            return buildResponse(204, "댓글이 삭제되었습니다.", null);
+            return ResponseUtil.buildResponse(204, "댓글이 삭제되었습니다.", null);
         } catch (IllegalStateException e) {
-            return buildResponse(404, e.getMessage(), null);
+            return ResponseUtil.buildResponse(404, e.getMessage(), null);
         } catch (IllegalArgumentException e) {
-            return buildResponse(400, "댓글 삭제 중 오류가 발생했습니다: " + e.getMessage(), null);
+            return ResponseUtil.buildResponse(400, "댓글 삭제 중 오류가 발생했습니다: " + e.getMessage(), null);
         } catch (Exception e) {
-            return buildResponse(500, "서버 내부 오류가 발생했습니다.", null);
+            return ResponseUtil.buildResponse(500, "서버 내부 오류가 발생했습니다.", null);
         }
     }
 }

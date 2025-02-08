@@ -5,14 +5,14 @@ import com.sooktin.backend.domain.Usernote;
 import com.sooktin.backend.dto.ResponseDto;
 import com.sooktin.backend.dto.usernote.CreateUsernoteRequest;
 import com.sooktin.backend.dto.usernote.CreateUsernoteResponse;
-import com.sooktin.backend.repository.UserRepository;
+import com.sooktin.backend.global.util.ResponseUtil;
+import com.sooktin.backend.service.UserService;
 import com.sooktin.backend.service.CustomUserDetails;
 import com.sooktin.backend.service.UsernoteService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +20,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping
 public class UsernoteController {
 
@@ -29,20 +30,7 @@ public class UsernoteController {
      **/
 
     private final UsernoteService usernoteService;
-    private final UserRepository userRepository;
-
-    @Autowired
-    public UsernoteController(UsernoteService usernoteService, UserRepository userRepository) {
-        this.usernoteService = usernoteService;
-        this.userRepository = userRepository;
-    }
-
-
-    // 공통 응답 생성 메서드
-    private <T> ResponseEntity<ResponseDto<T>> buildResponse(int statusCode, String message, T data) {
-        return ResponseEntity.status(statusCode)
-                .body(new ResponseDto<>(statusCode, message, data));
-    }
+    private final UserService userService;
 
 
     // R - 전체 게시글 조회
@@ -52,11 +40,11 @@ public class UsernoteController {
             List<CreateUsernoteResponse> usernotes = usernoteService.findAll().stream()
                     .map(CreateUsernoteResponse::new)
                     .collect(Collectors.toList());
-            return buildResponse(200, "게시글 목록을 불러왔습니다.", usernotes);
+            return ResponseUtil.buildResponse(200, "게시글 목록을 불러왔습니다.", usernotes);
         } catch (IllegalStateException e) {
-            return buildResponse(400, "잘못된 요청입니다." , null);
+            return ResponseUtil.buildResponse(400, "잘못된 요청입니다." , null);
         } catch (Exception e) {
-            return buildResponse(500, "게시글 목록을 불러오는 중 오류가 발생했습니다.", null);
+            return ResponseUtil.buildResponse(500, "게시글 목록을 불러오는 중 오류가 발생했습니다.", null);
         }
     }
 
@@ -65,16 +53,16 @@ public class UsernoteController {
     public ResponseEntity<ResponseDto<CreateUsernoteResponse>> getUsernoteById(@PathVariable Long id) {
         try {
             Optional<Usernote> usernote = usernoteService.findById(id);
-            return usernote.map(note -> buildResponse(200, "게시글을 조회했습니다.", new CreateUsernoteResponse(note)))
-                    .orElseGet(() -> buildResponse(404, "게시글을 찾을 수 없습니다.", null));
+            return usernote.map(note -> ResponseUtil.buildResponse(200, "게시글을 조회했습니다.", new CreateUsernoteResponse(note)))
+                    .orElseGet(() -> ResponseUtil.buildResponse(404, "게시글을 찾을 수 없습니다.", null));
         } catch (Exception e) {
-            return buildResponse(500, "게시글 조회 중 오류가 발생했습니다.", null);
+            return ResponseUtil.buildResponse(500, "게시글 조회 중 오류가 발생했습니다.", null);
         }
     }
 
     // 포스트 생성
     /* -> 추후에 파라미터로 @AuthenticationPrincipal UserDetails userDetails 넣고
-          user 찾을 때 Optional<User> user = userRepository.findByEmail(userDetails.getUsername())도 고려해주세욤
+          user 찾을 때 Optional<User> user = userService.findByEmail(userDetails.getUsername())도 고려해주세욤
     from 경민 to 수진
     */
     @PostMapping("/usernotes")
@@ -84,11 +72,11 @@ public class UsernoteController {
         try {
             // 사용자 인증 확인
             if (userDetails == null) {
-                return buildResponse(401, "인증 정보가 유효하지 않습니다. 다시 로그인해주세요.", null);
+                return ResponseUtil.buildResponse(401, "인증 정보가 유효하지 않습니다. 다시 로그인해주세요.", null);
             }
 
             // 사용자 조회
-            User user = userRepository.findByEmail(userDetails.getUsername())
+            User user = userService.findUserByEmail(userDetails.getUsername())
                     .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
             // 게시글 생성
@@ -98,13 +86,13 @@ public class UsernoteController {
             newUsernote.setUser(user);
 
             Usernote createdUsernote = usernoteService.createUsernote(newUsernote);
-            return buildResponse(201, "게시글이 성공적으로 생성되었습니다.", new CreateUsernoteResponse(createdUsernote));
+            return ResponseUtil.buildResponse(201, "게시글이 성공적으로 생성되었습니다.", new CreateUsernoteResponse(createdUsernote));
         } catch (IllegalArgumentException e) {
             // 잘못된 요청 처리
-            return buildResponse(400, "게시글 생성 중 오류가 발생했습니다: " + e.getMessage(), null);
+            return ResponseUtil.buildResponse(400, "게시글 생성 중 오류가 발생했습니다: " + e.getMessage(), null);
         } catch (Exception e) {
             // 기타 서버 오류 처리
-            return buildResponse(500, "서버 내부 오류가 발생했습니다.", null);
+            return ResponseUtil.buildResponse(500, "서버 내부 오류가 발생했습니다.", null);
         }
     }
 
@@ -117,27 +105,27 @@ public class UsernoteController {
         try {
 
             if (userDetails == null) {
-                return buildResponse(401, "인증 정보가 유효하지 않습니다. 다시 로그인해주세요.", null);
+                return ResponseUtil.buildResponse(401, "인증 정보가 유효하지 않습니다. 다시 로그인해주세요.", null);
             }
 
-            User user = userRepository.findByEmail(userDetails.getUsername())
+            User user = userService.findUserByEmail(userDetails.getUsername())
                     .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
             Usernote existingUsernote = usernoteService.findById(id)
                     .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
 
             if (!existingUsernote.getUser().getId().equals(user.getId())) {
-                return buildResponse(403, "권한이 없습니다.", null);
+                return ResponseUtil.buildResponse(403, "권한이 없습니다.", null);
             }
 
             existingUsernote.setContent(userNoteRequest.getContent());
 
             // 업데이트
             Usernote updatedUsernote = usernoteService.updateUsernote(id, existingUsernote);
-            return buildResponse(200, "게시글이 성공적으로 수정되었습니다.", new CreateUsernoteResponse(updatedUsernote));
+            return ResponseUtil.buildResponse(200, "게시글이 성공적으로 수정되었습니다.", new CreateUsernoteResponse(updatedUsernote));
         } catch (IllegalArgumentException e) {
-            return buildResponse(400, "게시글 수정 중 오류가 발생했습니다: " + e.getMessage(), null);
+            return ResponseUtil.buildResponse(400, "게시글 수정 중 오류가 발생했습니다: " + e.getMessage(), null);
         } catch (Exception e) {
-            return buildResponse(500, "서버 내부 오류가 발생했습니다.", null);
+            return ResponseUtil.buildResponse(500, "서버 내부 오류가 발생했습니다.", null);
         }
     }
 
@@ -149,26 +137,26 @@ public class UsernoteController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         try {
             if (userDetails == null) {
-                return buildResponse(401, "인증 정보가 유효하지 않습니다. 다시 로그인해주세요.", null);
+                return ResponseUtil.buildResponse(401, "인증 정보가 유효하지 않습니다. 다시 로그인해주세요.", null);
             }
 
-            User user = userRepository.findByEmail(userDetails.getUsername())
+            User user = userService.findUserByEmail(userDetails.getUsername())
                     .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
             Usernote existingUsernote = usernoteService.findById(id)
                     .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
 
             if (!existingUsernote.getUser().getId().equals(user.getId())) {
-                return buildResponse(403, "권한이 없습니다.", null);
+                return ResponseUtil.buildResponse(403, "권한이 없습니다.", null);
             }
 
             // 게시글 삭제
             usernoteService.deleteById(id);
-            return buildResponse(204, "게시글이 성공적으로 삭제되었습니다.", null);
+            return ResponseUtil.buildResponse(204, "게시글이 성공적으로 삭제되었습니다.", null);
         } catch (IllegalArgumentException e) {
-            return buildResponse(400, "게시글 삭제 중 오류가 발생했습니다: " + e.getMessage(), null);
+            return ResponseUtil.buildResponse(400, "게시글 삭제 중 오류가 발생했습니다: " + e.getMessage(), null);
         } catch (Exception e) {
-            return buildResponse(500, "서버 내부 오류가 발생했습니다.", null);
+            return ResponseUtil.buildResponse(500, "서버 내부 오류가 발생했습니다.", null);
         }
     }
 }
