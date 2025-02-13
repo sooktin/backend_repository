@@ -14,8 +14,7 @@ server:
 cloud:
   aws:
     credentials:
-      access-key: ${/sooktin/prod/aws/access-key}
-      secret-key: ${/sooktin/prod/aws/secret-key}
+      instance-profile: true  # EC2 IAM 역할 사용
     paramstore:
       enabled: true
       prefix: /sooktin/prod
@@ -36,13 +35,19 @@ spring:
     username: ${/sooktin/prod/db/username}
     password: ${/sooktin/prod/db/password}
     driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:  # Connection Pool 설정 추가
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 300000
+      connection-timeout: 20000
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate  # 프로덕션에서는 update 대신 validate 권장
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
-    show-sql: true
+        format_sql: false  # 프로덕션에서는 SQL 포매팅 비활성화
+    show-sql: false  # 프로덕션에서는 SQL 로깅 비활성화
   security:
     user:
       name: ${/sooktin/prod/security/user/name}
@@ -59,10 +64,13 @@ spring:
           auth: true
           starttls:
             enable: true
+          timeout: 5000  # 타임아웃 설정 추가
+          connectiontimeout: 5000
   data:
     redis:
       host: redis
       port: 6379
+      timeout: 5000  # Redis 타임아웃 설정 추가
 
 management:
   endpoints:
@@ -74,7 +82,7 @@ management:
     prometheus:
       enabled: true
     health:
-      show-details: always
+      show-details: when_authorized  # 프로덕션에서는 인증된 사용자에게만 상세 정보 표시
     metrics:
       enabled: true
   metrics:
@@ -88,6 +96,9 @@ management:
 
 logging:
   level:
-    org:
-      springframework:
-        security: DEBUG
+    root: INFO  # 기본 로그 레벨을 INFO로 설정
+    org.springframework.security: INFO  # 프로덕션에서는 DEBUG 대신 INFO 사용
+  file:  # 파일 로깅 추가
+    name: /var/log/sooktin/application.log
+    max-size: 10MB
+    max-history: 30
