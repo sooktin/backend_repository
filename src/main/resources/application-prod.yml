@@ -19,7 +19,8 @@ cloud:
       enabled: true
       prefix: /sooktin/prod
       name: sooktin
-      profile-separator: "/"
+      defaultContext: application
+      profileSeparator: _
     region:
       static: ap-northeast-2
     stack:
@@ -30,6 +31,8 @@ cloud:
 spring:
   application:
     name: sooktin
+  config:
+    import: aws-parameterstore:/sooktin/prod/
   datasource:
     url: ${/sooktin/prod/db/url}
     username: ${/sooktin/prod/db/username}
