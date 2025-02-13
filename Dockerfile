@@ -13,8 +13,5 @@ COPY build/libs/*.jar app.jar
 COPY entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 
-ENV SPRING_PROFILES_ACTIVE=prod
-ENV AWS_DEFAULT_REGION=ap-northeast-2
-
 EXPOSE 8080
 ENTRYPOINT ["/app/entrypoint.sh"]
