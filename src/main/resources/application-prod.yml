@@ -16,6 +16,11 @@ cloud:
     credentials:
       access-key: ${/sooktin/prod/aws/access-key}
       secret-key: ${/sooktin/prod/aws/secret-key}
+    paramstore:
+      enabled: true
+      prefix: /sooktin/prod
+      name: sooktin
+      profile-separator: "/"
     region:
       static: ap-northeast-2
     stack:
