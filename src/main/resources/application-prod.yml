@@ -1,8 +1,8 @@
 jwt:
-  issuer: ${/sooktin/prod/jwt/issuer}
-  access-expiration: ${/sooktin/prod/jwt/access-expiration}
-  refresh-expiration: ${/sooktin/prod/jwt/refresh-expiration}
-  secret-key: ${/sooktin/prod/jwt/secret-key}
+  issuer: ${jwt.issuer}
+  access-expiration: ${jwt.access-expiration}
+  refresh-expiration: ${jwt.refresh-expiration}
+  secret-key: ${jwt.secret-key}
 
 server:
   error:
@@ -26,7 +26,7 @@ cloud:
     stack:
       auto: false
     s3:
-      bucket: ${/sooktin/prod/aws/s3-bucket}
+      bucket: ${aws.s3-bucket}
 
 spring:
   application:
@@ -34,46 +34,46 @@ spring:
   config:
     import: aws-parameterstore:/sooktin/prod/
   datasource:
-    url: ${/sooktin/prod/db/url}
-    username: ${/sooktin/prod/db/username}
-    password: ${/sooktin/prod/db/password}
+    url: ${db.url}
+    username: ${db.username}
+    password: ${db.password}
     driver-class-name: com.mysql.cj.jdbc.Driver
-    hikari:  # Connection Pool 설정 추가
+    hikari:
       maximum-pool-size: 10
       minimum-idle: 5
       idle-timeout: 300000
       connection-timeout: 20000
   jpa:
     hibernate:
-      ddl-auto: validate  # 프로덕션에서는 update 대신 validate 권장
+      ddl-auto: validate
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
-        format_sql: false  # 프로덕션에서는 SQL 포매팅 비활성화
-    show-sql: false  # 프로덕션에서는 SQL 로깅 비활성화
+        format_sql: false
+    show-sql: false
   security:
     user:
-      name: ${/sooktin/prod/security/user/name}
-      password: ${/sooktin/prod/security/user/password}
+      name: ${security.user.name}
+      password: ${security.user.password}
       roles: ADMIN
   mail:
     host: smtp.gmail.com
     port: 587
-    username: ${/sooktin/prod/smtp/username}
-    password: ${/sooktin/prod/smtp/password}
+    username: ${smtp.username}
+    password: ${smtp.password}
     properties:
       mail:
         smtp:
           auth: true
           starttls:
             enable: true
-          timeout: 5000  # 타임아웃 설정 추가
+          timeout: 5000
           connectiontimeout: 5000
   data:
     redis:
       host: localhost
       port: 6379
-      timeout: 5000  # Redis 타임아웃 설정 추가
+      timeout: 5000
 
 management:
   endpoints:
@@ -85,7 +85,7 @@ management:
     prometheus:
       enabled: true
     health:
-      show-details: when_authorized  # 프로덕션에서는 인증된 사용자에게만 상세 정보 표시
+      show-details: when_authorized
     metrics:
       enabled: true
   metrics:
@@ -99,12 +99,12 @@ management:
 
 logging:
   level:
-    root: INFO  # 기본 로그 레벨을 INFO로 설정
-    org.springframework.security: INFO  # 프로덕션에서는 DEBUG 대신 INFO 사용
+    root: INFO
+    org.springframework.security: INFO
     com.amazonaws: DEBUG
     io.awspring.cloud: DEBUG
     org.springframework.cloud.aws: DEBUG
-  file:  # 파일 로깅 추가
+  file:
     name: /var/log/sooktin/application.log
     max-size: 10MB
     max-history: 30
