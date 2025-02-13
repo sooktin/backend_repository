@@ -98,6 +98,9 @@ logging:
   level:
     root: INFO  # 기본 로그 레벨을 INFO로 설정
     org.springframework.security: INFO  # 프로덕션에서는 DEBUG 대신 INFO 사용
+    com.amazonaws: DEBUG
+    io.awspring.cloud: DEBUG
+    org.springframework.cloud.aws: DEBUG
   file:  # 파일 로깅 추가
     name: /var/log/sooktin/application.log
     max-size: 10MB

@@ -8,7 +8,8 @@ services:
       - SPRING_PROFILES_ACTIVE=prod
       - AWS_DEFAULT_REGION=ap-northeast-2
       # EC2의 IAM 역할 사용을 위함
-      - AWS_CONTAINER_CREDENTIALS_RELATIVE_URI=${AWS_CONTAINER_CREDENTIALS_RELATIVE_URI}
+#      - AWS_CONTAINER_CREDENTIALS_RELATIVE_URI=${AWS_CONTAINER_CREDENTIALS_RELATIVE_URI}
+      - AWS_EC2_METADATA_DISABLED=false
     volumes:
       # EC2 인스턴스의 AWS 자격 증명을 컨테이너와 공유
       - ~/.aws:/root/.aws:ro
