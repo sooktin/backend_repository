@@ -2,16 +2,22 @@ version: '3'
 services:
   app:
     build: .
-    ports:
-      - "8080:8080"
+    network_mode: "host"
     environment:
       - SPRING_PROFILES_ACTIVE=prod
-      - AWS_DEFAULT_REGION=ap-northeast-2
-      # EC2의 IAM 역할 사용을 위함
-      - AWS_CONTAINER_CREDENTIALS_RELATIVE_URI=${AWS_CONTAINER_CREDENTIALS_RELATIVE_URI}
-    volumes:
-      # EC2 인스턴스의 AWS 자격 증명을 컨테이너와 공유
-      - ~/.aws:/root/.aws:ro
+      - AWS_REGION=ap-northeast-2
+      # AWS 자격증명
+      - CLOUD_AWS_CREDENTIALS_ACCESS_KEY=AKIA3FLD3UNUJIUZXIHM
+      - CLOUD_AWS_CREDENTIALS_SECRET_KEY=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
+      - CLOUD_AWS_REGION_STATIC=ap-northeast-2
+      - CLOUD_AWS_S3_BUCKET=sooktin-storage
+      # DB 설정
+      - SPRING_DATASOURCE_URL=jdbc:mysql://sooktin-db.cj4ey4aiefr4.ap-northeast-2.rds.amazonaws.com:3306/sooktin?serverTimezone=UTC
+      - SPRING_DATASOURCE_USERNAME=admin
+      - SPRING_DATASOURCE_PASSWORD=dbcoals!47
+      # security 설정
+      - SPRING_SECURITY_USER_NAME=admin
+      - SPRING_SECURITY_USER_PASSWORD=sooktin0908
     depends_on:
       - redis
 
@@ -19,11 +25,15 @@ services:
     image: redis:latest
     ports:
       - "6379:6379"
+    networks:
+      - monitoring
   
   prometheus:
     image: prom/prometheus:latest
     ports:
       - "9090:9090"
+    networks:
+      - monitoring
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
 

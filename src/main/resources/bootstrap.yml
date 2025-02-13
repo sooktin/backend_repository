@@ -1,0 +1,7 @@
+spring:
+  cloud:
+    aws:
+      credentials:
+        instance-profile: false
+      region:
+        static: ap-northeast-2

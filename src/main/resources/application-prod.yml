@@ -10,27 +10,53 @@ server:
     include-message: always
   address: 0.0.0.0
   port: 8080
-
+  
+ # cloud:
+ #  aws:
+ #  credentials:
+ #    access-key: ${/sooktin/prod/aws/access-key}
+ #    secret-key: ${/sooktin/prod/aws/secret-key}
+ #  region:
+ #    static: ap-northeast-2
+ #  stack:
+ #    auto: false
+ #  s3:
+ #    bucket: ${/sooktin/prod/aws/s3-bucket}
 cloud:
   aws:
     credentials:
-      access-key: ${/sooktin/prod/aws/access-key}
-      secret-key: ${/sooktin/prod/aws/secret-key}
+      access-key: ${CLOUD_AWS_CREDENTIALS_ACCESS-KEY}
+      secret-key: ${CLOUD_AWS_CREDENTIALS_SECRET-KEY}
     region:
-      static: ap-northeast-2
+      static: ${CLOUD_AWS_REGION_STATIC}
     stack:
       auto: false
     s3:
-      bucket: ${/sooktin/prod/aws/s3-bucket}
+      bucket: ${CLOUD_AWS_S3_BUCKET}
+aws:
+  paramstore:
+    enabled: true
+    endpoint: https://ssm.ap-northeast-2.amazonaws.com
+    region: ap-northeast-2
+    defaultContext: application
+    profileSeparator: _
 
 spring:
   application:
     name: sooktin
+  # datasource:
+  #   url: ${/sooktin/prod/db/url}
+  # username: ${/sooktin/prod/db/username}
+  # password: ${/sooktin/prod/db/password}
+  # driver-class-name: com.mysql.cj.jdbc.Driver
   datasource:
-    url: ${/sooktin/prod/db/url}
-    username: ${/sooktin/prod/db/username}
-    password: ${/sooktin/prod/db/password}
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+  security:
+    user:
+      name: ${SPRING_SECURITY_USER_NAME}
+      password: ${SPRING_SECURITY_USER_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: update
@@ -38,11 +64,15 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
     show-sql: true
-  security:
-    user:
-      name: ${/sooktin/prod/security/user/name}
-      password: ${/sooktin/prod/security/user/password}
-      roles: ADMIN
+ # security:
+ #  basic:
+ #    enabled: false # 기본 인증 비활성화
+ #  user:
+ #    # name: ${/sooktin/prod/security/user/name}
+ #    # password: ${/sooktin/prod/security/user/password}
+ #    name: admin  # 직접 값 설정
+ #    password: sooktin0908  # 직접 값 설정
+ #    roles: ADMIN
   mail:
     host: smtp.gmail.com
     port: 587
@@ -58,6 +88,9 @@ spring:
     redis:
       host: redis
       port: 6379
+
+  config:
+    import: "optional:aws-parameterstore:/sooktin/prod/"
 
 management:
   endpoints:

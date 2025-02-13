@@ -4,6 +4,7 @@
 aws ssm get-parameters-by-path \
     --path "/sooktin/prod" \
     --with-decryption \
+    --recursive \
     --region ap-northeast-2 \
     --query "Parameters[*].[Name,Value]" \
     --output text | while read -r name value; do
