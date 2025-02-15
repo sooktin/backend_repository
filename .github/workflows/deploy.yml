@@ -40,7 +40,7 @@ jobs:
         username: ubuntu
         key: ${{ secrets.EC2_SSH_KEY }}
         source: "build/libs/*.jar,Dockerfile,docker-compose.yml,deploy.sh,prometheus.yml"
-        target: "/app"
+        target: "~/app"
         strip_components: 1
         
     - name: Deploy to EC2
