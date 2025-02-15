@@ -12,9 +12,10 @@ import java.time.LocalDateTime;
 @Setter
 public class CreateCommentResponse {
     private Long commentId; // 댓글 ID
-    private Long userId; // 작성자 ID
-    private Long usernoteId; // 댓글이 속한 게시글 ID
     private String nickname; // 작성자 닉네임
+    //private Long userId; // 작성자 ID
+    private Long usernoteId; // 댓글이 속한 게시글 ID
+
     private String content; // 댓글 내용
 
     private Boolean isParent; // 부모 댓글 여부
@@ -31,9 +32,10 @@ public class CreateCommentResponse {
 
     public CreateCommentResponse(Comment comment) {
         this.commentId = comment.getId();
-        this.userId = comment.getUser().getId();
-        this.usernoteId = comment.getUsernote().getId();
+        //this.userId = comment.getUser().getId();
         this.nickname = comment.getUser().getNickname();
+        this.usernoteId = comment.getUsernote().getId();
+
         this.content = comment.isDeleted() ? "삭제된 댓글입니다." : comment.getContent();
         this.isParent = comment.getParentId() == null; // parentId가 null이면 부모 댓글
         this.parentId = this.isParent ? null : comment.getParentId(); // 부모 댓글일 경우 null

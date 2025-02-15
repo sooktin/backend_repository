@@ -11,9 +11,9 @@ import java.util.List;
 @Setter
 public class CreateCareerCardResponse {
     private Long cardId; // 카드 ID
-    private Long userId;         // 사용자 ID
-
+    //private Long userId;         // 사용자 ID
     private String nickname;       // 닉네임
+
     private String major;          // 전공
     private String studentNum;     // 학번
     private String studentStatus;  // 재학 상태
@@ -46,6 +46,6 @@ public class CreateCareerCardResponse {
 
         this.createdAt = careerCard.getCreated_at().toString();
         this.modifiedAt = careerCard.getModified_at().toString();
-        this.userId = careerCard.getUser().getId();
+        //this.userId = careerCard.getUser().getId();
     }
 }
