@@ -1,32 +1,36 @@
-version: '3'
 services:
+  app:
+    build: .
+    network_mode: "host"  # EC2 메타데이터 서비스 접근을 위해 유지
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - AWS_DEFAULT_REGION=ap-northeast-2
+      - SPRING_DATA_REDIS_HOST=localhost  # host 네트워크 모드에서는 localhost 사용
+    volumes:
+      - ~/.aws:/root/.aws:ro
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:latest
+    network_mode: "host"  # app 서비스와 통신을 위해 host 모드로 변경
+    # ports 설정 제거 (host 모드에서는 불필요)
+
   prometheus:
-    image: prom/prometheus
-    container_name: prometheus
-    ports:
-      - "9090:9090"
+    image: prom/prometheus:latest
+    network_mode: "host"  # 일관성을 위해 host 모드로 변경
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
-    networks:
-      - monitoring
 
   grafana:
     image: grafana/grafana
     container_name: grafana
+    network_mode: "host"  # 일관성을 위해 host 모드로 변경
     volumes:
       - grafana_data:/var/lib/grafana
-    ports:
-      - "3000:3000"
-    depends_on:
-      - prometheus
-    networks:
-      - monitoring
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
 
 volumes:
   grafana_data:
-networks:
-  monitoring:
-    driver: bridge

@@ -1,25 +1,31 @@
 package com.sooktin.backend.global.exception;
 
 import com.sooktin.backend.dto.ResponseDto;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import javax.naming.AuthenticationException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class ResponseExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ResponseDto<Object>> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
-        Map<String,String> errors = new HashMap<>();
+        Map<String,List<String>> errors = new HashMap<>();
         ex.getBindingResult().getFieldErrors().forEach(error -> {
-            errors.put(error.getField(), error.getDefaultMessage());
+            errors.computeIfAbsent(error.getField(), key -> new ArrayList<>()).add(error.getDefaultMessage());
         });
-
         ResponseDto<Object> response = new ResponseDto<>(
                 400,
                 "잘못된 접근입니다",
@@ -30,16 +36,33 @@ public class ResponseExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ResponseDto<Object>> handleIllegalArgumentException(IllegalArgumentException ex) {
-
-
         ResponseDto<Object> response = new ResponseDto<>(
                 400,
                 "잘못된 요청입니다.",
                 null
         );
+
         return ResponseEntity.badRequest().body(response);
     }
 
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ResponseDto<Object>> handleConstraintViolation(ConstraintViolationException ex) {
+        Map<String, List<String>> errors = new HashMap<>();
+
+        ex.getConstraintViolations().forEach(violation -> {
+            String fieldName = violation.getPropertyPath().toString();
+            String errorMessage = violation.getMessage();
+            errors.computeIfAbsent(fieldName, key -> new ArrayList<>()).add(errorMessage);
+        });
+
+        ResponseDto<Object> response = new ResponseDto<>(
+                400,
+                "잘못된 접근입니다.",
+                errors
+        );
+
+        return ResponseEntity.badRequest().body(response);
+    }
     @ExceptionHandler
     public ResponseEntity<ResponseDto<Object>> handleAuthenticationException(AuthenticationException ex) {
         ResponseDto<Object> response = new ResponseDto<>(
@@ -50,6 +73,26 @@ public class ResponseExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
 
+    @ExceptionHandler
+    public ResponseEntity<ResponseDto<Object>> handleUsernameNotFoundException(UsernameNotFoundException ex) {
+        ResponseDto<Object> response = new ResponseDto<>(
+                401,
+                "유저가 없습니다.",
+                null
+        );
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+    }
+
+
+    @ExceptionHandler
+    public ResponseEntity<ResponseDto<Object>> handleBadCredentialsException(BadCredentialsException ex) {
+        ResponseDto<Object> response = new ResponseDto<>(
+                401,
+                "이메일을 확인해주세요",
+                null
+        );
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+    }
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ResponseDto<Object>> handleRuntimeException(RuntimeException ex) {
         ResponseDto<Object> response = new ResponseDto<>(

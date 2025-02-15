@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: sooktin
+  cloud:
+    aws:
+      parameterstore:
+        enabled: true
+        region: ap-northeast-2
+        default-context: /sooktin/prod/
+        prefix: /sooktin/prod/
