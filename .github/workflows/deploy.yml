@@ -39,15 +39,9 @@ jobs:
         host: ${{ secrets.EC2_HOST }}
         username: ubuntu
         key: ${{ secrets.EC2_SSH_KEY }}
-        source: >-
-          build/libs/*.jar
-          Dockerfile
-          docker-compose.yml
-          deploy.sh
-          prometheus.yml
-          nginx-default.conf
+        source: "build/libs/*.jar,Dockerfile,docker-compose.yml,deploy.sh,prometheus.yml,nginx-default.conf"
         target: "~/app"
-        strip_components: 0
+        strip_components: 1
         overwrite: true
         
     - name: Deploy to EC2
