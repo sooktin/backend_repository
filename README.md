@@ -1,4 +1,4 @@
-# backend_repository
+# 💡 backend_repository
 
 Git branch 전략: GitHub Flow 방식
 추후 GitHub Actions를 통하여 AWS beanstalk EC2 배포 전략
