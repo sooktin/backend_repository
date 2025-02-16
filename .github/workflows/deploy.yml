@@ -36,12 +36,19 @@ jobs:
     - name: Copy files to EC2
       uses: appleboy/scp-action@master
       with:
-        host: 43.200.223.253
+        host: ${{ secrets.EC2_HOST }}
         username: ubuntu
         key: ${{ secrets.EC2_SSH_KEY }}
-        source: "build/libs/*.jar,Dockerfile,docker-compose.yml,deploy.sh,prometheus.yml,nginx-default.conf"
+        source: |
+          build/libs/*.jar
+          Dockerfile
+          docker-compose.yml
+          deploy.sh
+          prometheus.yml
+          nginx-default.conf
         target: "~/app"
-        strip_components: 1
+        strip_components: 0
+        overwrite: true  # EC2에 업뎃되도록
         
     - name: Deploy to EC2
       uses: appleboy/ssh-action@master
