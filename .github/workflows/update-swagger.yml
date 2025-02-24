@@ -16,6 +16,7 @@ jobs:
       - name: Copy Swagger YAML to Docs
         run: |
           cp src/main/resources/swagger.yml docs/swagger.yml
+       
 
       - name: Commit and Push Changes
         run: |
@@ -24,3 +25,5 @@ jobs:
           git add docs/swagger.yml
           git commit -m "Update Swagger YAML" || echo "No changes to commit"
           git push
+        env:
+          GITHUB_TOKEN: ${{secrets.PAT}}
