@@ -15,12 +15,12 @@ jobs:
 
       - name: Copy Swagger YAML to Docs
         run: |
-          cp src/main/resources/swagger.yaml docs/swagger.yaml
+          cp src/main/resources/swagger.yml docs/swagger.yml
 
       - name: Commit and Push Changes
         run: |
           git config --global user.email "youkm0806@sookmyung.ac.kr"
           git config --global user.name "youkm1"
-          git add docs/swagger.yaml
+          git add docs/swagger.yml
           git commit -m "Update Swagger YAML" || echo "No changes to commit"
           git push
