@@ -33,7 +33,7 @@ import java.util.Arrays;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-
+    //TODO CSRF 다시 활성화, HTTP 보안 헤더(X-XSS-Protection, X-Frame-Options) 적용, Rate Limitin으로 DoS 공격 방지하기
     private final CustomUserDetailsService customUserDetailsService;
     private final JwtUtil jwtUtil;
     private final CustomUserDetailsService userDetailsService;

@@ -1,0 +1,26 @@
+name: Update Swagger Docs & Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main  # main 브랜치에 push될 때 실행
+
+jobs:
+  update-swagger:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Copy Swagger YAML to Docs
+        run: |
+          cp src/main/resources/swagger.yaml docs/swagger.yaml
+
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.email "youkm0806@sookmyung.ac.kr"
+          git config --global user.name "youkm1"
+          git add docs/swagger.yaml
+          git commit -m "Update Swagger YAML" || echo "No changes to commit"
+          git push
