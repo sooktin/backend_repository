@@ -13,7 +13,7 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
-@Table(name = "careercards")
+@Table(name = "careerCards")
 public class CareerCard {
 
     /* ERD카드 참고하여 작성한 엔티티
@@ -74,8 +74,7 @@ public class CareerCard {
 
     // 나중에 user 수가 증가하면  @ElementCollection -> 별도 엔티티 분리로 리팩토링 해야합니다!
 
-    @ManyToOne
-    @JoinColumn(name = "card_storage_id")
-    private CareerCardStorage careerCardStorage;
+    @OneToMany(mappedBy = "careerCard", cascade = CascadeType.ALL)
+    private List<StorageCardMapping> storageMappings = new ArrayList<>();
 
 }
