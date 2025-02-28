@@ -1,8 +1,11 @@
 package com.sooktin.backend.domain;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import net.minidev.json.annotate.JsonIgnore;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -13,6 +16,8 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "careerCards")
 public class CareerCard {
 
@@ -26,6 +31,7 @@ public class CareerCard {
 
     @OneToOne(fetch = FetchType.LAZY) // 회원ID 외래키 - 일대일
     @JoinColumn(name = "user_id", nullable = false) // 외래키 선언
+    @JsonIgnore //순환 참조 방지
     private User user; // 회원 정보 (User 엔티티와 연결)
 
   /*  @ManyToOne(fetch = FetchType.LAZY) // 보관Id 외래키 - 다대일
@@ -63,6 +69,7 @@ public class CareerCard {
     @Column(length = 30)
     private String job; // 직업 (최대 20자)
 
+    //N+1문제가능성도... @BatchSize(10)
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "career_card_experiences", joinColumns = @JoinColumn(name = "career_card_id"))
     private List<Experience> experiences = new ArrayList<>(); // 경력 (회사 + 기간)
