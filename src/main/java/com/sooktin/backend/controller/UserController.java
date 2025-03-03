@@ -4,6 +4,8 @@ import com.sooktin.backend.auth.JwtUtil;
 import com.sooktin.backend.domain.CareerCard;
 import com.sooktin.backend.domain.User;
 import com.sooktin.backend.dto.ResponseDto;
+import com.sooktin.backend.dto.careercard.storage.CcgotoStorageRequest;
+import com.sooktin.backend.dto.careercard.storage.CcgotoStorageResponse;
 import com.sooktin.backend.dto.careercard.storage.GetStorageResponse;
 import com.sooktin.backend.dto.user.NicknameRequest;
 import com.sooktin.backend.dto.user.NicknameResponse;
@@ -165,6 +167,12 @@ public class UserController {
         GetStorageResponse response = storageService.getCardsFromStorage(userDetails.getUserId());
 
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/card-storage/career-cards")
+    public ResponseEntity<String> saveCareerCard(@RequestParam Long careerCardId) {
+        String message = storageService.saveCardsToStorage(careerCardId);
+        return ResponseEntity.ok(message);
     }
 
 }
