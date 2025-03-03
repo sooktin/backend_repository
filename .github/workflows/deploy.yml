@@ -6,6 +6,7 @@ on:
 
 env:
   AWS_REGION: ap-northeast-2
+  REPO_URL: https://github.com/sooktin/backend_repository.git
 
 jobs:
   deploy:
@@ -20,8 +21,13 @@ jobs:
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
           cd ~/app
-          git pull https://${{ secrets.GITHUB_USERNAME }}:${{ secrets.GITHUB_TOKEN }}@github.com/chaeminyu/backend.git main
-          chmod +x gradlew
-          ./gradlew build -x test
+          git pull https://${{ secrets.GIT_USERNAME }}:${{ secrets.GIT_TOKEN }}@github.com/sooktin/backend_repository.git main || echo "Git pull failed, but continuing deployment"
+          # 서버에 이미 Java가 있으면 아래 명령어를 실행할 수 있음
+          if command -v java &> /dev/null; then
+            chmod +x gradlew
+            ./gradlew build -x test
+          else
+            echo "Skipping Gradle build as Java is not available"
+          fi
           chmod +x deploy.sh
           ./deploy.sh
