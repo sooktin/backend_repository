@@ -18,7 +18,7 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "careerCards")
+@Table(name = "careercards")
 public class CareerCard {
 
     /* ERD카드 참고하여 작성한 엔티티
@@ -26,7 +26,7 @@ public class CareerCard {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "cardId")
+    @Column(name = "card_id")
     private Long id; // 카드ID
 
     @OneToOne(fetch = FetchType.LAZY) // 회원ID 외래키 - 일대일
@@ -49,8 +49,8 @@ public class CareerCard {
     @Column(nullable = false)
     private LocalDateTime modified_at; // 수정일시
 
-    @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(name = "career_card_images", joinColumns = @JoinColumn(name = "career_card_id"))
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "career_card_images", joinColumns = @JoinColumn(name = "card_id"))
     @Column(name = "image_url", length = 255)
     private List<String> imageUrls = new ArrayList<>(); // 이미지
 
@@ -70,12 +70,12 @@ public class CareerCard {
     private String job; // 직업 (최대 20자)
 
     //N+1문제가능성도... @BatchSize(10)
-    @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(name = "career_card_experiences", joinColumns = @JoinColumn(name = "career_card_id"))
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "career_card_experiences", joinColumns = @JoinColumn(name = "card_id"))
     private List<Experience> experiences = new ArrayList<>(); // 경력 (회사 + 기간)
 
-    @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(name = "career_card_skills", joinColumns = @JoinColumn(name = "career_card_id"))
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "career_card_skills", joinColumns = @JoinColumn(name = "card_id"))
     @Column(name = "skill", length = 100)
     private List<String> skills = new ArrayList<>(); // 기술
 

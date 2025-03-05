@@ -11,5 +11,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CcgotoStorageRequest {
     private Long careerId;
-    private
+    //private
 }

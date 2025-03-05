@@ -18,7 +18,7 @@ public class StorageCardMapping {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "cardId")
+    @JoinColumn(name = "card_id")
     private CareerCard careerCard;
 
     @ManyToOne

@@ -32,7 +32,7 @@ public class StorageService {
 
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public String saveCardsToStorage(Long careerCardId) {
         Long userId = getCurrentUserId();
         CareerCardStorage storage = storageRepository.findByUserIdWithQuery(userId)

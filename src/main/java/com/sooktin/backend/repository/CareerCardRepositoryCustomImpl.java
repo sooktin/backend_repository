@@ -56,7 +56,7 @@ public class CareerCardRepositoryCustomImpl implements CareerCardRepositoryCusto
         BooleanBuilder builder = new BooleanBuilder();
 
         if (keyword != null && !keyword.trim().isEmpty()) {
-            String[] keysords = keyword.trim().split("\\s+");
+            String[] keysords = keyword.trim().split(" "); //.split("\\s+")
             BooleanBuilder orBuilder = new BooleanBuilder();
 
             for (String singleKeyword : keysords) {
