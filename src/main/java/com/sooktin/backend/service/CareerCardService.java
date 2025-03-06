@@ -3,9 +3,14 @@ package com.sooktin.backend.service;
 import com.sooktin.backend.domain.CareerCard;
 import com.sooktin.backend.domain.Experience;
 import com.sooktin.backend.domain.User;
+import com.sooktin.backend.dto.careercard.CareerCardMapper;
 import com.sooktin.backend.dto.careercard.CreateCareerCardRequest;
+import com.sooktin.backend.dto.careercard.SearchCareerCardResponse;
 import com.sooktin.backend.repository.CareerCardRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,6 +27,7 @@ public class CareerCardService {
     private static final int MAX_IMAGE_COUNT = 3;
     private final CareerCardRepository careerCardRepository;
     private final S3Service s3Service;
+    private final CareerCardMapper careerCardMapper;
 
     // C - 커리어카드 생성 (S3 이미지 업로드 추가)
     public CareerCard createCareerCard(CreateCareerCardRequest request, User user, List<MultipartFile> files) {
@@ -139,5 +145,25 @@ public class CareerCardService {
                 .collect(Collectors.toList()));
 
         careerCard.setSkills(request.getSkills());
+    }
+
+    @Transactional(readOnly = true)
+    public Page<CareerCard> search(String keyword, Pageable pageable) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            throw new IllegalArgumentException("검색어는 필수 입력값입니다.");
+        }
+        return careerCardRepository.searchCareerCardsWithOrCondition(keyword,pageable);
+    }
+
+    public SearchCareerCardResponse searchWithDtos(String keyword, int page, int size) {
+        Pageable pageable = PageRequest.of(page,size);
+        Page<CareerCard> results = search(keyword, pageable);
+
+        return new SearchCareerCardResponse(
+                careerCardMapper.toDtoList(results.getContent()),
+                (int) results.getTotalElements(),
+                page,
+                size
+        );
     }
 }

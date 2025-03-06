@@ -1,9 +1,11 @@
 package com.sooktin.backend.global.exception;
 
 import com.sooktin.backend.dto.ResponseDto;
+import com.sooktin.backend.global.exception.auth.SearchNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.ErrorResponse;
@@ -101,5 +103,15 @@ public class ResponseExceptionHandler {
                 null
         );
         return ResponseEntity.internalServerError().body(response);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<ResponseDto<Object>> handleSearchNotFoundException(SearchNotFoundException ex) {
+        ResponseDto<Object> response = new ResponseDto<>(
+          404,
+          ex.getMessage(),
+          null
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 }

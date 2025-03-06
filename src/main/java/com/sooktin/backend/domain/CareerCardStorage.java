@@ -23,6 +23,7 @@ public class CareerCardStorage {
     private User user;
 
     @OneToMany(mappedBy = "careerCardStorage",cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<StorageCardMapping> cardMappings = new ArrayList<>();
 
 
