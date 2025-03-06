@@ -72,6 +72,7 @@ public class ResponseExceptionHandler {
                 ex.getMessage(),
                 null
         );
+
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
 
@@ -95,6 +96,8 @@ public class ResponseExceptionHandler {
         );
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
+
+
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ResponseDto<Object>> handleRuntimeException(RuntimeException ex) {
         ResponseDto<Object> response = new ResponseDto<>(

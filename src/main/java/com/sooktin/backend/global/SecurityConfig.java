@@ -68,6 +68,7 @@ public class SecurityConfig {
                         .requestMatchers("/users/**","/usernotes/**","/career-cards/**").authenticated()
                         .anyRequest().authenticated()
                 )
+
                 .exceptionHandling(handling -> handling
                         .authenticationEntryPoint((request, response, authException) -> {
                             ResponseDto<Object> errorResponse = new ResponseDto<>(
@@ -75,7 +76,7 @@ public class SecurityConfig {
                                     "인증 정보가 유효하지 않습니다. 다시 로그인해주세요",
                                     null
                             );
-                            response.setContentType("application/json");
+                            response.setContentType("application/json;charset=UTF-8");
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                             response.getWriter().write(new ObjectMapper().writeValueAsString(errorResponse));
                         })
