@@ -4,12 +4,15 @@ import com.sooktin.backend.auth.JwtUtil;
 import com.sooktin.backend.domain.CareerCard;
 import com.sooktin.backend.domain.User;
 import com.sooktin.backend.dto.ResponseDto;
+import com.sooktin.backend.dto.careercard.storage.CcgotoStorageRequest;
+import com.sooktin.backend.dto.careercard.storage.CcgotoStorageResponse;
 import com.sooktin.backend.dto.careercard.storage.GetStorageResponse;
 import com.sooktin.backend.dto.user.NicknameRequest;
 import com.sooktin.backend.dto.user.NicknameResponse;
 import com.sooktin.backend.dto.user.UserGetResponse;
 import com.sooktin.backend.dto.usernote.FindMyUsernoteWithJWTResponse;
 import com.sooktin.backend.global.util.ResponseUtil;
+import com.sooktin.backend.repository.StorageCardMappingRepository;
 import com.sooktin.backend.repository.UserRepository;
 import com.sooktin.backend.service.*;
 import io.micrometer.core.annotation.Timed;
@@ -27,6 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static com.sooktin.backend.domain.QCareerCard.careerCard;
+
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
@@ -36,6 +41,7 @@ public class UserController {
     private final UsernoteService usernoteService;
     private final StorageService storageService;
     private final CareerCardService careerCardService;
+    private final StorageCardMappingRepository storageCardMappingRepository;
 
     //delete되는지 가라 기능 작업 수행임
     @GetMapping("/search")
@@ -166,5 +172,16 @@ public class UserController {
 
         return ResponseEntity.ok(response);
     }
+
+    //TODO String 반환말고 다른 좋을게잇을듯함 서비스 코드도 리팩터 필요
+    @PostMapping("/card-storage/career-cards")
+    public ResponseEntity<String> saveCareerCard(@RequestParam Long careerCardId) {
+        String message = storageService.saveCardsToStorage(careerCardId);
+        //boolean으로중복값
+;        return ResponseEntity.ok(message);
+    }
+
+    //삭제 기능
+    //TODO @DeleteMapping("/card-storage/career-cards")
 
 }

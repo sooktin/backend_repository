@@ -49,7 +49,7 @@ public class UsernoteController {
     }
 
     // 특정 포스트 조회
-    @GetMapping("/usernote/{id}")
+    @GetMapping("/usernotes/{id}")
     public ResponseEntity<ResponseDto<CreateUsernoteResponse>> getUsernoteById(@PathVariable Long id) {
         try {
             Optional<Usernote> usernote = usernoteService.findById(id);
@@ -97,7 +97,7 @@ public class UsernoteController {
     }
 
     // 포스트 수정
-    @PatchMapping("/usernote/{id}")
+    @PatchMapping("/usernotes/{id}")
     public ResponseEntity<ResponseDto<CreateUsernoteResponse>> updateUsernote(
             @PathVariable Long id,
             @RequestBody CreateUsernoteRequest userNoteRequest,
@@ -131,7 +131,7 @@ public class UsernoteController {
 
 
     // 포스트 삭제
-    @DeleteMapping("/usernote/{id}")
+    @DeleteMapping("/usernotes/{id}")
     public ResponseEntity<ResponseDto<Void>> deleteUsernote(
             @PathVariable Long id,
             @AuthenticationPrincipal CustomUserDetails userDetails) {

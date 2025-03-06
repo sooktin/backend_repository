@@ -5,12 +5,17 @@ import com.sooktin.backend.domain.User;
 import com.sooktin.backend.dto.ResponseDto;
 import com.sooktin.backend.dto.careercard.CreateCareerCardRequest;
 import com.sooktin.backend.dto.careercard.CreateCareerCardResponse;
+import com.sooktin.backend.dto.careercard.SearchCareerCardResponse;
 import com.sooktin.backend.global.util.ResponseUtil;
 import com.sooktin.backend.service.CareerCardService;
 import com.sooktin.backend.service.CustomUserDetails;
 import com.sooktin.backend.service.UserService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -199,4 +204,24 @@ public class CareerCardController {
             return ResponseUtil.buildResponse(500, "커리어카드를 삭제하는 중 오류가 발생했습니다.", null);
         }
     }
+
+    //TODO 우선 일케하고 그라파나,JMeter로 WebFlux와의 작용 보자
+    @GetMapping("/search")
+    public ResponseEntity<ResponseDto<SearchCareerCardResponse>> searchCareerCards(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam @NotBlank(message = "검색어는 필수 입력값입니다") String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size)
+    {
+
+        SearchCareerCardResponse response = careerCardService.searchWithDtos(keyword, page, size);
+        return ResponseEntity.ok(new ResponseDto<>(
+                200,
+                "검색 성공",
+                response
+        ));
+
+    }
+
+
 }
