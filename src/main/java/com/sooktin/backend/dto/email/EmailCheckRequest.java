@@ -1,11 +1,20 @@
 package com.sooktin.backend.dto.email;
 
-import io.swagger.v3.oas.annotations.media.Schema;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
-@Schema(description = "이메일 확인 요")
 public class EmailCheckRequest {
-    @Schema(description = "email")
+    @NotBlank
+    @Email
     private String email;
+
+    public EmailCheckRequest(String email) {
+        this.email = email;
+    }
+
+    public EmailCheckRequest() {}
 }

@@ -8,9 +8,7 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.Getter;
-import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
-import lombok.val;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
@@ -19,7 +17,6 @@ import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -30,21 +27,30 @@ public class JwtUtil {
     @Value("${jwt.secret-key}")
     private String secret_key;
 
+    @Value("${jwt.refresh-expiration}")
+    private long refresh_expiration;
+
     @Value("${jwt.issuer}")
     private String issuer;
     @Value("${jwt.access-expiration}")
-    private long expiration;
+    private long access_expiration;
 
-    public String generateToken(CustomUserDetails userDetails) {
+    public String generateAccessToken(CustomUserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("email", userDetails.getUsername());
         claims.put("roles", userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList()));
-        return createToken(claims, userDetails.getUsername());
+        return createToken(claims, userDetails.getUsername(),access_expiration);
     }
 
-    public String createToken(Map<String, Object> claims, String subject) {
+    public String generateRefreshToken(CustomUserDetails userDetails) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("email", userDetails.getUsername());
+        return createToken(claims, userDetails.getUsername(),refresh_expiration);
+    }
+
+    public String createToken(Map<String, Object> claims, String subject, long expiration) {
         return Jwts.builder()
                 .issuer(issuer)
                 .claims(claims)

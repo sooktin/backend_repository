@@ -1,0 +1,110 @@
+jwt:
+  issuer: ${jwt.issuer}
+  access-expiration: ${jwt.access-expiration}
+  refresh-expiration: ${jwt.refresh-expiration}
+  secret-key: ${jwt.secret-key}
+
+server:
+  error:
+    include-binding-errors: always
+    include-message: always
+  address: 0.0.0.0
+  port: 8080
+
+cloud:
+  aws:
+    credentials:
+      instance-profile: true  # EC2 IAM 역할 사용
+    paramstore:
+      enabled: true
+      prefix: /sooktin/prod
+      name: sooktin
+      defaultContext: application
+      profileSeparator: _
+    region:
+      static: ap-northeast-2
+    stack:
+      auto: false
+    s3:
+      bucket: ${aws.s3-bucket}
+
+spring:
+  application:
+    name: sooktin
+  config:
+    import: aws-parameterstore:/sooktin/prod/
+  datasource:
+    url: ${db.url}
+    username: ${db.username}
+    password: ${db.password}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 300000
+      connection-timeout: 20000
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: false
+    show-sql: false
+  security:
+    user:
+      name: ${security.user.name}
+      password: ${security.user.password}
+      roles: ADMIN
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${smtp.username}
+    password: ${smtp.password}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          timeout: 5000
+          connectiontimeout: 5000
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 5000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus, metrics, health
+      base-path: /actuator
+  endpoint:
+    prometheus:
+      enabled: true
+    health:
+      show-details: when_authorized
+    metrics:
+      enabled: true
+  metrics:
+    enable:
+      all: true
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+
+logging:
+  level:
+    root: INFO
+    org.springframework.security: INFO
+    com.amazonaws: DEBUG
+    io.awspring.cloud: DEBUG
+    org.springframework.cloud.aws: DEBUG
+  file:
+    name: /var/log/sooktin/application.log
+    max-size: 10MB
+    max-history: 30

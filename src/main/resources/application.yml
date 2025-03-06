@@ -1,22 +1,44 @@
 jwt:
     issuer: sooktin
-    access-expiration: 360000
+    access-expiration: 1209600000  # 1시간
+    refresh-expiration: 1209600000  # 14일
     secret-key: cThIIoDvwdueQB468K5xDc5633seEFoqwxjF_xSJyQQ
 server:
   error:
     include-binding-errors: always
     include-message: always
+  address: 0.0.0.0
+  port: 8080
+cloud:
+  aws:
+    credentials:
+      access-key: AKIA3FLD3UNUJIUZXIHM
+      secret-key: 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
+    region:
+      static: ap-northeast-2
+    stack:
+      auto: false
+    s3:
+      bucket: sooktin-storage
 spring:
+  autoconfigure:
+    exclude:
+      - io.awspring.cloud.autoconfigure.s3.S3AutoConfiguration
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 50MB
   application:
     name: sooktin
   datasource:
-    url: jdbc:mysql://localhost:3306/sooktin
+    url: jdbc:mysql://sooktin-db.cj4ey4aiefr4.ap-northeast-2.rds.amazonaws.com:3306/sooktin?serverTimezone=UTC
     username: admin
-    password: sooktin0000
+    password: dbcoals!47
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update #create-drop
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
@@ -37,14 +59,44 @@ spring:
           auth: true
           starttls:
             enable: true
+
   data:
     redis:
-      host: test
+      host: localhost
       port: 6379
 
 springdoc:
   api-docs:
     path: /api-docs
+    enabled: true
   swagger-ui:
-    path: /swagger-ui.html
+    display-request-duration: true
+  default-consumes-media-type: application/json;charset=UTF-8
+  default-produces-media-type: application/json;charset=UTF-8
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus, metrics, health
+      base-path: /actuator
+  endpoint:
+    prometheus:
+      enabled: true
+    health:
+      show-details: always
+    metrics:
+      enabled: true
+  metrics:
+    enable:
+      all: true
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG

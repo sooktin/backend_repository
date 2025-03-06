@@ -1,178 +1,170 @@
 package com.sooktin.backend.controller;
 
-import com.sooktin.backend.auth.AuthResponse;
-import com.sooktin.backend.auth.AuthenticationResult;
-import com.sooktin.backend.auth.AuthenticationStatus;
 import com.sooktin.backend.auth.JwtUtil;
-import com.sooktin.backend.dto.TwofaRequiredResponse;
+import com.sooktin.backend.domain.CareerCard;
 import com.sooktin.backend.domain.User;
-
-import com.sooktin.backend.dto.email.EmailCheckRequest;
-import com.sooktin.backend.dto.email.EmailCheckResponse;
-
-import com.sooktin.backend.dto.user.ChangePasswordRequest;
-import com.sooktin.backend.dto.user.LogoutRequestDto;
-import com.sooktin.backend.dto.user.PasswordChangeResponse;
+import com.sooktin.backend.dto.ResponseDto;
+import com.sooktin.backend.dto.careercard.storage.GetStorageResponse;
+import com.sooktin.backend.dto.user.NicknameRequest;
+import com.sooktin.backend.dto.user.NicknameResponse;
+import com.sooktin.backend.dto.user.UserGetResponse;
+import com.sooktin.backend.dto.usernote.FindMyUsernoteWithJWTResponse;
+import com.sooktin.backend.global.util.ResponseUtil;
 import com.sooktin.backend.repository.UserRepository;
-import com.sooktin.backend.service.AuthenticationService;
-import com.sooktin.backend.service.UserService;
-
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import com.sooktin.backend.service.*;
+import io.micrometer.core.annotation.Timed;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
-
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import static com.sooktin.backend.auth.AuthenticationStatus.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/users")
 @RequiredArgsConstructor
 public class UserController {
-    private final AuthenticationService authenticationService;
-    private final JwtUtil jwtUtil;
     private final UserService userService;
-    private final UserRepository userRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
+    private final UsernoteService usernoteService;
+    private final StorageService storageService;
+    private final CareerCardService careerCardService;
 
-    @Operation(summary = "회원 가입 API", description = "회원 가입에 성공하면 이메일 인증(2fa)을 거칩니다.")
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200", description = "2fa로 넘어갑니다. 추후 201 코드로 바뀔듯요",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(type = "string"),
-                            examples = @ExampleObject(value = "회원가입에 성공하셨습니다. 이메일 인증을 위하여 이메일함을 확인해주세요."))
+    //delete되는지 가라 기능 작업 수행임
+    @GetMapping("/search")
+    public ResponseEntity<Optional<User>> searchUsers(@RequestParam String nickname) {
+        return ResponseEntity.ok((userService.search(nickname)));
+    }
 
-            ),
-            @ApiResponse(
-                    responseCode = "400", description = "잘못된 요청.",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(type = "string"),
-                            examples = @ExampleObject(value = "이미 존재하는 이메일입니다."))
-            )
-    })
-    @PostMapping("/register")
-    public ResponseEntity<?> registerUser(
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "사용자 회원 정보",
-                    required = true,
-                    content = @Content(schema = @Schema(implementation = User.class))
-            )
-            @RequestBody User user
-    ) {
+    @GetMapping
+    public ResponseEntity<?> getUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        Optional<User> user = userService.findUserById(userDetails.getUserId());
+        return user.map(u -> ResponseEntity.ok(UserGetResponse.from(u)))
+                .orElseGet(() -> ResponseEntity.notFound().build()); //elseget은 매개값이 필요할때만
+    }
+
+    @DeleteMapping
+    public ResponseEntity<?> deleteUser(HttpServletRequest request) {
         try {
-            User registeredUser = userService.registerUser(user);
-            return ResponseEntity.ok("회원가입에 성공하셨습니다. 이메일 인증을 위하여 이메일함을 확인해주세요. ");
+            String token = request.getHeader("Authorization");
+            if (token != null && token.startsWith("Bearer ")) {
+                token = token.substring(7);
+            }
+
+            if (!jwtUtil.validateToken(token)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 토큰입니다.");
+            }
+
+            String userEmail = jwtUtil.getEmailFromToken(token);
+
+            userService.delete(userEmail);
+            return ResponseEntity.ok().body("회원탈퇴성공");
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 
-
-    @Operation(summary = "이메일 인증 API", description = "해당되는 이메일로 링크가 전달됩니다.")
-    @GetMapping("/2fa")
-    public ResponseEntity<String> confirmEmail(@RequestParam("token") String token) {
-        try {
-            String result = userService.confirmEmail(token);
-            return ResponseEntity.ok(result);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("에러 발생");
-        }
+    @GetMapping("/usernotes")
+    public ResponseEntity<List<FindMyUsernoteWithJWTResponse>> getUserNotes(@AuthenticationPrincipal UserDetails userDetails) {
+        List<FindMyUsernoteWithJWTResponse> responseList = usernoteService.findByUserEmail(userDetails.getUsername());
+        return ResponseEntity.ok(responseList);
     }
 
+    @GetMapping("/nickname")
+    public ResponseEntity<ResponseDto<String>> getNickname(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        try {
+            if (userDetails == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new ResponseDto<>(401, "인증 정보가 유효하지 않습니다. 다시 로그인해주세요.", null));
+            }
 
-    @Operation(summary = "우선 이메일 확인 API", description = "이메일이 User DB에 있는지 확인합니다.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "이메일이 존재",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = EmailCheckResponse.class),
-                            examples = @ExampleObject(value = "이메일이 확인되었습니다. 비밀번호를 입력해주세요. ")
-                    )}
-            ),
-            @ApiResponse(responseCode = "404", description = "이메일 없음 ㅠㅠ",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = EmailCheckResponse.class),
-                            examples = @ExampleObject(value = "이메일이 존재하지 않아 회원가입으로 이동합니다.")
-                    )}
-            )
-    })
+            String nickname = userDetails.getNickname();
 
-    @PostMapping("/check-email")
-    public ResponseEntity<EmailCheckResponse> checkEmail(@RequestBody EmailCheckRequest request) {
-        AuthenticationResult authenticationResult = authenticationService.checkEmailExists(request.getEmail());
-        if (authenticationResult.getStatus() == AUTHENTICATED) {
-            return ResponseEntity.ok(new EmailCheckResponse(true, "이메일이 확인되었습니다. 비밀번호를 입력해주세요."));
-        } else if (authenticationResult.getStatus() == ACCOUNT_DISABLED) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new EmailCheckResponse(true, "계정이 정지되었습니다. 고객센터에 문의해주세요."));
-        } else if (authenticationResult.getStatus() == NONE_ACCOUNT) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new EmailCheckResponse(false, "이메일이 존재하지 않아 회원가입으로 이동합니다."));
-        } else {
+            // 정상 응답 반환
+            return ResponseEntity.ok(new ResponseDto<>(200, "닉네임 조회 성공", nickname));
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new EmailCheckResponse(false, "내부 서버 오류입니다. 다시접속해주세요."));
+                    .body(new ResponseDto<>(500, "서버 내부 오류가 발생했습니다. 다시 시도해주세요.", null));
         }
     }
 
-    @Operation(summary = "로그인 API", description = "2차인증이 필요하다면 2차인증 수속을 다시 밟고 이미 되었다면 JWT 토큰을 반환합니다.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "로그인 성공 또는 2FA 필요",
-                    content = {@Content(schema = @Schema(oneOf = {TwofaRequiredResponse.class, AuthResponse.class}))}),
-            @ApiResponse(responseCode = "500", description = "서버 내 오류", content = {@Content(mediaType = "applicatoin/json",
-                    examples = @ExampleObject(value = "다시 접속해주세요."))})
-    })
-    @PostMapping("/login")
-    public ResponseEntity<?> login(
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "사용자 로그인 정보",
-                    required = true,
-                    content = @Content(schema = @Schema(implementation = User.class))
-            )
-            //TODO 유저 로그인 리퀘스트Dto로 바꾸기
-            @RequestBody User user) {
-        AuthenticationResult result = authenticationService.authenticate(user.getEmail(), user.getPassword());
-        if (result.getStatus() == AuthenticationStatus.REQUIRES_2FA) {
-            return ResponseEntity.ok(new TwofaRequiredResponse());
-        } else if (result.getStatus() == AUTHENTICATED) {
-            return ResponseEntity.ok(new AuthResponse(result.getToken()));
-        } else {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("다시 접속해주세요.");
+    // R - 로그인된 사용자의 메인 이미지(커리어카드 첫 번째 이미지) 반환
+    @GetMapping("/main-image")
+    public ResponseEntity<ResponseDto<String>> getMyMainImage(
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        try {
+            if (userDetails == null) {
+                return ResponseUtil.buildResponse(401, "인증 정보가 유효하지 않습니다. 다시 로그인해주세요.", null);
+            }
+
+            CareerCard careerCard = careerCardService.findByUserId(userDetails.getUserId())
+                    .orElseThrow(() -> new IllegalArgumentException("현재 로그인된 사용자의 커리어카드를 찾을 수 없습니다."));
+
+            List<String> imageUrls = careerCard.getImageUrls();
+
+            if (imageUrls.isEmpty()) {
+                return ResponseUtil.buildResponse(404, "로그인된 사용자의 프로필 이미지가 없습니다.", null);
+            }
+
+            String profileImage = imageUrls.get(0); // 첫 번째 이미지 선택
+            return ResponseUtil.buildResponse(200, "로그인된 사용자의 프로필 이미지 조회 성공", profileImage);
+
+        } catch (IllegalArgumentException e) {
+            return ResponseUtil.buildResponse(404, e.getMessage(), null);
+        } catch (Exception e) {
+            return ResponseUtil.buildResponse(500, "로그인된 사용자의 프로필 이미지를 조회하는 중 오류가 발생했습니다.", null);
         }
     }
 
+    // R - 특정 사용자의 메인 이미지(커리어카드 첫 번째 이미지) 반환
+    @GetMapping("/{userId}/main-image")
+    public ResponseEntity<ResponseDto<String>> getUserMainImage(@PathVariable Long userId) {
+        try {
+            CareerCard careerCard = careerCardService.findByUserId(userId)
+                    .orElseThrow(() -> new IllegalArgumentException("해당 사용자의 커리어카드를 찾을 수 없습니다."));
 
-    @Operation(summary = "로그아웃 API", description = "이미 로그아웃되었으므로 아무것도 반환하지 않습니다.")
-    @ApiResponse(responseCode = "200", description = "")
-    @PostMapping("/logout")
-    public ResponseEntity<?> logout(
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "사용자 로그아웃 정보",
-                    required = true,
-                    content = @Content(schema = @Schema(implementation = LogoutRequestDto.class))
-            )
-            @RequestBody LogoutRequestDto logoutRequestDto
-    ) {
-        authenticationService.logout(logoutRequestDto.getEmail());
-        return ResponseEntity.ok().build();
+            List<String> imageUrls = careerCard.getImageUrls();
+
+            if (imageUrls.isEmpty()) {
+                return ResponseUtil.buildResponse(404, "해당 사용자의 프로필 이미지가 없습니다.", null);
+            }
+
+            String profileImage = imageUrls.get(0); // 첫 번째 이미지 선택
+            return ResponseUtil.buildResponse(200, "해당 사용자의 프로필 이미지 조회 성공", profileImage);
+
+        } catch (IllegalArgumentException e) {
+            return ResponseUtil.buildResponse(404, e.getMessage(), null);
+        } catch (Exception e) {
+            return ResponseUtil.buildResponse(500, "해당 사용자의 프로필 이미지를 조회하는 중 오류가 발생했습니다.", null);
+        }
     }
 
-    @PatchMapping("password")
-    public ResponseEntity<?> changePassword(@RequestHeader("Authorization") String token, @RequestBody ChangePasswordRequest request) {
-       PasswordChangeResponse response = userService.changeResponse(
-               token,
-               request.getOldPassword(),
-               request.getNewPassword()
-       );
-       return response.getStatus() == 200
-               ? ResponseEntity.ok(response)
-               : ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    @PatchMapping("/nickname")
+    public ResponseEntity<NicknameResponse> chacngeNickname(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody @Valid NicknameRequest nicknameRequest) {
+        NicknameResponse response = userService.changeNickname(userDetails.getNickname(), nicknameRequest.getNickname());
+        return ResponseEntity.ok(response);
+    }
+
+
+    //CCS를 반환하면 id,userID등불필요한 데이터도 반환하기에 리스트형태의 CC 반환
+    @Timed(
+            value = "get.user.cardstorage",
+            description = "Time taken to get user's card storage",
+            percentiles = {0.5, 0.95, 0.99},
+            histogram = true
+    )
+    @GetMapping("/card-storage")
+    public ResponseEntity<GetStorageResponse> getUserCardStorage(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        GetStorageResponse response = storageService.getCardsFromStorage(userDetails.getUserId());
+
+        return ResponseEntity.ok(response);
     }
 
 }
-

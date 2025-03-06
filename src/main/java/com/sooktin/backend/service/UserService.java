@@ -1,108 +1,179 @@
 package com.sooktin.backend.service;
 
 import com.sooktin.backend.auth.JwtUtil;
+import com.sooktin.backend.domain.CareerCardStorage;
 import com.sooktin.backend.domain.User;
 import com.sooktin.backend.domain.UserRole;
 import com.sooktin.backend.domain.VerificationToken;
+import com.sooktin.backend.dto.email.EmailCheckResponse;
+import com.sooktin.backend.dto.user.NicknameResponse;
 import com.sooktin.backend.dto.user.PasswordChangeResponse;
+import com.sooktin.backend.dto.user.RegisterRequest;
+import com.sooktin.backend.dto.verification.VerficationResponse;
+import com.sooktin.backend.global.exception.auth.DuplicateEmailException;
+import com.sooktin.backend.global.exception.auth.DuplicateNicknameException;
+import com.sooktin.backend.global.exception.auth.PasswordMismatchException;
+import com.sooktin.backend.repository.StorageRepository;
 import com.sooktin.backend.repository.UserRepository;
 import com.sooktin.backend.repository.VerificationRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.UUID;
+import java.util.*;
 
 @Service
+@RequiredArgsConstructor
+
 public class UserService {
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private VerificationRepository tokenRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private EmailService emailService;
-    @Autowired
-    private JwtUtil jwtUtil;
+    private final UserRepository userRepository;
+    private final VerificationRepository tokenRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
+    @Qualifier("redisTemplate")
+    private final RedisTemplate redisTemplate;
 
     @Transactional
-    public User registerUser(User user) throws Exception {
-        if (userRepository.existsByNickname(user.getNickname())) {
-            throw new Exception("닉네임이 이미 존재합니다.");
+    public void registerUser(RegisterRequest request) {
+
+        if (!request.getPassword().equals(request.getConfirmPassword())) {
+            throw new PasswordMismatchException("비밀번호가 일치하지 않습니다.");
         }
-        if (userRepository.existsByEmail(user.getEmail())){
-            throw new Exception("이메일이 이미 존재합니다.");
+        if (userRepository.existsByNickname(request.getNickname())) {
+            throw new DuplicateEmailException();
         }
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new DuplicateNicknameException();
+        }
+
         User newUser = User.builder()
-                .email(user.getEmail())
-                .nickname(user.getNickname())
-                .password(passwordEncoder.encode(user.getPassword()))
+                .email(request.getEmail())
+                .nickname(request.getNickname())
+                .password(passwordEncoder.encode(request.getPassword()))
                 .roles(Collections.singleton(UserRole.USER))
-                .is2fa(false)
                 .build();
-       /* user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRoles(Collections.singleton(UserRole.USER));
-        //user.setEmail(false);
-        user.set2fa(false); ->를 빌더패턴으로 변환*/
-        User savedUser = userRepository.save(newUser);
+        CareerCardStorage storage = CareerCardStorage.builder()
+                .user(newUser)
+                .build();
 
-        String token = UUID.randomUUID().toString();
-        createVerificationToken(savedUser,token);
+        newUser.setCareerCardStorage(storage);
 
-        emailService.sendVerificationEmail(user.getEmail(),token);
-
-        return savedUser;
+        userRepository.save(newUser);
     }
 
     @Transactional
-    public void createVerificationToken(User user, String token) {
-        VerificationToken myToken = new VerificationToken(token, user);
-        tokenRepository.save(myToken);
-    }
+    public PasswordChangeResponse changePassword(Long userId, String oldPassword, String newPassword) {
 
-    @Transactional
-    public String confirmEmail(String token) {
-        VerificationToken verificationToken = tokenRepository.findByToken(token);
-        if (verificationToken == null){
-            return "토큰이 유효하지 않습니다.";
-        }
-        User user = verificationToken.getUser();
-        Calendar calendar = Calendar.getInstance();
-        if (verificationToken.getExpiryDate().getTime() - calendar.getTime().getTime() <= 0){
-            return "토큰이 만료하였습니다.";
-        }
-        user.setIs2fa(true);
-        userRepository.save(user);
-        return "이메일 인증에 성공하였습니다.";
-    }
-
-    /*@Transactional
-    public User loginUser(){
-
-      return
-    }*/
-
-    @Transactional
-    public PasswordChangeResponse changeResponse(String token, String oldPassword, String newPassword) {
-        Long userId = jwtUtil.getUserIdFromToken(token);
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UsernameNotFoundException("user not found!"));
+                .orElseThrow(() -> new UsernameNotFoundException("없는 회원입니다!"));
 
-        if (!passwordEncoder.matches(oldPassword, user.getPassword())){
-            return new PasswordChangeResponse(400,"current password not matches");
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            return new PasswordChangeResponse(400, "비밀번호를 제대로 입력해주세요",null);
         }
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
 
-        return new PasswordChangeResponse(200,"비밀번호가 변경되었습니다");
+        return new PasswordChangeResponse(200, "비밀번호가 변경되었습니다",null);
+    }
+
+    @Transactional
+    public NicknameResponse changeNickname(String currentNickname, String newNickname) {
+        User user = userRepository.findByNickname(currentNickname)
+                .orElseThrow(() -> new UsernameNotFoundException("없는 회원입니다"));
+
+        if (user.getNickname().equals(newNickname)){
+            throw new IllegalArgumentException("중복 닉네임입니다.");
+        }
+        if (userRepository.existsByNickname(newNickname)) {
+            throw new IllegalArgumentException("다른 닉네임을 입력해주세요");
+        }
+        user.setNickname(newNickname);
+        userRepository.save(user);
+
+        return new NicknameResponse(200,"닉네임이 변경되었습니다.", user);
+    }
+
+    @Transactional(readOnly = true)
+    public EmailCheckResponse checkEmail(String email) {
+
+            if (userRepository.existsByEmail(email)) {
+                return EmailCheckResponse.loginRequired();
+            }
+            return EmailCheckResponse.registerRequired();
+
+
+    }
+
+    @Transactional
+    public void createVerificationToken(String email, String code) {
+        VerificationToken verificationToken = new VerificationToken(code, email);
+        tokenRepository.save(verificationToken);
+        emailService.sendVerificationEmail(email, code);
+    }
+
+    @Transactional
+    public void sendVerificationCode(String email) {
+        String verficationCode = generateVerificationCode();
+
+        createVerificationToken(email, verficationCode);
+    }
+
+    private String generateVerificationCode() {
+        Random random = new Random();
+        return String.format("%06d", random.nextInt(1000000));
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<User> findUserById(Long id) {
+        return userRepository.findById(id);
+    }
+    
+    @Transactional(readOnly = true)
+    public Optional<User> findUserByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
+    @Transactional
+    public VerficationResponse verifyEmail(String email, String code) {
+        VerificationToken verificationToken = tokenRepository.findByEmailAndToken(email,code);
+
+        if (verificationToken == null) {
+            return VerficationResponse.invalidCode();
+        }
+
+        Calendar calendar = Calendar.getInstance();
+        if (verificationToken.getExpiryDate().getTime() - calendar.getTime().getTime() <= 0) {
+            tokenRepository.delete(verificationToken);
+            return VerficationResponse.expired();
+        }
+
+        tokenRepository.delete(verificationToken);
+
+        return VerficationResponse.success();
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<User> search(String nickname) {
+        return userRepository.findByNickname(nickname);
+    }
+
+    @Transactional(readOnly = true)
+    public void delete(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다."));
+
+        // 연관된 데이터 처리 (예: 게시글, 댓글 등)
+        // postRepository.deleteByUser(user);
+        // commentRepository.deleteByUser(user);
+
+        userRepository.delete(user);
+
+        String refreshtoken = "REFRESH_" + user.getEmail();
+        redisTemplate.delete(refreshtoken);
     }
 }

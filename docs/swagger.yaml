@@ -1,0 +1,1484 @@
+---
+openapi: 3.0.1
+info:
+  title: Sooktin Swagger
+  description: 숙틴 v1 명세서입니다
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Generated server url
+security:
+  - 'bearer ': []
+paths:
+  "/usernotes":
+    get:
+      tags:
+        - usernote-controller
+      operationId: getAllUsernotes
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                "$ref": "#/components/schemas/ResponseDtoListCreateUsernoteResponse"
+    post:
+      tags:
+        - usernote-controller
+      operationId: createPost
+      requestBody:
+        content:
+          application/json;charset=UTF-8:
+            schema:
+              "$ref": "#/components/schemas/CreateUsernoteRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                "$ref": "#/components/schemas/ResponseDtoCreateUsernoteResponse"
+  "/usernotes/{noteId}/likes":
+    post:
+      tags:
+        - liked-controller
+      operationId: toggleNoteLike
+      parameters:
+        - name: noteId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                "$ref": "#/components/schemas/LikedResponse"
+  "/usernote/{noteId}/comments":
+    get:
+      tags:
+        - comment-controller
+      operationId: getCommentsByNoteId
+      parameters:
+        - name: noteId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                "$ref": "#/components/schemas/ResponseDtoListCreateCommentResponse"
+    post:
+      tags:
+        - comment-controller
+      operationId: createComment
+      parameters:
+        - name: noteId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json;charset=UTF-8:
+            schema:
+              "$ref": "#/components/schemas/CreateCommentRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                "$ref": "#/components/schemas/ResponseDtoCreateCommentResponse"
+  "/usernote/{noteId}/comments/{parentId}/replies":
+    get:
+      tags:
+        - comment-controller
+      operationId: getReplies
+      parameters:
+        - name: noteId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: parentId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                "$ref": "#/components/schemas/ResponseDtoListCreateCommentResponse"
+    post:
+      tags:
+        - comment-controller
+      operationId: createReply
+      parameters:
+        - name: noteId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: parentId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json;charset=UTF-8:
+            schema:
+              "$ref": "#/components/schemas/CreateCommentRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                "$ref": "#/components/schemas/ResponseDtoCreateCommentResponse"
+  "/s3/upload":
+    post:
+      tags:
+        - s-3-controller
+      operationId: uploadImage
+      requestBody:
+        content:
+          application/json;charset=UTF-8:
+            schema:
+              required:
+                - file
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                "$ref": "#/components/schemas/ResponseDtoString"
+  "/comments/{commentId}/likes":
+    post:
+      tags:
+        - liked-controller
+      operationId: toggleCommentLike
+      parameters:
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                "$ref": "#/components/schemas/LikedResponse"
+  "/career-cards":
+    get:
+      tags:
+        - career-card-controller
+      operationId: getCareerCardByUser
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                "$ref": "#/components/schemas/ResponseDtoCreateCareerCardResponse"
+    post:
+      tags:
+        - career-card-controller
+      operationId: createCareerCard
+      requestBody:
+        content:
+          application/json;charset=UTF-8:
+            schema:
+              required:
+                - request
+              type: object
+              properties:
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                request:
+                  "$ref": "#/components/schemas/CreateCareerCardRequest"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                "$ref": "#/components/schemas/ResponseDtoCreateCareerCardResponse"
+    delete:
+      tags:
+        - career-card-controller
+      operationId: deleteCareerCard
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                "$ref": "#/components/schemas/ResponseDtoVoid"
+    patch:
+      tags:
+        - career-card-controller
+      operationId: updateCareerCard
+      requestBody:
+        content:
+          application/json;charset=UTF-8:
+            schema:
+              required:
+                - request
+              type: object
+              properties:
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                request:
+                  "$ref": "#/components/schemas/CreateCareerCardRequest"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                "$ref": "#/components/schemas/ResponseDtoCreateCareerCardResponse"
+  "/auth/verify":
+    post:
+      tags:
+        - auth-controller
+      operationId: verifyEmail
+      requestBody:
+        content:
+          application/json;charset=UTF-8:
+            schema:
+              "$ref": "#/components/schemas/VerificationRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                "$ref": "#/components/schemas/VerficationResponse"
+  "/auth/send-verification":
+    post:
+      tags:
+        - auth-controller
+      operationId: sendVerificationCode
+      requestBody:
+        content:
+          application/json;charset=UTF-8:
+            schema:
+              "$ref": "#/components/schemas/SendVerificationRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                type: object
+  "/auth/register":
+    post:
+      tags:
+        - auth-controller
+      operationId: registerUser
+      requestBody:
+        content:
+          application/json;charset=UTF-8:
+            schema:
+              "$ref": "#/components/schemas/RegisterRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                "$ref": "#/components/schemas/RegisterResponse"
+  "/auth/refresh-token":
+    post:
+      tags:
+        - auth-controller
+      operationId: refreshToken
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                "$ref": "#/components/schemas/RefreshTokenResponse"
+  "/auth/logout":
+    post:
+      tags:
+        - auth-controller
+      operationId: logout
+      requestBody:
+        content:
+          application/json;charset=UTF-8:
+            schema:
+              "$ref": "#/components/schemas/LogoutRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                type: object
+  "/auth/login":
+    post:
+      tags:
+        - auth-controller
+      operationId: login
+      requestBody:
+        content:
+          application/json;charset=UTF-8:
+            schema:
+              "$ref": "#/components/schemas/LoginRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                "$ref": "#/components/schemas/LoginResponse"
+  "/auth/check-email":
+    post:
+      tags:
+        - auth-controller
+      operationId: checkEmail
+      requestBody:
+        content:
+          application/json;charset=UTF-8:
+            schema:
+              "$ref": "#/components/schemas/EmailCheckRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                "$ref": "#/components/schemas/EmailCheckResponse"
+  "/users/nickname":
+    get:
+      tags:
+        - user-controller
+      operationId: getNickname
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                "$ref": "#/components/schemas/ResponseDtoString"
+    patch:
+      tags:
+        - user-controller
+      operationId: chacngeNickname
+      requestBody:
+        content:
+          application/json;charset=UTF-8:
+            schema:
+              "$ref": "#/components/schemas/NicknameRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                "$ref": "#/components/schemas/NicknameResponse"
+  "/usernote/{noteId}/comments/{commentId}":
+    get:
+      tags:
+        - comment-controller
+      operationId: getCommentById
+      parameters:
+        - name: noteId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                "$ref": "#/components/schemas/ResponseDtoCreateCommentResponse"
+    delete:
+      tags:
+        - comment-controller
+      operationId: deleteComment
+      parameters:
+        - name: noteId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                "$ref": "#/components/schemas/ResponseDtoVoid"
+    patch:
+      tags:
+        - comment-controller
+      operationId: updateComment
+      parameters:
+        - name: noteId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json;charset=UTF-8:
+            schema:
+              "$ref": "#/components/schemas/CreateCommentRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                "$ref": "#/components/schemas/ResponseDtoCreateCommentResponse"
+  "/usernote/{id}":
+    get:
+      tags:
+        - usernote-controller
+      operationId: getUsernoteById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                "$ref": "#/components/schemas/ResponseDtoCreateUsernoteResponse"
+    delete:
+      tags:
+        - usernote-controller
+      operationId: deleteUsernote
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                "$ref": "#/components/schemas/ResponseDtoVoid"
+    patch:
+      tags:
+        - usernote-controller
+      operationId: updateUsernote
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json;charset=UTF-8:
+            schema:
+              "$ref": "#/components/schemas/CreateUsernoteRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                "$ref": "#/components/schemas/ResponseDtoCreateUsernoteResponse"
+  "/auth/password":
+    patch:
+      tags:
+        - auth-controller
+      operationId: changePassword
+      requestBody:
+        content:
+          application/json;charset=UTF-8:
+            schema:
+              "$ref": "#/components/schemas/PasswordChangeRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                "$ref": "#/components/schemas/PasswordChangeResponse"
+  "/users":
+    get:
+      tags:
+        - user-controller
+      operationId: getUser
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                type: object
+    delete:
+      tags:
+        - user-controller
+      operationId: deleteUser
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                type: object
+  "/users/{userId}/main-image":
+    get:
+      tags:
+        - user-controller
+      operationId: getUserMainImage
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                "$ref": "#/components/schemas/ResponseDtoString"
+  "/users/usernotes":
+    get:
+      tags:
+        - user-controller
+      operationId: getUserNotes
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/FindMyUsernoteWithJWTResponse"
+  "/users/search":
+    get:
+      tags:
+        - user-controller
+      operationId: searchUsers
+      parameters:
+        - name: nickname
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                "$ref": "#/components/schemas/User"
+  "/users/main-image":
+    get:
+      tags:
+        - user-controller
+      operationId: getMyMainImage
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                "$ref": "#/components/schemas/ResponseDtoString"
+  "/users/card-storage":
+    get:
+      tags:
+        - user-controller
+      operationId: getUserCardStorage
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                "$ref": "#/components/schemas/GetStorageResponse"
+  "/usernotes/{noteId}/likes/status":
+    get:
+      tags:
+        - liked-controller
+      operationId: checkNoteLikeStatus
+      parameters:
+        - name: noteId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                type: boolean
+  "/usernotes/{noteId}/likes/count":
+    get:
+      tags:
+        - liked-controller
+      operationId: getNoteLikeCount
+      parameters:
+        - name: noteId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                type: integer
+                format: int64
+  "/usernote/{noteId}/comments/user":
+    get:
+      tags:
+        - comment-controller
+      operationId: getCommentsByUser
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                "$ref": "#/components/schemas/ResponseDtoListCreateCommentResponse"
+  "/s3/images":
+    get:
+      tags:
+        - s-3-controller
+      operationId: getAllImages
+      parameters:
+        - name: imageUrls
+          in: query
+          required: true
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                "$ref": "#/components/schemas/ResponseDtoListString"
+  "/s3/image":
+    get:
+      tags:
+        - s-3-controller
+      operationId: getImage
+      parameters:
+        - name: imageUrl
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                "$ref": "#/components/schemas/ResponseDtoString"
+  "/comments/{commentId}/likes/status":
+    get:
+      tags:
+        - liked-controller
+      operationId: checkCommentLikeStatus
+      parameters:
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                type: boolean
+  "/comments/{commentId}/likes/count":
+    get:
+      tags:
+        - liked-controller
+      operationId: getCommentLikeCount
+      parameters:
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                type: integer
+                format: int64
+  "/career-cards/{userId}/images":
+    get:
+      tags:
+        - career-card-controller
+      operationId: getCareerCardImagesByUserId
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                "$ref": "#/components/schemas/ResponseDtoListString"
+  "/career-cards/{cardId}":
+    get:
+      tags:
+        - career-card-controller
+      operationId: getCareerCardById
+      parameters:
+        - name: cardId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                "$ref": "#/components/schemas/ResponseDtoCreateCareerCardResponse"
+  "/career-cards/images":
+    get:
+      tags:
+        - career-card-controller
+      operationId: getMyCareerCardImages
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                "$ref": "#/components/schemas/ResponseDtoListString"
+  "/career-cards/all":
+    get:
+      tags:
+        - career-card-controller
+      operationId: getAllCareerCards
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                "$ref": "#/components/schemas/ResponseDtoListCreateCareerCardResponse"
+  "/auth/id":
+    get:
+      tags:
+        - auth-controller
+      operationId: id
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                type: string
+  "/s3/delete":
+    delete:
+      tags:
+        - s-3-controller
+      operationId: deleteImage
+      parameters:
+        - name: imageUrl
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                "$ref": "#/components/schemas/ResponseDtoVoid"
+  "/s3/delete-all":
+    delete:
+      tags:
+        - s-3-controller
+      operationId: deleteAllImages
+      requestBody:
+        content:
+          application/json;charset=UTF-8:
+            schema:
+              type: array
+              items:
+                type: string
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                "$ref": "#/components/schemas/ResponseDtoVoid"
+components:
+  schemas:
+    CreateUsernoteRequest:
+      type: object
+      properties:
+        content:
+          type: string
+    CreateUsernoteResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        userNickname:
+          type: string
+        content:
+          type: string
+        createdAt:
+          type: string
+        modifiedAt:
+          type: string
+    ResponseDtoCreateUsernoteResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          format: int32
+        message:
+          type: string
+        data:
+          "$ref": "#/components/schemas/CreateUsernoteResponse"
+    LikedDto:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        liked:
+          type: boolean
+    LikedResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          format: int32
+        message:
+          type: string
+        data:
+          "$ref": "#/components/schemas/LikedDto"
+    CreateCommentRequest:
+      type: object
+      properties:
+        content:
+          type: string
+    CreateCommentResponse:
+      type: object
+      properties:
+        commentId:
+          type: integer
+          format: int64
+        nickname:
+          type: string
+        usernoteId:
+          type: integer
+          format: int64
+        content:
+          type: string
+        isParent:
+          type: boolean
+        parentId:
+          type: integer
+          format: int64
+        createdAt:
+          type: string
+          format: date-time
+        modifiedAt:
+          type: string
+          format: date-time
+    ResponseDtoCreateCommentResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          format: int32
+        message:
+          type: string
+        data:
+          "$ref": "#/components/schemas/CreateCommentResponse"
+    ResponseDtoString:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          format: int32
+        message:
+          type: string
+        data:
+          type: string
+    CreateCareerCardRequest:
+      required:
+        - grade
+      type: object
+      properties:
+        major:
+          type: string
+        studentStatus:
+          type: string
+        grade:
+          type: string
+          format: byte
+        studentNum:
+          type: string
+        department:
+          maxLength: 30
+          minLength: 0
+          type: string
+        job:
+          maxLength: 30
+          minLength: 0
+          type: string
+        experiences:
+          type: array
+          items:
+            "$ref": "#/components/schemas/ExperienceRequest"
+        skills:
+          type: array
+          items:
+            maxLength: 100
+            minLength: 0
+            type: string
+        imageUrls:
+          maxItems: 3
+          minItems: 0
+          type: array
+          items:
+            type: string
+    ExperienceRequest:
+      required:
+        - company
+        - period
+      type: object
+      properties:
+        company:
+          maxLength: 50
+          minLength: 0
+          type: string
+        period:
+          maxLength: 20
+          minLength: 0
+          type: string
+    CreateCareerCardResponse:
+      type: object
+      properties:
+        cardId:
+          type: integer
+          format: int64
+        nickname:
+          type: string
+        major:
+          type: string
+        studentNum:
+          type: string
+        studentStatus:
+          type: string
+        grade:
+          type: integer
+          format: int32
+        job:
+          type: string
+        department:
+          type: string
+        experiences:
+          type: array
+          items:
+            "$ref": "#/components/schemas/Experience"
+        skills:
+          type: array
+          items:
+            type: string
+        imageUrls:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+        modifiedAt:
+          type: string
+    Experience:
+      type: object
+      properties:
+        company:
+          type: string
+        period:
+          type: string
+    ResponseDtoCreateCareerCardResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          format: int32
+        message:
+          type: string
+        data:
+          "$ref": "#/components/schemas/CreateCareerCardResponse"
+    VerificationRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        token:
+          type: string
+    VerficationResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          format: int32
+        message:
+          type: string
+        data:
+          type: boolean
+    SendVerificationRequest:
+      type: object
+      properties:
+        email:
+          type: string
+    RegisterRequest:
+      required:
+        - confirmPassword
+        - email
+        - nickname
+        - password
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          pattern: "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,20}$"
+          type: string
+        confirmPassword:
+          type: string
+        nickname:
+          type: string
+    RegisterResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          format: int32
+        message:
+          type: string
+        data:
+          type: boolean
+    RefreshTokenResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          format: int32
+        message:
+          type: string
+        data:
+          "$ref": "#/components/schemas/TokenDto"
+    TokenDto:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        expiresIn:
+          type: integer
+          format: int32
+        tokenType:
+          type: string
+    LogoutRequest:
+      required:
+        - email
+      type: object
+      properties:
+        email:
+          type: string
+          description: email
+          example: foo@sookmyung.ac.kr
+      description: 로그아웃 요청 DTO
+    LoginRequest:
+      required:
+        - email
+        - password
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          maxLength: 20
+          minLength: 8
+          type: string
+    LoginResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          format: int32
+        message:
+          type: string
+        data:
+          "$ref": "#/components/schemas/TokenDto"
+    EmailCheckRequest:
+      required:
+        - email
+      type: object
+      properties:
+        email:
+          type: string
+    EmailCheckResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          format: int32
+        message:
+          type: string
+        data:
+          type: boolean
+    NicknameRequest:
+      required:
+        - nickname
+      type: object
+      properties:
+        nickname:
+          maxLength: 10
+          minLength: 2
+          type: string
+    NicknameResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          format: int32
+        message:
+          type: string
+        data:
+          "$ref": "#/components/schemas/UserDto"
+    UserDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        email:
+          type: string
+        nickname:
+          type: string
+    PasswordChangeRequest:
+      required:
+        - newPassword
+        - oldPassword
+      type: object
+      properties:
+        oldPassword:
+          type: string
+        newPassword:
+          type: string
+    PasswordChangeResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          format: int32
+        message:
+          type: string
+        data:
+          type: object
+    FindMyUsernoteDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        title:
+          type: string
+        content:
+          type: string
+        likes:
+          type: integer
+          format: int32
+        createdAt:
+          type: string
+          format: date-time
+        modifiedAt:
+          type: string
+          format: date-time
+    FindMyUsernoteWithJWTResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          format: int32
+        message:
+          type: string
+        data:
+          "$ref": "#/components/schemas/FindMyUsernoteDto"
+    CareerCard:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        user:
+          "$ref": "#/components/schemas/User"
+        major:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        modified_at:
+          type: string
+          format: date-time
+        imageUrls:
+          type: array
+          items:
+            type: string
+        student_status:
+          type: string
+        grade:
+          type: integer
+          format: int32
+        student_num:
+          type: string
+        department:
+          type: string
+        job:
+          type: string
+        experiences:
+          type: array
+          items:
+            "$ref": "#/components/schemas/Experience"
+        skills:
+          type: array
+          items:
+            type: string
+        careerCardStorage:
+          "$ref": "#/components/schemas/CareerCardStorage"
+    CareerCardStorage:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        user:
+          "$ref": "#/components/schemas/User"
+        careerCards:
+          type: array
+          items:
+            "$ref": "#/components/schemas/CareerCard"
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        email:
+          type: string
+          description: email
+          example: foo@sookmyung.ac.kr
+        nickname:
+          maxLength: 10
+          minLength: 2
+          type: string
+        password:
+          type: string
+          description: password
+          example: jamone122@3
+        roles:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+            enum:
+              - USER
+              - ADMIN
+        careerCard:
+          "$ref": "#/components/schemas/CareerCard"
+        careerCardStorage:
+          "$ref": "#/components/schemas/CareerCardStorage"
+      description: 회원
+    GetStorageResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          format: int32
+        message:
+          type: string
+        data:
+          "$ref": "#/components/schemas/CareerCardStorage"
+    ResponseDtoListCreateUsernoteResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          format: int32
+        message:
+          type: string
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/CreateUsernoteResponse"
+    ResponseDtoListCreateCommentResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          format: int32
+        message:
+          type: string
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/CreateCommentResponse"
+    ResponseDtoListString:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          format: int32
+        message:
+          type: string
+        data:
+          type: array
+          items:
+            type: string
+    ResponseDtoListCreateCareerCardResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          format: int32
+        message:
+          type: string
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/CreateCareerCardResponse"
+    ResponseDtoVoid:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          format: int32
+        message:
+          type: string
+        data:
+          type: object
+  securitySchemes:
+    'bearer ':
+      type: http
+      name: 'bearer '
+      scheme: bearer
+      bearerFormat: JWT
