@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping
+@RequestMapping("/usernotes")
 public class UsernoteController {
 
     /**
@@ -34,7 +34,7 @@ public class UsernoteController {
 
 
     // R - 전체 게시글 조회
-    @GetMapping("/usernotes")
+    @GetMapping
     public ResponseEntity<ResponseDto<List<CreateUsernoteResponse>>> getAllUsernotes() {
         try {
             List<CreateUsernoteResponse> usernotes = usernoteService.findAll().stream()
@@ -49,7 +49,7 @@ public class UsernoteController {
     }
 
     // 특정 포스트 조회
-    @GetMapping("/usernotes/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<ResponseDto<CreateUsernoteResponse>> getUsernoteById(@PathVariable Long id) {
         try {
             Optional<Usernote> usernote = usernoteService.findById(id);
@@ -65,7 +65,7 @@ public class UsernoteController {
           user 찾을 때 Optional<User> user = userService.findByEmail(userDetails.getUsername())도 고려해주세욤
     from 경민 to 수진
     */
-    @PostMapping("/usernotes")
+    @PostMapping
     public ResponseEntity<ResponseDto<CreateUsernoteResponse>> createPost(
             @Valid @RequestBody CreateUsernoteRequest userNoteRequest, // 유효성 검사를 추가
             @AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -97,7 +97,7 @@ public class UsernoteController {
     }
 
     // 포스트 수정
-    @PatchMapping("/usernotes/{id}")
+    @PatchMapping("/{id}")
     public ResponseEntity<ResponseDto<CreateUsernoteResponse>> updateUsernote(
             @PathVariable Long id,
             @RequestBody CreateUsernoteRequest userNoteRequest,
@@ -131,7 +131,7 @@ public class UsernoteController {
 
 
     // 포스트 삭제
-    @DeleteMapping("/usernotes/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<ResponseDto<Void>> deleteUsernote(
             @PathVariable Long id,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
