@@ -1,13 +1,10 @@
 name: Deploy to EC2
-
 on:
   push:
-    branches: [ main ]
-
+    branches: [ develope ]
 env:
   AWS_REGION: ap-northeast-2
   REPO_URL: https://github.com/sooktin/backend_repository.git
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -21,7 +18,7 @@ jobs:
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
           cd ~/app
-          git pull https://${{ secrets.GIT_USERNAME }}:${{ secrets.GIT_TOKEN }}@github.com/sooktin/backend_repository.git main || echo "Git pull failed, but continuing deployment"
+          git pull https://${{ secrets.GIT_USERNAME }}:${{ secrets.GIT_TOKEN }}@github.com/sooktin/backend_repository.git develope || echo "Git pull failed, but continuing deployment"  # main에서 develope로 변경
           # 서버에 이미 Java가 있으면 아래 명령어를 실행할 수 있음
           if command -v java &> /dev/null; then
             chmod +x gradlew
