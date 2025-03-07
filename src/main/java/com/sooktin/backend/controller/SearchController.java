@@ -33,7 +33,7 @@ public class SearchController {
         }
 
         searchService.trackSearchKeyword(keyword, userDetails.getUserId());
-        return ResponseEntity.ok(new ResponseDto<>(200, "검색어가 기록되었습니다.", null));
+        return ResponseEntity.ok(new ResponseDto<>(200, "검색어가 기록되었습니다.", keyword));
     }
 
     // 최근 검색어 조회
