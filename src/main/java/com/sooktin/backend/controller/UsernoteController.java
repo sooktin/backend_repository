@@ -5,12 +5,16 @@ import com.sooktin.backend.domain.Usernote;
 import com.sooktin.backend.dto.ResponseDto;
 import com.sooktin.backend.dto.usernote.CreateUsernoteRequest;
 import com.sooktin.backend.dto.usernote.CreateUsernoteResponse;
+import com.sooktin.backend.dto.usernote.SearchUsernoteResponse;
 import com.sooktin.backend.global.util.ResponseUtil;
 import com.sooktin.backend.service.UserService;
 import com.sooktin.backend.service.CustomUserDetails;
 import com.sooktin.backend.service.UsernoteService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -158,5 +162,19 @@ public class UsernoteController {
         } catch (Exception e) {
             return ResponseUtil.buildResponse(500, "서버 내부 오류가 발생했습니다.", null);
         }
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<ResponseDto<Page<Usernote>>> searchUsernote(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam String keyword,
+            @PageableDefault(size = 10, page = 0) Pageable pageable) {
+        Page<Usernote> usernotes = usernoteService.searchUsernotes(keyword,pageable);
+        return ResponseEntity.ok(new ResponseDto<>(
+                200,
+                "검색 성공",
+                usernotes
+        ));
+
     }
 }

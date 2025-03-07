@@ -2,7 +2,12 @@ package com.sooktin.backend.service;
 
 import com.sooktin.backend.dto.usernote.FindMyUsernoteWithJWTResponse;
 import com.sooktin.backend.repository.UserRepository;
+import com.sooktin.backend.repository.UsernoteRepositoryCustom;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import com.sooktin.backend.domain.Usernote;
 import com.sooktin.backend.repository.UsernoteRepository;
@@ -13,16 +18,14 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
+@RequiredArgsConstructor
 public class UsernoteService {
 
-    @Autowired
-    private UsernoteRepository usernoteRepository;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    public UsernoteService(UsernoteRepository usernoteRepository) {
-        this.usernoteRepository = usernoteRepository;
-    }
+
+    private final UsernoteRepository usernoteRepository;
+    private final UsernoteRepositoryCustom usernoteRepositoryCustom;
+    private final UserRepository userRepository;
 
     // C - Create post
     public Usernote createUsernote(Usernote usernote) {
@@ -43,7 +46,7 @@ public class UsernoteService {
     }
 
     // U - Update post by ID
-    @Transactional
+
     public Usernote updateUsernote(Long id, Usernote updatedUsernote) {
         Usernote usernote = usernoteRepository.findById(id).orElseThrow(
                 () -> new IllegalArgumentException("해당 포스트가 존재하지 않습니다. id: " + id)
@@ -62,7 +65,7 @@ public class UsernoteService {
             throw new IllegalArgumentException("해당 포스트가 존재하지 않습니다. id: " + id);
         }
     }
-    @Transactional
+
     public List<FindMyUsernoteWithJWTResponse> findByUserEmail(String email) {
         List<Usernote> usernotes = usernoteRepository.findByUser_Email(email);
 
@@ -83,5 +86,9 @@ public class UsernoteService {
                 })
                 .collect(Collectors.toList());
 
+    }
+
+    public Page<Usernote> searchUsernotes(String keyword, Pageable pageable) {
+        return usernoteRepositoryCustom.searchUsernotesWithOrCondition(keyword, pageable);
     }
 }

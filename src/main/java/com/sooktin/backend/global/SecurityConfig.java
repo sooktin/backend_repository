@@ -7,6 +7,7 @@ import com.sooktin.backend.dto.ResponseDto;
 import com.sooktin.backend.service.AuthenticationService;
 import com.sooktin.backend.service.CustomUserDetailsService;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,21 +33,15 @@ import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
     //TODO CSRF 다시 활성화, HTTP 보안 헤더(X-XSS-Protection, X-Frame-Options) 적용, Rate Limitin으로 DoS 공격 방지하기
-    private final CustomUserDetailsService customUserDetailsService;
+
     private final JwtUtil jwtUtil;
     private final CustomUserDetailsService userDetailsService;
+    private final StringRedisTemplate redisTemplate;
 
-    @Autowired
-    private StringRedisTemplate redisTemplate;
 
-    public SecurityConfig(CustomUserDetailsService customUserDetailsService, JwtUtil jwtUtil, CustomUserDetailsService userDetailsService) {
-        this.customUserDetailsService = customUserDetailsService;
-        this.jwtUtil = jwtUtil;
-        this.userDetailsService = userDetailsService;
-
-    }
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
@@ -96,7 +91,7 @@ public class SecurityConfig {
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
 
-        authProvider.setUserDetailsService(customUserDetailsService);
+        authProvider.setUserDetailsService(userDetailsService);
         authProvider.setPasswordEncoder(bCryptPasswordEncoder());
         return authProvider;
     }
