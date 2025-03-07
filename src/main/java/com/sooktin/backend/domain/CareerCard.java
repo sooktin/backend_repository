@@ -1,8 +1,11 @@
 package com.sooktin.backend.domain;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import net.minidev.json.annotate.JsonIgnore;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -13,6 +16,8 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "careercards")
 public class CareerCard {
 
@@ -21,11 +26,12 @@ public class CareerCard {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "cardId")
+    @Column(name = "card_id")
     private Long id; // 카드ID
 
     @OneToOne(fetch = FetchType.LAZY) // 회원ID 외래키 - 일대일
     @JoinColumn(name = "user_id", nullable = false) // 외래키 선언
+    @JsonIgnore //순환 참조 방지
     private User user; // 회원 정보 (User 엔티티와 연결)
 
   /*  @ManyToOne(fetch = FetchType.LAZY) // 보관Id 외래키 - 다대일
@@ -43,8 +49,8 @@ public class CareerCard {
     @Column(nullable = false)
     private LocalDateTime modified_at; // 수정일시
 
-    @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(name = "career_card_images", joinColumns = @JoinColumn(name = "career_card_id"))
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "career_card_images", joinColumns = @JoinColumn(name = "card_id"))
     @Column(name = "image_url", length = 255)
     private List<String> imageUrls = new ArrayList<>(); // 이미지
 
@@ -63,19 +69,19 @@ public class CareerCard {
     @Column(length = 30)
     private String job; // 직업 (최대 20자)
 
-    @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(name = "career_card_experiences", joinColumns = @JoinColumn(name = "career_card_id"))
+    //N+1문제가능성도... @BatchSize(10)
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "career_card_experiences", joinColumns = @JoinColumn(name = "card_id"))
     private List<Experience> experiences = new ArrayList<>(); // 경력 (회사 + 기간)
 
-    @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(name = "career_card_skills", joinColumns = @JoinColumn(name = "career_card_id"))
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "career_card_skills", joinColumns = @JoinColumn(name = "card_id"))
     @Column(name = "skill", length = 100)
     private List<String> skills = new ArrayList<>(); // 기술
 
     // 나중에 user 수가 증가하면  @ElementCollection -> 별도 엔티티 분리로 리팩토링 해야합니다!
 
-    @ManyToOne
-    @JoinColumn(name = "card_storage_id")
-    private CareerCardStorage careerCardStorage;
+    @OneToMany(mappedBy = "careerCard", cascade = CascadeType.ALL)
+    private List<StorageCardMapping> storageMappings = new ArrayList<>();
 
 }

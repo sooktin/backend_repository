@@ -25,4 +25,3 @@ services:
     depends_on:
       - app
 
-# volumes 섹션 제거 (grafana_data가 더 이상 필요하지 않음)
