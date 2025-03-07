@@ -16,22 +16,6 @@ services:
     network_mode: "host"  # app 서비스와 통신을 위해 host 모드로 변경
     # ports 설정 제거 (host 모드에서는 불필요)
 
-  prometheus:
-    image: prom/prometheus:latest
-    network_mode: "host"  # 일관성을 위해 host 모드로 변경
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-
-  grafana:
-    image: grafana/grafana
-    container_name: grafana
-    network_mode: "host"  # 일관성을 위해 host 모드로 변경
-    volumes:
-      - grafana_data:/var/lib/grafana
-    environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-
   nginx:
     image: nginx:latest
     network_mode: host  # 다른 서비스들과 동일하게 host 네트워크 사용
@@ -41,5 +25,4 @@ services:
     depends_on:
       - app
 
-volumes:
-  grafana_data:
+# volumes 섹션 제거 (grafana_data가 더 이상 필요하지 않음)
