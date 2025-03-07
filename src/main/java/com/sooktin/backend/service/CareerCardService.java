@@ -147,14 +147,7 @@ public class CareerCardService {
         careerCard.setSkills(request.getSkills());
     }
 
-    @Transactional(readOnly = true)
-    public Page<CareerCard> search(String keyword, Pageable pageable) {
-        if (keyword == null || keyword.trim().isEmpty()) {
-            throw new IllegalArgumentException("검색어는 필수 입력값입니다.");
-        }
-        return careerCardRepository.searchCareerCardsWithOrCondition(keyword,pageable);
-    }
-
+    // 커리어카드 검색
     public SearchCareerCardResponse searchWithDtos(String keyword, int page, int size) {
         Pageable pageable = PageRequest.of(page,size);
         Page<CareerCard> results = search(keyword, pageable);
@@ -166,4 +159,16 @@ public class CareerCardService {
                 size
         );
     }
+
+
+    // 커리어카드 검색
+    @Transactional(readOnly = true)
+    public Page<CareerCard> search(String keyword, Pageable pageable) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            throw new IllegalArgumentException("검색어는 필수 입력값입니다.");
+        }
+
+        return careerCardRepository.searchCareerCardsWithOrCondition(keyword,pageable);
+    }
+
 }

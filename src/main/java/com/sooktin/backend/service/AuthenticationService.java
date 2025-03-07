@@ -66,5 +66,12 @@ public class AuthenticationService {
         }
     }
 
+    public Long getCurrentUserId() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof CustomUserDetails) {
+            return ((CustomUserDetails) principal).getUserId();
+        }
+        throw new RuntimeException("로그인된 사용자가 없습니다.");
+    }
 
 }
