@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/usernote/{noteId}/comments")
+@RequestMapping("/usernotes/{noteId}/comments")
 public class CommentController {
 
     private final CommentService commentService;
@@ -33,7 +33,6 @@ public class CommentController {
     private <T> T findEntityById(Optional<T> entityOptional, String errorMessage) {
         return entityOptional.orElseThrow(() -> new IllegalArgumentException(errorMessage));
     }
-
 
     private void validateOwnership(Comment comment, Long userId) {
         if (!comment.getUser().getId().equals(userId)) {
