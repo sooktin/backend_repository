@@ -8,6 +8,10 @@ import com.sooktin.backend.dto.careercard.CreateCareerCardRequest;
 import com.sooktin.backend.dto.careercard.SearchCareerCardResponse;
 import com.sooktin.backend.repository.CareerCardRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -57,17 +61,20 @@ public class CareerCardService {
     }
 
     // R - 특정 ID로 커리어카드 조회
+    @Cacheable(value = "careerCard", key = "#cardId")
     public Optional<CareerCard> findByCardId(Long cardId) {
         return careerCardRepository.findById(cardId);
     }
 
     // R - 특정 유저 ID로 커리어카드 조회
+    @Cacheable(value = "careerCard", key = "#userId")
     public Optional<CareerCard> findByUserId(Long userId) {
         return careerCardRepository.findByUserId(userId);
     }
 
 
     // U - 커리어카드 수정 (S3 이미지 변경 가능)
+    @CacheEvict(value = "careerCard", allEntries = true)
     @Transactional
     public CareerCard updateCareerCard(CreateCareerCardRequest request, User user, List<MultipartFile> files) {
         CareerCard careerCard = careerCardRepository.findByUserId(user.getId())
@@ -92,6 +99,7 @@ public class CareerCardService {
 
     // D - 커리어카드 삭제 (S3 이미지도 삭제)
     @Transactional
+    @CacheEvict(value = "careerCard", key = "#cardId")
     public void deleteById(Long cardId) {
         CareerCard careerCard = careerCardRepository.findById(cardId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 커리어카드를 찾을 수 없습니다. id: " + cardId));
@@ -148,8 +156,14 @@ public class CareerCardService {
     }
 
     // 커리어카드 검색
+    @Transactional(readOnly = true)
+    @Cacheable(
+            value = "careerCardSearch",
+            key = "'keyword_'+#keyword+'_page'+#page+'_size'+#size",
+            unless = "#result.careerCards.isEmpty()"
+    )
     public SearchCareerCardResponse searchWithDtos(String keyword, int page, int size) {
-        Pageable pageable = PageRequest.of(page,size);
+        Pageable pageable = PageRequest.of(page, size);
         Page<CareerCard> results = search(keyword, pageable);
 
         return new SearchCareerCardResponse(
@@ -162,13 +176,12 @@ public class CareerCardService {
 
 
     // 커리어카드 검색
-    @Transactional(readOnly = true)
     public Page<CareerCard> search(String keyword, Pageable pageable) {
         if (keyword == null || keyword.trim().isEmpty()) {
             throw new IllegalArgumentException("검색어는 필수 입력값입니다.");
         }
 
-        return careerCardRepository.searchCareerCardsWithOrCondition(keyword,pageable);
+        return careerCardRepository.searchCareerCardsWithOrCondition(keyword, pageable);
     }
 
 }
