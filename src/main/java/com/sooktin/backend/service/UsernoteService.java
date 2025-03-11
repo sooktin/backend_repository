@@ -2,6 +2,8 @@ package com.sooktin.backend.service;
 
 import com.sooktin.backend.domain.Usernote;
 import com.sooktin.backend.dto.usernote.FindMyUsernoteWithJWTResponse;
+import com.sooktin.backend.dto.usernote.SearchUsernoteResponse;
+import com.sooktin.backend.repository.UserRepository;
 import com.sooktin.backend.repository.UsernoteRepository;
 import com.sooktin.backend.repository.UsernoteRepositoryCustom;
 import lombok.RequiredArgsConstructor;
@@ -84,11 +86,10 @@ public class UsernoteService {
 
     }
 
-    public Page<Usernote> searchUsernotes(String keyword, Pageable pageable) {
-        if (keyword == null || keyword.trim().isEmpty()) {
-            throw new IllegalArgumentException("검색어는 필수 입력값입니다.");
-        }
 
-        return usernoteRepositoryCustom.searchUsernotesWithOrCondition(keyword, pageable);
+    public SearchUsernoteResponse searchUsernotes(String keyword, Pageable pageable) {
+        Page<Usernote> usernotes= usernoteRepositoryCustom.searchUsernotesWithOrCondition(keyword, pageable);
+        return SearchUsernoteResponse.from(usernotes);
+
     }
 }

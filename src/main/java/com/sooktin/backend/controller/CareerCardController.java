@@ -18,12 +18,14 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Validated
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/career-cards")
@@ -208,7 +210,6 @@ public class CareerCardController {
     //TODO 우선 일케하고 그라파나,JMeter로 WebFlux와의 작용 보자
     @GetMapping("/search")
     public ResponseEntity<ResponseDto<SearchCareerCardResponse>> searchCareerCards(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam @NotBlank(message = "검색어는 필수 입력값입니다") String keyword,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size)
