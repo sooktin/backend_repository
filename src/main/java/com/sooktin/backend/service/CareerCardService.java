@@ -158,7 +158,7 @@ public class CareerCardService {
     // 커리어카드 검색
     @Transactional(readOnly = true)
     @Cacheable(
-            value = "careerCardSearch",
+            value = "careerCard",
             key = "'keyword_'+#keyword+'_page'+#page+'_size'+#size",
             unless = "#result.careerCards.isEmpty()"
     )
