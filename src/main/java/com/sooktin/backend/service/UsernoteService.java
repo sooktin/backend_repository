@@ -1,6 +1,7 @@
 package com.sooktin.backend.service;
 
 import com.sooktin.backend.dto.usernote.FindMyUsernoteWithJWTResponse;
+import com.sooktin.backend.dto.usernote.SearchUsernoteResponse;
 import com.sooktin.backend.repository.UserRepository;
 import com.sooktin.backend.repository.UsernoteRepositoryCustom;
 import lombok.RequiredArgsConstructor;
@@ -88,7 +89,8 @@ public class UsernoteService {
 
     }
 
-    public Page<Usernote> searchUsernotes(String keyword, Pageable pageable) {
-        return usernoteRepositoryCustom.searchUsernotesWithOrCondition(keyword, pageable);
+    public SearchUsernoteResponse searchUsernotes(String keyword, Pageable pageable) {
+        Page<Usernote> usernotes= usernoteRepositoryCustom.searchUsernotesWithOrCondition(keyword, pageable);
+        return SearchUsernoteResponse.from(usernotes);
     }
 }

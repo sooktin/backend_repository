@@ -11,18 +11,21 @@ import com.sooktin.backend.service.UserService;
 import com.sooktin.backend.service.CustomUserDetails;
 import com.sooktin.backend.service.UsernoteService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Validated
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/usernotes")
@@ -165,16 +168,18 @@ public class UsernoteController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<ResponseDto<Page<Usernote>>> searchUsernote(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestParam String keyword,
+    public ResponseEntity<ResponseDto<SearchUsernoteResponse>> searchUsernote(
+            @RequestParam @NotBlank(message = "검색어는 필수 입력값입니다") String keyword,
             @PageableDefault(size = 10, page = 0) Pageable pageable) {
-        Page<Usernote> usernotes = usernoteService.searchUsernotes(keyword,pageable);
+        System.out.println("✅ 컨트롤러 진입 - keyword: " + keyword);
+        if (keyword == null || keyword.isBlank()) {
+            throw new IllegalArgumentException("검색어는 필수 입력값입니다");
+        }
+        SearchUsernoteResponse response = usernoteService.searchUsernotes(keyword, pageable);
         return ResponseEntity.ok(new ResponseDto<>(
                 200,
                 "검색 성공",
-                usernotes
+                response
         ));
-
     }
 }
