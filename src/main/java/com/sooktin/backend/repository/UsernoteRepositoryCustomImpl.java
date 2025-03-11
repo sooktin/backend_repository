@@ -37,7 +37,7 @@ public class UsernoteRepositoryCustomImpl implements UsernoteRepositoryCustom {
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        // ✅ 최적화된 `fetchCount()`
+
         Long total = queryFactory
                 .select(usernote.count())
                 .from(usernote)

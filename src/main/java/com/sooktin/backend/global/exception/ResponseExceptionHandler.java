@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -44,6 +45,16 @@ public class ResponseExceptionHandler {
         return ResponseEntity.badRequest().body(response);
     }
 
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ResponseDto<Object>> handleMissingServletRequestParameterException(MissingServletRequestParameterException ex) {
+        ResponseDto<Object> response = new ResponseDto<>(
+                400,
+                "검색어를 입력해주세요.",
+                null
+        );
+
+        return ResponseEntity.badRequest().body(response);
+    }
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ResponseDto<Object>> handleConstraintViolation(ConstraintViolationException ex) {
         Map<String, List<String>> errors = new HashMap<>();
