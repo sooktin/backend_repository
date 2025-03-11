@@ -1,17 +1,15 @@
 package com.sooktin.backend.service;
 
+import com.sooktin.backend.domain.Usernote;
 import com.sooktin.backend.dto.usernote.FindMyUsernoteWithJWTResponse;
 import com.sooktin.backend.dto.usernote.SearchUsernoteResponse;
 import com.sooktin.backend.repository.UserRepository;
+import com.sooktin.backend.repository.UsernoteRepository;
 import com.sooktin.backend.repository.UsernoteRepositoryCustom;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import com.sooktin.backend.domain.Usernote;
-import com.sooktin.backend.repository.UsernoteRepository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -26,7 +24,6 @@ public class UsernoteService {
 
     private final UsernoteRepository usernoteRepository;
     private final UsernoteRepositoryCustom usernoteRepositoryCustom;
-    private final UserRepository userRepository;
 
     // C - Create post
     public Usernote createUsernote(Usernote usernote) {
@@ -89,8 +86,10 @@ public class UsernoteService {
 
     }
 
+
     public SearchUsernoteResponse searchUsernotes(String keyword, Pageable pageable) {
         Page<Usernote> usernotes= usernoteRepositoryCustom.searchUsernotesWithOrCondition(keyword, pageable);
         return SearchUsernoteResponse.from(usernotes);
+
     }
 }

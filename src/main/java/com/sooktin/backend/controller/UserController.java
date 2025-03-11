@@ -4,8 +4,6 @@ import com.sooktin.backend.auth.JwtUtil;
 import com.sooktin.backend.domain.CareerCard;
 import com.sooktin.backend.domain.User;
 import com.sooktin.backend.dto.ResponseDto;
-import com.sooktin.backend.dto.careercard.storage.CcgotoStorageRequest;
-import com.sooktin.backend.dto.careercard.storage.CcgotoStorageResponse;
 import com.sooktin.backend.dto.careercard.storage.GetStorageResponse;
 import com.sooktin.backend.dto.user.NicknameRequest;
 import com.sooktin.backend.dto.user.NicknameResponse;
@@ -13,13 +11,11 @@ import com.sooktin.backend.dto.user.UserGetResponse;
 import com.sooktin.backend.dto.usernote.FindMyUsernoteWithJWTResponse;
 import com.sooktin.backend.global.util.ResponseUtil;
 import com.sooktin.backend.repository.StorageCardMappingRepository;
-import com.sooktin.backend.repository.UserRepository;
 import com.sooktin.backend.service.*;
 import io.micrometer.core.annotation.Timed;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -27,10 +23,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-
-import static com.sooktin.backend.domain.QCareerCard.careerCard;
 
 @RestController
 @RequestMapping("/users")
@@ -41,7 +34,6 @@ public class UserController {
     private final UsernoteService usernoteService;
     private final StorageService storageService;
     private final CareerCardService careerCardService;
-    private final StorageCardMappingRepository storageCardMappingRepository;
 
     //delete되는지 가라 기능 작업 수행임
     @GetMapping("/search")

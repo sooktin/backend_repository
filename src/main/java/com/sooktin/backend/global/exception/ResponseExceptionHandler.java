@@ -5,10 +5,8 @@ import com.sooktin.backend.global.exception.auth.SearchNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -19,7 +17,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class ResponseExceptionHandler {
@@ -76,6 +73,7 @@ public class ResponseExceptionHandler {
 
         return ResponseEntity.badRequest().body(response);
     }
+
     @ExceptionHandler
     public ResponseEntity<ResponseDto<Object>> handleAuthenticationException(AuthenticationException ex) {
         ResponseDto<Object> response = new ResponseDto<>(
