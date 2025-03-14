@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,16 +14,20 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CareerCardDTO {
+public class CareerCardDTO implements Serializable {
+    private static final long serialVersionUID = 1L;
     private Long id;
     private String major;
     private String job;
     private Long userId;
     private String department;
     private String student_num;
-    private List<String> skills;
-    private List<String> companiesInExperience;
-    private String imageUrl; //imageurls 중 첫번째 주소 반환!
+    @Builder.Default
+    private List<String> skills = new ArrayList<>();
+    @Builder.Default
+    private List<String> companiesInExperience = new ArrayList<>();
+    @Builder.Default
+    private List<String> imageUrls =new ArrayList<>(); //imageurls 중 첫번째 주소 반환!
 
 
 }

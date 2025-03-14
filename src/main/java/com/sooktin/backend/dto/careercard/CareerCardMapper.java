@@ -18,7 +18,7 @@ public interface CareerCardMapper {
     @Mapping(target = "userId", expression = "java(mapUserId(entity.getUser()))")
     @Mapping(target = "skills", expression = "java(mapSkills(entity.getSkills()))")
     @Mapping(target = "companiesInExperience", expression = "java(mapCompaniesInExperience(entity.getExperiences()))")
-    @Mapping(target = "imageUrl", expression = "java(mapImageUrl(entity.getImageUrls()))")
+    @Mapping(target = "imageUrls", expression = "java(mapImageUrls(entity.getImageUrls()))")
     CareerCardDTO toDto(CareerCard entity);
 
     default List<CareerCardDTO> toDtoList(List<CareerCard> entities) {
@@ -44,7 +44,7 @@ public interface CareerCardMapper {
 
     }
 
-    default String mapImageUrl(List<String> imageUrls) {
-        return imageUrls != null && !imageUrls.isEmpty() ? imageUrls.get(0) : "";
+    default List<String> mapImageUrls(List<String> imageUrls) {
+        return (imageUrls != null) ? new ArrayList<>(imageUrls) : new ArrayList<>();
     }
 }

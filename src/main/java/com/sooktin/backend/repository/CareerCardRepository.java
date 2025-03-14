@@ -1,6 +1,7 @@
 package com.sooktin.backend.repository;
 
 import com.sooktin.backend.domain.CareerCard;
+import com.sooktin.backend.dto.careercard.CareerCardDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

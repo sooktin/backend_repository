@@ -7,6 +7,8 @@ import com.sooktin.backend.repository.UserRepository;
 import com.sooktin.backend.repository.UsernoteRepository;
 import com.sooktin.backend.repository.UsernoteRepositoryCustom;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -39,12 +41,13 @@ public class UsernoteService {
     }
 
     // R - Read post by ID
+    @Cacheable(value = "userNote",key = "#id")
     public Optional<Usernote> findById(long id) {
         return usernoteRepository.findById(id);
     }
 
     // U - Update post by ID
-
+    @CacheEvict(value = "userNote",allEntries = true)
     public Usernote updateUsernote(Long id, Usernote updatedUsernote) {
         Usernote usernote = usernoteRepository.findById(id).orElseThrow(
                 () -> new IllegalArgumentException("해당 포스트가 존재하지 않습니다. id: " + id)
@@ -55,6 +58,7 @@ public class UsernoteService {
     }
 
     // D - Delete post by ID
+    @CacheEvict(value = "userNote",key = "#id")
     public boolean deleteById(long id) {
         if (usernoteRepository.existsById(id)) {
             usernoteRepository.deleteById(id);
@@ -63,7 +67,7 @@ public class UsernoteService {
             throw new IllegalArgumentException("해당 포스트가 존재하지 않습니다. id: " + id);
         }
     }
-
+    @Cacheable(value = "userNote", key = "#email")
     public List<FindMyUsernoteWithJWTResponse> findByUserEmail(String email) {
         List<Usernote> usernotes = usernoteRepository.findByUser_Email(email);
 
@@ -86,7 +90,12 @@ public class UsernoteService {
 
     }
 
-
+    @Transactional(readOnly = true)
+    @Cacheable(
+            value = "userNote",
+            key = "#keyword",
+            unless = "#result.usernotes.isEmpty()"
+    )
     public SearchUsernoteResponse searchUsernotes(String keyword, Pageable pageable) {
         Page<Usernote> usernotes= usernoteRepositoryCustom.searchUsernotesWithOrCondition(keyword, pageable);
         return SearchUsernoteResponse.from(usernotes);

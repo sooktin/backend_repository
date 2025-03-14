@@ -3,11 +3,16 @@ package com.sooktin.backend.service;
 import com.sooktin.backend.domain.CareerCard;
 import com.sooktin.backend.domain.Experience;
 import com.sooktin.backend.domain.User;
+import com.sooktin.backend.dto.careercard.CareerCardDTO;
 import com.sooktin.backend.dto.careercard.CareerCardMapper;
 import com.sooktin.backend.dto.careercard.CreateCareerCardRequest;
 import com.sooktin.backend.dto.careercard.SearchCareerCardResponse;
 import com.sooktin.backend.repository.CareerCardRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -30,7 +35,7 @@ public class CareerCardService {
     private final CareerCardMapper careerCardMapper;
 
     // C - 커리어카드 생성 (S3 이미지 업로드 추가)
-    public CareerCard createCareerCard(CreateCareerCardRequest request, User user, List<MultipartFile> files) {
+    public CareerCardDTO createCareerCard(CreateCareerCardRequest request, User user, List<MultipartFile> files) {
         if (careerCardRepository.findByUserId(user.getId()).isPresent()) {
             throw new IllegalArgumentException("해당 유저는 이미 커리어카드를 가지고 있습니다.");
         }
@@ -47,29 +52,39 @@ public class CareerCardService {
         if (!imageUrls.isEmpty()) {
             careerCard.setImageUrls(imageUrls);
         }
-
-        return careerCardRepository.save(careerCard);
+        CareerCard savedCareerCard = careerCardRepository.save(careerCard);
+        return careerCardMapper.toDto(savedCareerCard);
     }
 
     // R - 모든 커리어카드 조회
-    public List<CareerCard> findAll() {
-        return careerCardRepository.findAll();
+    public List<CareerCardDTO> findAll() {
+        List<CareerCard> careerCards = careerCardRepository.findAll();
+        return careerCards.stream()
+                .map(careerCardMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     // R - 특정 ID로 커리어카드 조회
-    public Optional<CareerCard> findByCardId(Long cardId) {
-        return careerCardRepository.findById(cardId);
+    @Cacheable(value = "careerCard", key = "#cardId")
+    public Optional<CareerCardDTO> findByCardId(Long cardId) {
+
+        return careerCardRepository.findById(cardId)
+                .map(careerCardMapper::toDto);
     }
 
     // R - 특정 유저 ID로 커리어카드 조회
-    public Optional<CareerCard> findByUserId(Long userId) {
-        return careerCardRepository.findByUserId(userId);
+    @Cacheable(value = "careerCard", key = "#userId")
+    public Optional<CareerCardDTO> findByUserId(Long userId) {
+
+        return careerCardRepository.findByUserId(userId)
+                .map(careerCardMapper::toDto);
     }
 
 
     // U - 커리어카드 수정 (S3 이미지 변경 가능)
+    @CacheEvict(value = "careerCard", allEntries = true)
     @Transactional
-    public CareerCard updateCareerCard(CreateCareerCardRequest request, User user, List<MultipartFile> files) {
+    public CareerCardDTO updateCareerCard(CreateCareerCardRequest request, User user, List<MultipartFile> files) {
         CareerCard careerCard = careerCardRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자의 커리어카드를 찾을 수 없습니다."));
 
@@ -86,12 +101,14 @@ public class CareerCardService {
         // 공통 필드 설정
         setCareerCardFields(careerCard, request);
 
-        return careerCardRepository.save(careerCard);
+        CareerCard updatedCareerCard = careerCardRepository.save(careerCard);
+        return careerCardMapper.toDto(updatedCareerCard);
     }
 
 
     // D - 커리어카드 삭제 (S3 이미지도 삭제)
     @Transactional
+    @CacheEvict(value = "careerCard", key = "#cardId")
     public void deleteById(Long cardId) {
         CareerCard careerCard = careerCardRepository.findById(cardId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 커리어카드를 찾을 수 없습니다. id: " + cardId));
@@ -148,8 +165,14 @@ public class CareerCardService {
     }
 
     // 커리어카드 검색
+    @Transactional(readOnly = true)
+    @Cacheable(
+            value = "careerCard",
+            key = "'keyword_'+#keyword+'_page'+#page+'_size'+#size",
+            unless = "#result.careerCards.isEmpty()"
+    )
     public SearchCareerCardResponse searchWithDtos(String keyword, int page, int size) {
-        Pageable pageable = PageRequest.of(page,size);
+        Pageable pageable = PageRequest.of(page, size);
         Page<CareerCard> results = search(keyword, pageable);
 
         return new SearchCareerCardResponse(
@@ -162,13 +185,12 @@ public class CareerCardService {
 
 
     // 커리어카드 검색
-    @Transactional(readOnly = true)
     public Page<CareerCard> search(String keyword, Pageable pageable) {
         if (keyword == null || keyword.trim().isEmpty()) {
             throw new IllegalArgumentException("검색어는 필수 입력값입니다.");
         }
 
-        return careerCardRepository.searchCareerCardsWithOrCondition(keyword,pageable);
+        return careerCardRepository.searchCareerCardsWithOrCondition(keyword, pageable);
     }
 
 }

@@ -4,6 +4,7 @@ import com.sooktin.backend.auth.JwtUtil;
 import com.sooktin.backend.domain.CareerCard;
 import com.sooktin.backend.domain.User;
 import com.sooktin.backend.dto.ResponseDto;
+import com.sooktin.backend.dto.careercard.CareerCardDTO;
 import com.sooktin.backend.dto.careercard.storage.GetStorageResponse;
 import com.sooktin.backend.dto.user.NicknameRequest;
 import com.sooktin.backend.dto.user.NicknameResponse;
@@ -102,7 +103,7 @@ public class UserController {
                 return ResponseUtil.buildResponse(401, "인증 정보가 유효하지 않습니다. 다시 로그인해주세요.", null);
             }
 
-            CareerCard careerCard = careerCardService.findByUserId(userDetails.getUserId())
+            CareerCardDTO careerCard = careerCardService.findByUserId(userDetails.getUserId())
                     .orElseThrow(() -> new IllegalArgumentException("현재 로그인된 사용자의 커리어카드를 찾을 수 없습니다."));
 
             List<String> imageUrls = careerCard.getImageUrls();
@@ -125,7 +126,7 @@ public class UserController {
     @GetMapping("/{userId}/main-image")
     public ResponseEntity<ResponseDto<String>> getUserMainImage(@PathVariable Long userId) {
         try {
-            CareerCard careerCard = careerCardService.findByUserId(userId)
+            CareerCardDTO careerCard = careerCardService.findByUserId(userId)
                     .orElseThrow(() -> new IllegalArgumentException("해당 사용자의 커리어카드를 찾을 수 없습니다."));
 
             List<String> imageUrls = careerCard.getImageUrls();
