@@ -3,6 +3,7 @@ package com.sooktin.backend.service;
 import com.sooktin.backend.domain.CareerCard;
 import com.sooktin.backend.domain.Experience;
 import com.sooktin.backend.domain.User;
+import com.sooktin.backend.dto.careercard.CareerCardDTO;
 import com.sooktin.backend.dto.careercard.CareerCardMapper;
 import com.sooktin.backend.dto.careercard.CreateCareerCardRequest;
 import com.sooktin.backend.dto.careercard.SearchCareerCardResponse;
@@ -68,8 +69,13 @@ public class CareerCardService {
 
     // R - 특정 유저 ID로 커리어카드 조회
     @Cacheable(value = "careerCard", key = "#userId")
-    public Optional<CareerCard> findByUserId(Long userId) {
-        return careerCardRepository.findByUserId(userId);
+    public Optional<CareerCardDTO> findByUserId(Long userId) {
+
+        CareerCard careerCard = careerCardRepository.findByUserId(userId)
+                .orElseThrow(()->{throw new IllegalArgumentException("해당 유저의 커리어카드가 없습니다.");});
+
+        CareerCardDTO careerCardDTO = careerCardMapper.toDto(careerCard);
+        return Optional.ofNullable(careerCardDTO);
     }
 
 

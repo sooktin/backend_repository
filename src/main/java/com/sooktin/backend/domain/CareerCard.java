@@ -70,9 +70,11 @@ public class CareerCard {
     private String job; // 직업 (최대 20자)
 
     //N+1문제가능성도... @BatchSize(10)
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "career_card_experiences", joinColumns = @JoinColumn(name = "card_id"))
     private List<Experience> experiences = new ArrayList<>(); // 경력 (회사 + 기간)
+
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "career_card_skills", joinColumns = @JoinColumn(name = "card_id"))
@@ -81,6 +83,7 @@ public class CareerCard {
 
     // 나중에 user 수가 증가하면  @ElementCollection -> 별도 엔티티 분리로 리팩토링 해야합니다!
 
+    @JsonIgnore
     @OneToMany(mappedBy = "careerCard", cascade = CascadeType.ALL)
     private List<StorageCardMapping> storageMappings = new ArrayList<>();
 

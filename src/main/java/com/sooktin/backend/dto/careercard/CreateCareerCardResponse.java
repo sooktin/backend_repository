@@ -1,6 +1,5 @@
 package com.sooktin.backend.dto.careercard;
 
-import com.sooktin.backend.domain.CareerCard;
 import com.sooktin.backend.domain.Experience;
 import lombok.Getter;
 import lombok.Setter;
@@ -30,7 +29,7 @@ public class CreateCareerCardResponse {
     private String modifiedAt;   // 수정일시
 
 
-    public CreateCareerCardResponse(CareerCard careerCard) {
+    public CreateCareerCardResponse(CareerCardDTO careerCard) {
         this.cardId = careerCard.getId();
         this.nickname = careerCard.getUser().getNickname(); // User에서 가져옴
         this.major = careerCard.getMajor();

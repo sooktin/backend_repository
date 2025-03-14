@@ -3,6 +3,7 @@ package com.sooktin.backend.controller;
 import com.sooktin.backend.domain.CareerCard;
 import com.sooktin.backend.domain.User;
 import com.sooktin.backend.dto.ResponseDto;
+import com.sooktin.backend.dto.careercard.CareerCardDTO;
 import com.sooktin.backend.dto.careercard.CreateCareerCardRequest;
 import com.sooktin.backend.dto.careercard.CreateCareerCardResponse;
 import com.sooktin.backend.dto.careercard.SearchCareerCardResponse;
@@ -13,9 +14,7 @@ import com.sooktin.backend.service.UserService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
@@ -25,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Validated
 @RestController
 @RequiredArgsConstructor
@@ -34,8 +34,8 @@ public class CareerCardController {
     private final CareerCardService careerCardService;
     private final UserService userService;
 
-    private void validateOwnership(CareerCard careerCard, Long userId) {
-        if (!careerCard.getUser().getId().equals(userId)) {
+    private void validateOwnership(CareerCardDTO careerCard, Long userId) {
+        if (!careerCard.getUserId().equals(userId)) {
             throw new IllegalArgumentException("권한이 없습니다.");
         }
     }
@@ -62,7 +62,7 @@ public class CareerCardController {
                 return ResponseUtil.buildResponse(401, "인증 정보가 유효하지 않습니다. 다시 로그인해주세요.", null);
             }
 
-            CareerCard careerCard = careerCardService.findByUserId(userDetails.getUserId())
+            CareerCardDTO careerCard = careerCardService.findByUserId(userDetails.getUserId())
                     .orElseThrow(() -> new IllegalArgumentException("현재 로그인된 사용자의 커리어카드를 찾을 수 없습니다."));
 
             validateOwnership(careerCard, userDetails.getUserId());
@@ -71,6 +71,7 @@ public class CareerCardController {
         } catch (IllegalArgumentException e) {
             return ResponseUtil.buildResponse(404, e.getMessage(), null);
         } catch (Exception e) {
+            log.error(e.getMessage(), e);
             return ResponseUtil.buildResponse(500, "커리어카드를 조회하는 중 오류가 발생했습니다.", null);
         }
     }
@@ -99,7 +100,7 @@ public class CareerCardController {
                 return ResponseUtil.buildResponse(401, "인증 정보가 유효하지 않습니다. 다시 로그인해주세요.", null);
             }
 
-            CareerCard careerCard = careerCardService.findByUserId(userDetails.getUserId())
+            CareerCardDTO careerCard = careerCardService.findByUserId(userDetails.getUserId())
                     .orElseThrow(() -> new IllegalArgumentException("현재 로그인된 사용자의 커리어카드를 찾을 수 없습니다."));
 
             List<String> imageUrls = careerCard.getImageUrls();
@@ -121,7 +122,7 @@ public class CareerCardController {
     @GetMapping("/{userId}/images")
     public ResponseEntity<ResponseDto<List<String>>> getCareerCardImagesByUserId(@PathVariable Long userId) {
         try {
-            CareerCard careerCard = careerCardService.findByUserId(userId)
+            CareerCardDTO careerCard = careerCardService.findByUserId(userId)
                     .orElseThrow(() -> new IllegalArgumentException("해당 사용자의 커리어카드를 찾을 수 없습니다."));
 
             List<String> imageUrls = careerCard.getImageUrls();
@@ -154,7 +155,7 @@ public class CareerCardController {
                     .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
             CareerCard createdCard = careerCardService.createCareerCard(request, user, files);
-            return ResponseUtil.buildResponse(201, "커리어카드를 성공적으로 생성했습니다.", new CreateCareerCardResponse(createdCard));
+            return //ResponseUtil.buildResponse(201, "커리어카드를 성공적으로 생성했습니다.", new CreateCareerCardResponse(createdCard));
         } catch (IllegalArgumentException e) {
             return ResponseUtil.buildResponse(400, e.getMessage(), null);
         } catch (Exception e) {
@@ -193,7 +194,7 @@ public class CareerCardController {
                 return ResponseUtil.buildResponse(401, "인증 정보가 유효하지 않습니다. 다시 로그인해주세요.", null);
             }
 
-            CareerCard careerCard = careerCardService.findByUserId(userDetails.getUserId())
+            CareerCardDTO careerCard = careerCardService.findByUserId(userDetails.getUserId())
                     .orElseThrow(() -> new IllegalArgumentException("현재 로그인된 사용자의 커리어카드를 찾을 수 없습니다."));
 
             validateOwnership(careerCard, userDetails.getUserId());
