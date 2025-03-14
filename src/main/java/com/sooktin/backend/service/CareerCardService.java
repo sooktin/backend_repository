@@ -35,7 +35,7 @@ public class CareerCardService {
     private final CareerCardMapper careerCardMapper;
 
     // C - 커리어카드 생성 (S3 이미지 업로드 추가)
-    public CareerCard createCareerCard(CreateCareerCardRequest request, User user, List<MultipartFile> files) {
+    public CareerCardDTO createCareerCard(CreateCareerCardRequest request, User user, List<MultipartFile> files) {
         if (careerCardRepository.findByUserId(user.getId()).isPresent()) {
             throw new IllegalArgumentException("해당 유저는 이미 커리어카드를 가지고 있습니다.");
         }
@@ -52,37 +52,39 @@ public class CareerCardService {
         if (!imageUrls.isEmpty()) {
             careerCard.setImageUrls(imageUrls);
         }
-
-        return careerCardRepository.save(careerCard);
+        CareerCard savedCareerCard = careerCardRepository.save(careerCard);
+        return careerCardMapper.toDto(savedCareerCard);
     }
 
     // R - 모든 커리어카드 조회
-    public List<CareerCard> findAll() {
-        return careerCardRepository.findAll();
+    public List<CareerCardDTO> findAll() {
+        List<CareerCard> careerCards = careerCardRepository.findAll();
+        return careerCards.stream()
+                .map(careerCardMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     // R - 특정 ID로 커리어카드 조회
     @Cacheable(value = "careerCard", key = "#cardId")
-    public Optional<CareerCard> findByCardId(Long cardId) {
-        return careerCardRepository.findById(cardId);
+    public Optional<CareerCardDTO> findByCardId(Long cardId) {
+
+        return careerCardRepository.findById(cardId)
+                .map(careerCardMapper::toDto);
     }
 
     // R - 특정 유저 ID로 커리어카드 조회
     @Cacheable(value = "careerCard", key = "#userId")
     public Optional<CareerCardDTO> findByUserId(Long userId) {
 
-        CareerCard careerCard = careerCardRepository.findByUserId(userId)
-                .orElseThrow(()->{throw new IllegalArgumentException("해당 유저의 커리어카드가 없습니다.");});
-
-        CareerCardDTO careerCardDTO = careerCardMapper.toDto(careerCard);
-        return Optional.ofNullable(careerCardDTO);
+        return careerCardRepository.findByUserId(userId)
+                .map(careerCardMapper::toDto);
     }
 
 
     // U - 커리어카드 수정 (S3 이미지 변경 가능)
     @CacheEvict(value = "careerCard", allEntries = true)
     @Transactional
-    public CareerCard updateCareerCard(CreateCareerCardRequest request, User user, List<MultipartFile> files) {
+    public CareerCardDTO updateCareerCard(CreateCareerCardRequest request, User user, List<MultipartFile> files) {
         CareerCard careerCard = careerCardRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자의 커리어카드를 찾을 수 없습니다."));
 
@@ -99,7 +101,8 @@ public class CareerCardService {
         // 공통 필드 설정
         setCareerCardFields(careerCard, request);
 
-        return careerCardRepository.save(careerCard);
+        CareerCard updatedCareerCard = careerCardRepository.save(careerCard);
+        return careerCardMapper.toDto(updatedCareerCard);
     }
 
 

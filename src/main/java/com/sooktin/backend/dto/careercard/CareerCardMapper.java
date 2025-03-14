@@ -44,7 +44,7 @@ public interface CareerCardMapper {
 
     }
 
-    default String mapImageUrls(List<String> imageUrls) {
-        return imageUrls != null && !imageUrls.isEmpty() ? imageUrls.get(0) : String.valueOf(new ArrayList<>());
+    default List<String> mapImageUrls(List<String> imageUrls) {
+        return (imageUrls != null) ? new ArrayList<>(imageUrls) : new ArrayList<>();
     }
 }

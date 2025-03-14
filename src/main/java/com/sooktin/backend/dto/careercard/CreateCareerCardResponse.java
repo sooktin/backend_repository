@@ -1,3 +1,4 @@
+/*
 package com.sooktin.backend.dto.careercard;
 
 import com.sooktin.backend.domain.Experience;
@@ -47,4 +48,4 @@ public class CreateCareerCardResponse {
         this.modifiedAt = careerCard.getModified_at().toString();
         //this.userId = careerCard.getUser().getId();
     }
-}
+}*/

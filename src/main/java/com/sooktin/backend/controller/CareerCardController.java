@@ -5,7 +5,7 @@ import com.sooktin.backend.domain.User;
 import com.sooktin.backend.dto.ResponseDto;
 import com.sooktin.backend.dto.careercard.CareerCardDTO;
 import com.sooktin.backend.dto.careercard.CreateCareerCardRequest;
-import com.sooktin.backend.dto.careercard.CreateCareerCardResponse;
+
 import com.sooktin.backend.dto.careercard.SearchCareerCardResponse;
 import com.sooktin.backend.global.util.ResponseUtil;
 import com.sooktin.backend.service.CareerCardService;
@@ -42,20 +42,17 @@ public class CareerCardController {
 
     // R - 모든 CareerCard 목록 조회
     @GetMapping("/all")
-    public ResponseEntity<ResponseDto<List<CreateCareerCardResponse>>> getAllCareerCards() {
-        try {
-            List<CreateCareerCardResponse> careerCards = careerCardService.findAll().stream()
-                    .map(CreateCareerCardResponse::new)
-                    .collect(Collectors.toList());
-            return ResponseUtil.buildResponse(200, "커리어카드를 성공적으로 조회했습니다.", careerCards);
-        } catch (Exception e) {
-            return ResponseUtil.buildResponse(500, "커리어카드 목록을 조회하는 중 오류가 발생했습니다.", null);
-        }
+    public ResponseEntity<ResponseDto<List<CareerCardDTO>>> getAllCareerCards() {
+
+        List<CareerCardDTO> careerCards = careerCardService.findAll();
+
+        return ResponseUtil.buildResponse(200, "커리어카드를 성공적으로 조회했습니다.", careerCards);
+
     }
 
     // R - 로그인된 사용자의 CareerCard 조회
     @GetMapping
-    public ResponseEntity<ResponseDto<CreateCareerCardResponse>> getCareerCardByUser(
+    public ResponseEntity<ResponseDto<CareerCardDTO>> getCareerCardByUser(
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         try {
             if (userDetails == null) {
@@ -67,7 +64,7 @@ public class CareerCardController {
 
             validateOwnership(careerCard, userDetails.getUserId());
 
-            return ResponseUtil.buildResponse(200, "커리어카드를 성공적으로 조회했습니다.", new CreateCareerCardResponse(careerCard));
+            return ResponseUtil.buildResponse(200, "커리어카드를 성공적으로 조회했습니다.",careerCard);
         } catch (IllegalArgumentException e) {
             return ResponseUtil.buildResponse(404, e.getMessage(), null);
         } catch (Exception e) {
@@ -78,17 +75,11 @@ public class CareerCardController {
 
     // R - 특정 CareerCard 조회
     @GetMapping("/{cardId}")
-    public ResponseEntity<ResponseDto<CreateCareerCardResponse>> getCareerCardById(@PathVariable Long cardId) {
-        try {
-            CareerCard careerCard = careerCardService.findByCardId(cardId)
-                    .orElseThrow(() -> new IllegalArgumentException("커리어카드를 찾을 수 없습니다."));
+    public ResponseEntity<ResponseDto<CareerCardDTO>> getCareerCardById(@PathVariable Long cardId) {
+        CareerCardDTO careerCard = careerCardService.findByCardId(cardId)
+                .orElseThrow(()-> new IllegalArgumentException("커리어카드를 찾을 수 없습니다."));
 
-            return ResponseUtil.buildResponse(200, "커리어카드를 성공적으로 조회했습니다.", new CreateCareerCardResponse(careerCard));
-        } catch (IllegalArgumentException e) {
-            return ResponseUtil.buildResponse(404, e.getMessage(), null);
-        } catch (Exception e) {
-            return ResponseUtil.buildResponse(500, "커리어카드를 조회하는 중 오류가 발생했습니다.", null);
-        }
+        return ResponseUtil.buildResponse(200, "커리어카드를 성공적으로 조회했습니다.", careerCard);
     }
 
     // R - 로그인된 사용자의 CareerCard 이미지 목록 조회
@@ -142,7 +133,7 @@ public class CareerCardController {
 
     // C - CareerCard 생성 (이미지 포함)
     @PostMapping
-    public ResponseEntity<ResponseDto<CreateCareerCardResponse>> createCareerCard(
+    public ResponseEntity<ResponseDto<CareerCardDTO>> createCareerCard(
             @RequestPart(value = "files", required = false) List<MultipartFile> files,  // 이미지 파일
             @RequestPart(value = "request") @Valid CreateCareerCardRequest request,  // JSON 데이터 (DTO)
             @AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -154,8 +145,8 @@ public class CareerCardController {
             User user = userService.findUserByEmail(userDetails.getUsername())
                     .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-            CareerCard createdCard = careerCardService.createCareerCard(request, user, files);
-            return //ResponseUtil.buildResponse(201, "커리어카드를 성공적으로 생성했습니다.", new CreateCareerCardResponse(createdCard));
+            CareerCardDTO createdCard = careerCardService.createCareerCard(request, user, files);
+            return  ResponseUtil.buildResponse(201, "커리어카드를 성공적으로 생성했습니다.", createdCard);
         } catch (IllegalArgumentException e) {
             return ResponseUtil.buildResponse(400, e.getMessage(), null);
         } catch (Exception e) {
@@ -165,7 +156,7 @@ public class CareerCardController {
 
     // U - CareerCard 수정 (새로운 이미지 포함)
     @PatchMapping
-    public ResponseEntity<ResponseDto<CreateCareerCardResponse>> updateCareerCard(
+    public ResponseEntity<ResponseDto<CareerCardDTO>> updateCareerCard(
             @RequestPart(value = "files", required = false) List<MultipartFile> files,
             @RequestPart(value = "request") @Valid CreateCareerCardRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -177,8 +168,8 @@ public class CareerCardController {
             User user = userService.findUserByEmail(userDetails.getUsername())
                     .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-            CareerCard updatedCard = careerCardService.updateCareerCard(request, user, files);
-            return ResponseUtil.buildResponse(200, "커리어카드를 성공적으로 수정했습니다.", new CreateCareerCardResponse(updatedCard));
+            CareerCardDTO updatedCard = careerCardService.updateCareerCard(request, user, files);
+            return ResponseUtil.buildResponse(200, "커리어카드를 성공적으로 수정했습니다.", updatedCard);
         } catch (IllegalArgumentException e) {
             return ResponseUtil.buildResponse(400, e.getMessage(), null);
         } catch (Exception e) {
@@ -213,8 +204,7 @@ public class CareerCardController {
     public ResponseEntity<ResponseDto<SearchCareerCardResponse>> searchCareerCards(
             @RequestParam @NotBlank(message = "검색어는 필수 입력값입니다") String keyword,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size)
-    {
+            @RequestParam(defaultValue = "10") int size) {
 
         SearchCareerCardResponse response = careerCardService.searchWithDtos(keyword, page, size);
         return ResponseEntity.ok(new ResponseDto<>(
