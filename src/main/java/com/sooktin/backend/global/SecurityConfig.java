@@ -78,8 +78,8 @@ public class SecurityConfig {
                 )
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class) //jwt 토큰 필터 확인 후 보냄
                 .sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authenticationProvider(authenticationProvider())
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()));
+                .authenticationProvider(authenticationProvider());
+                //.cors(cors -> cors.configurationSource(corsConfigurationSource()));
         return http.build();
     }
 
@@ -96,21 +96,19 @@ public class SecurityConfig {
         return authProvider;
     }
 
-    @Bean
+    /*@Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList(
-                "http://localhost:3000",
-                "http://172.20.10.8:3000"
-                )); // 프론트엔드 IP
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
+        configuration.addAllowedOriginPattern("*");
+        configuration.addAllowedMethod("*");
+        configuration.addAllowedHeader("*");
+
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
-
+*/
 
 }
