@@ -14,7 +14,7 @@ public class FindMyUsernoteWithJWTResponse extends ResponseDto<FindMyUsernoteWit
         private Long id;
         private String title;
         private String content;
-        private Integer likes;
+        // private Integer likes;
         private LocalDateTime createdAt;
         private LocalDateTime modifiedAt;
     }
