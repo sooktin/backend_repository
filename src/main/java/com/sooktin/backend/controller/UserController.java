@@ -153,7 +153,7 @@ public class UserController {
 
 
     //CCS를 반환하면 id,userID등불필요한 데이터도 반환하기에 리스트형태의 CC 반환
-    @Timed(
+    /*@Timed(
             value = "get.user.cardstorage",
             description = "Time taken to get user's card storage",
             percentiles = {0.5, 0.95, 0.99},
@@ -173,7 +173,7 @@ public class UserController {
         //boolean으로중복값
 ;        return ResponseEntity.ok(message);
     }
-
+*/
     //삭제 기능
     //TODO @DeleteMapping("/card-storage/career-cards")
 

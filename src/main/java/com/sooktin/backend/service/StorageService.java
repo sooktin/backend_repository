@@ -3,6 +3,7 @@ package com.sooktin.backend.service;
 import com.sooktin.backend.domain.CareerCard;
 import com.sooktin.backend.domain.CareerCardStorage;
 import com.sooktin.backend.domain.StorageCardMapping;
+import com.sooktin.backend.dto.careercard.storage.CardStorageResponse;
 import com.sooktin.backend.dto.careercard.storage.GetStorageResponse;
 import com.sooktin.backend.repository.CareerCardRepository;
 import com.sooktin.backend.repository.StorageCardMappingRepository;
@@ -14,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,20 +25,25 @@ public class StorageService {
     private final StorageCardMappingRepository storageCardMappingRepository;
 
     // jpa 쓰지 않고 스프링 시쿠리티로 찾아올수있음
-    @Transactional(readOnly = true)
-    public GetStorageResponse getCardsFromStorage(Long userId) {
-        CareerCardStorage storage = storageRepository.findByUserIdWithQuery(userId)
-                .orElseThrow(()->new IllegalArgumentException("보관함을 찾을 수 없습니다."));
-
-        return new GetStorageResponse(200,"커리어카드 보관함을 갖고 옵니다.", storage);
-
+   /* @Transactional(readOnly = true)
+    public List<GetStorageResponse> getCardsFromStorage(Long userId) {
+        List<Object[]> results = storageRepository.findByUserIdWithQuery(userId);
+        if (results.isEmpty()) {
+            throw new IllegalArgumentException("보관함이 없습니다.");
+        }
+        return results.stream()
+                .map(result -> new CardStorageResponse(
+                        200,
+                        "보관된 카드 조회 성공",
+                        new CardStorageResponse.CardToHome((Long) result[0], (CareerCardStorage) result[1])
+                ))
+                .collect(Collectors.toList());
     }
 
     @Transactional
     public String saveCardsToStorage(Long careerCardId) {
         Long userId = getCurrentUserId();
-        CareerCardStorage storage = storageRepository.findByUserIdWithQuery(userId)
-                .orElseThrow(()->new IllegalArgumentException("보관함을 찾을 수 없습니다."));
+        List<Object[]> storage = storageRepository.findByUserIdWithQuery(userId);
         CareerCard careerCard = careerCardRepository.findById(careerCardId)
                 .orElseThrow(()->new IllegalArgumentException("존재하지 않는 커리어카드입니다."));
         StorageCardMapping mapping = new StorageCardMapping();
@@ -46,7 +53,7 @@ public class StorageService {
         storageCardMappingRepository.save(mapping);
 
         return "커리어카드가 보관함에 성공적으로 추가되었습니다.";
-    }
+    }*/
 
     private Long getCurrentUserId() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
