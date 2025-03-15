@@ -18,6 +18,7 @@ public interface CareerCardMapper {
 
     @Mapping(target = "cardId", source = "id")
     @Mapping(target = "nickname", source = "user.nickname")
+    @Mapping(target = "userId", source = "user.id")
     @Mapping(target = "major", source = "major")
     @Mapping(target = "student_num", source = "student_num")
     @Mapping(target = "student_status", source = "student_status")
