@@ -58,12 +58,12 @@ public class AuthenticationService {
     }
 
     public void logout(String email) {
-        try {
-            SecurityContextHolder.clearContext(); //보안 컨텍스트 정리
-            redisTemplate.delete("REFRESH_" + email);
-        } catch (Exception e) {
-            throw new RuntimeException("로그아웃 실패 : ", e);
+        if (email == null) {
+            throw new RuntimeException("로그아웃 실패: 사용자 정보 없음");
         }
+
+        SecurityContextHolder.clearContext(); // 보안 컨텍스트 초기화
+        redisTemplate.delete("REFRESH_" + email);
     }
 
     public Long getCurrentUserId() {

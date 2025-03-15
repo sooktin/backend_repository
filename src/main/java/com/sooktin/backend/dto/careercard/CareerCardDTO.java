@@ -36,7 +36,7 @@ public class CareerCardDTO implements Serializable {
     @Builder
     @NoArgsConstructor // 기본 생성자 추가 (필수)
     @AllArgsConstructor
-    static class ExperienceDTO {
+    public static class ExperienceDTO {
         private String company;
         private String period;
 
