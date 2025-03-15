@@ -30,6 +30,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final UserDetailsService userDetailsService;
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        if (shouldNotFilter(request)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
         try {
             String token = getJwtFromRequest(request);
             // refresh-token endpoint는 만료된 토큰도 허용
@@ -60,6 +64,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             log.error("JWT validation failed: {}", e.getMessage());
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "invalid jwt token");
         }
+    }
+
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        boolean shouldSkip = path.startsWith("/auth/") ||
+                path.startsWith("/swagger-ui/") ||
+                path.contains("swagger-ui") ||  // 추가
+                path.startsWith("/v3/api-docs") ||
+                path.startsWith("/api-docs") ||
+                path.equals("/swagger-ui.html") ||
+                path.startsWith("/swagger-resources") ||
+                path.startsWith("/webjars/") ||
+                path.startsWith("/actuator") ||
+                path.equals("/error");
+
+        log.info("Request path: {}, Should skip filter: {}", path, shouldSkip);
+        return shouldSkip;
     }
 
     private String getJwtFromRequest(HttpServletRequest request) {

@@ -3,6 +3,7 @@ package com.sooktin.backend.domain;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import net.minidev.json.annotate.JsonIgnore;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
@@ -22,6 +23,7 @@ public class StorageCardMapping {
     private CareerCard careerCard;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name="card_storage_id")
     private CareerCardStorage careerCardStorage;
 

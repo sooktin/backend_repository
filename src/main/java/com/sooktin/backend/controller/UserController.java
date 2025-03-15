@@ -6,6 +6,7 @@ import com.sooktin.backend.domain.User;
 import com.sooktin.backend.dto.ResponseDto;
 import com.sooktin.backend.dto.careercard.CareerCardDTO;
 import com.sooktin.backend.dto.careercard.storage.GetStorageResponse;
+import com.sooktin.backend.dto.careercard.storage.StorageResponse;
 import com.sooktin.backend.dto.user.NicknameRequest;
 import com.sooktin.backend.dto.user.NicknameResponse;
 import com.sooktin.backend.dto.user.UserGetResponse;
@@ -153,27 +154,26 @@ public class UserController {
 
 
     //CCS를 반환하면 id,userID등불필요한 데이터도 반환하기에 리스트형태의 CC 반환
-    /*@Timed(
+    @Timed(
             value = "get.user.cardstorage",
             description = "Time taken to get user's card storage",
             percentiles = {0.5, 0.95, 0.99},
             histogram = true
     )
     @GetMapping("/card-storage")
-    public ResponseEntity<GetStorageResponse> getUserCardStorage(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        GetStorageResponse response = storageService.getCardsFromStorage(userDetails.getUserId());
-
-        return ResponseEntity.ok(response);
+    public ResponseEntity<ResponseDto<StorageResponse>> getUserCardStorage(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        ResponseDto<StorageResponse> response = storageService.getCardsFromStorage(userDetails.getUserId());
+        return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
     //TODO String 반환말고 다른 좋을게잇을듯함 서비스 코드도 리팩터 필요
     @PostMapping("/card-storage/career-cards")
-    public ResponseEntity<String> saveCareerCard(@RequestParam Long careerCardId) {
-        String message = storageService.saveCardsToStorage(careerCardId);
+    public ResponseEntity<ResponseDto<Long>> saveCareerCard(@RequestParam Long careerCardId) {
+        ResponseDto<Long> message = storageService.saveCardsToStorage(careerCardId);
         //boolean으로중복값
 ;        return ResponseEntity.ok(message);
     }
-*/
+
     //삭제 기능
     //TODO @DeleteMapping("/card-storage/career-cards")
 
