@@ -75,6 +75,7 @@ public class StorageService {
         if (storageList.isEmpty()) {
             throw new IllegalArgumentException("보관함이 없습니다.");
         }
+        //TODO 왜첫번째여야하지? 걍 개인당 하나 소유이긴함
         CareerCardStorage storage = (CareerCardStorage) storageList.get(0)[1]; // 첫 번째 보관함 사용
         CareerCard careerCard = careerCardRepository.findById(careerCardId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 커리어카드입니다."));

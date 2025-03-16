@@ -38,7 +38,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String token = getJwtFromRequest(request);
             // refresh-token endpoint는 만료된 토큰도 허용
             boolean isRefreshRequest = request.getRequestURI().equals("/auth/refresh-token");
-
+            String path = request.getRequestURI();
+            if (path.startsWith("/v3/api-docs") || path.startsWith("/swagger-ui") || path.startsWith("/api-docs")) {
+                filterChain.doFilter(request, response);
+                return;
+            }
             if (StringUtils.hasText(token)) {
                 Jws<Claims> claims = jwtUtil.parserClaims(token);
                 String email = claims.getPayload().getSubject();
