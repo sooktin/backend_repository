@@ -8,6 +8,7 @@ import com.sooktin.backend.service.AuthenticationService;
 import com.sooktin.backend.service.CustomUserDetailsService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.parsers.ReturnTypeParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,6 +21,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -54,12 +56,40 @@ public class SecurityConfig {
     }
 
     @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring()
+                .requestMatchers(
+                        "/swagger-ui/**",
+                        "/swagger-ui.html",
+                        "/v3/api-docs/**",
+                        "/api-docs/**",
+                        "/swagger-resources/**",
+                        "/webjars/**",
+                        "/api-docs.html"
+                );
+    }
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf((csrf) -> csrf.disable())
+                .securityMatcher("/**")
                 .authorizeHttpRequests((requests) -> requests
-                        .requestMatchers("/auth/**","/actuator",
-                        "/swagger-ui/**", "/swagger-ui.html", "/api-docs/**","/swagger-resources/**","/webjars/**","/error").permitAll()
+                        .requestMatchers(
+                                "/auth/**",
+                                "/actuator/**",
+                                "/swagger-ui/index.html",
+                                "/swagger-ui/swagger-ui.css",
+                                "/swagger-ui/swagger-ui-bundle.js",
+                                "/swagger-ui/swagger-ui-standalone-preset.js",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs",
+                                "/v3/api-docs/**",
+                                "/api-docs/**",
+                                "/swagger-resources/**",
+                                "/webjars/**",
+                                "/error"
+                        ).permitAll()
                         .requestMatchers("/users/**","/usernotes/**","/career-cards/**").authenticated()
                         .anyRequest().authenticated()
                 )
@@ -78,8 +108,8 @@ public class SecurityConfig {
                 )
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class) //jwt 토큰 필터 확인 후 보냄
                 .sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authenticationProvider(authenticationProvider());
-                //.cors(cors -> cors.configurationSource(corsConfigurationSource()));
+                .authenticationProvider(authenticationProvider())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()));
         return http.build();
     }
 
@@ -96,19 +126,27 @@ public class SecurityConfig {
         return authProvider;
     }
 
-    /*@Bean
+    @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowCredentials(true);
-        configuration.addAllowedOriginPattern("*");
-        configuration.addAllowedMethod("*");
-        configuration.addAllowedHeader("*");
+/*        configuration.setAllowedOrigins(Arrays.asList(
+                "http://localhost:3000",
+                "http://172.20.10.8:3000",
+                "http://localhost:8080"
+                )); // 프론트엔드 IP
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setAllowCredentials(true);*/
 
+        configuration.setAllowedOriginPatterns(Arrays.asList("*")); // ✅ 모든 Origin 허용
+        configuration.setAllowedMethods(Arrays.asList("*")); // ✅ 모든 HTTP 메서드 허용 (GET, POST, PATCH 등)
+        configuration.setAllowedHeaders(Arrays.asList("*")); // ✅ 모든 헤더 허용
+        configuration.setAllowCredentials(true); // ✅ 인증 정보 포함 허용
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
-*/
+
 
 }
