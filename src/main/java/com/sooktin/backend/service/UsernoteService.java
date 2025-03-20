@@ -7,6 +7,7 @@ import com.sooktin.backend.repository.UserRepository;
 import com.sooktin.backend.repository.UsernoteRepository;
 import com.sooktin.backend.repository.UsernoteRepositoryCustom;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -97,8 +99,15 @@ public class UsernoteService {
             unless = "#result.usernotes.isEmpty()"
     )
     public SearchUsernoteResponse searchUsernotes(String keyword, Pageable pageable) {
+        keyword = sanitizeKeyword(keyword);
         Page<Usernote> usernotes= usernoteRepositoryCustom.searchUsernotesWithOrCondition(keyword, pageable);
+        log.info("📌서비스 단계에서 공백 정리된 keyword: \"{}\"", keyword);
         return SearchUsernoteResponse.from(usernotes);
 
+    }
+
+    public String sanitizeKeyword(String keyword) {
+        if (keyword == null) return "";
+        return keyword.replaceAll("[\\p{Cntrl}]", ""); // 모든 컨트롤 문자 제거
     }
 }

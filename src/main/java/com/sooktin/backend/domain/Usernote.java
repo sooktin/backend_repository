@@ -1,5 +1,6 @@
 package com.sooktin.backend.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -37,6 +38,7 @@ public class Usernote {
 
     // User와 일대일 관계 설정 (회원ID 외래키)
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnore
     @JoinColumn(name = "user_id", nullable = false) // 외래키 선언
     private User user; // 회원 정보 (User 엔티티와 연결)
 }

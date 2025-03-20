@@ -70,6 +70,7 @@ public class SecurityConfig {
                 );
     }
 
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -77,17 +78,22 @@ public class SecurityConfig {
                 .securityMatcher("/**")
                 .authorizeHttpRequests((requests) -> requests
                         .requestMatchers(
-                                "/swagger-ui/index.html",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/api-docs/**",
                                 "/auth/**",
                                 "/actuator/**",
+                                "/auth/**",
+                                "/actuator/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs",
+                                "/v3/api-docs/**",
+                                "/api-docs/**",
                                 "/swagger-resources/**",
                                 "/webjars/**",
                                 "/error"
                         ).permitAll()
-                        .requestMatchers("/users/**", "/usernotes/**", "/career-cards/**").authenticated()
+                        .requestMatchers("/users/**","/usernotes/**","/career-cards/**").authenticated()
                         .anyRequest().authenticated()
                 )
 
@@ -133,8 +139,9 @@ public class SecurityConfig {
                 "http://localhost:8080"
         )); // 프론트엔드 IP
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
-        configuration.setAllowCredentials(true);
+        configuration.setAllowedMethods(Arrays.asList("*")); // ✅ 모든 HTTP 메서드 허용 (GET, POST, PATCH 등)
+        configuration.setAllowedHeaders(Arrays.asList("*")); // ✅ 모든 헤더 허용
+        configuration.setAllowCredentials(true); // ✅ 인증 정보 포함 허용
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

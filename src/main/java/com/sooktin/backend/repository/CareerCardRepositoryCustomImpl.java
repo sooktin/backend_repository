@@ -56,22 +56,35 @@ public class CareerCardRepositoryCustomImpl implements CareerCardRepositoryCusto
         BooleanBuilder builder = new BooleanBuilder();
 
         if (keyword != null && !keyword.trim().isEmpty()) {
-            String[] keywords = keyword.trim().split(" "); //.split("\\s+")
+            String[] keywords = keyword.trim().split("\\s+");
             BooleanBuilder orBuilder = new BooleanBuilder();
 
             for (String singleKeyword : keywords) {
-                String pattern = "%" + keyword + "%";
-                orBuilder.or(
-                        cc.major.like(pattern)
-                                .or(cc.department.like(pattern))
-                                .or(cc.job.like(pattern))
-                                .or(cc.experiences.any().company.like(pattern))
-                                .or(cc.skills.any().like(pattern))
-                );
-            }
-            builder.and(orBuilder);
+                BooleanBuilder condition = new BooleanBuilder();
+                boolean isExactMatch = singleKeyword.startsWith("\"") && singleKeyword.endsWith("\"");
+                singleKeyword = singleKeyword.replaceAll("^\"|\"$", "");
 
+                if (isExactMatch) {
+                    condition.or(cc.major.equalsIgnoreCase(singleKeyword))
+                            .or(cc.department.equalsIgnoreCase(singleKeyword))
+                            .or(cc.job.equalsIgnoreCase(singleKeyword))
+                            .or(cc.experiences.any().company.equalsIgnoreCase(singleKeyword))
+                            .or(cc.skills.any().equalsIgnoreCase(singleKeyword));
+                } else {
+                    String pattern = "%" + singleKeyword + "%";
+                    condition.or(cc.major.likeIgnoreCase(pattern))
+                            .or(cc.department.likeIgnoreCase(pattern))
+                            .or(cc.job.likeIgnoreCase(pattern))
+                            .or(cc.experiences.any().company.likeIgnoreCase(pattern))
+                            .or(cc.skills.any().likeIgnoreCase(pattern));
+                }
+
+                orBuilder.or(condition);
+            }
+
+            builder.and(orBuilder);
         }
+
         List<CareerCard> content = queryFactory
                 .selectFrom(cc)
                 .where(builder)

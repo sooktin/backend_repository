@@ -173,6 +173,7 @@ public class CareerCardService {
     )
     public SearchCareerCardResponse searchWithDtos(String keyword, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
+        keyword = sanitizeKeyword(keyword);
         Page<CareerCard> results = search(keyword, pageable);
 
         return new SearchCareerCardResponse(
@@ -186,11 +187,17 @@ public class CareerCardService {
 
     // 커리어카드 검색
     public Page<CareerCard> search(String keyword, Pageable pageable) {
+        keyword = sanitizeKeyword(keyword);
         if (keyword == null || keyword.trim().isEmpty()) {
             throw new IllegalArgumentException("검색어는 필수 입력값입니다.");
         }
 
         return careerCardRepository.searchCareerCardsWithOrCondition(keyword, pageable);
+    }
+
+    public String sanitizeKeyword(String keyword) {
+        if (keyword == null) return "";
+        return keyword.replaceAll("[\\p{Cntrl}]", ""); // 모든 컨트롤 문자 제거
     }
 
 }
