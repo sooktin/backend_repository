@@ -18,6 +18,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.hibernate.query.sqm.tree.SqmNode.log;
+
 @RestControllerAdvice
 public class ResponseExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -114,6 +116,7 @@ public class ResponseExceptionHandler {
                 "내부 서버 오류입니다. 다시 접속해주세요.",
                 null
         );
+        log.error("RuntimeException occurred: {}", ex.getMessage(), ex);
         return ResponseEntity.internalServerError().body(response);
     }
 

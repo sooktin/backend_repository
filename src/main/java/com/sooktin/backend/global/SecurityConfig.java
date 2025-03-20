@@ -44,11 +44,11 @@ public class SecurityConfig {
     private final StringRedisTemplate redisTemplate;
 
 
-
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter(jwtUtil,redisTemplate,userDetailsService);
+        return new JwtAuthenticationFilter(jwtUtil, redisTemplate, userDetailsService);
     }
+
     //BCryptPasswordEncoder는 passwordEncoder 인터페이스를 구현한다.
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
@@ -59,15 +59,18 @@ public class SecurityConfig {
     public WebSecurityCustomizer webSecurityCustomizer() {
         return (web) -> web.ignoring()
                 .requestMatchers(
+                        "/swagger",
+                        "swagger-ui.html",
+                        "/swagger-ui/index.html",
                         "/swagger-ui/**",
-                        "/swagger-ui.html",
                         "/v3/api-docs/**",
-                        "/api-docs/**",
-                        "/swagger-resources/**",
-                        "/webjars/**",
-                        "/api-docs.html"
+                        "/api-docs",
+                        "/api-docs/**"
+
                 );
     }
+
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -75,13 +78,13 @@ public class SecurityConfig {
                 .securityMatcher("/**")
                 .authorizeHttpRequests((requests) -> requests
                         .requestMatchers(
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/api-docs/**",
                                 "/auth/**",
                                 "/actuator/**",
-                                "/swagger-ui/index.html",
-                                "/swagger-ui/swagger-ui.css",
-                                "/swagger-ui/swagger-ui-bundle.js",
-                                "/swagger-ui/swagger-ui-standalone-preset.js",
-                                "/swagger-ui/**",
+                                "/auth/**",
+                                "/actuator/**",
                                 "/swagger-ui.html",
                                 "/v3/api-docs",
                                 "/v3/api-docs/**",
@@ -117,6 +120,7 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
+
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
@@ -129,16 +133,12 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-/*        configuration.setAllowedOrigins(Arrays.asList(
+        configuration.setAllowedOrigins(Arrays.asList(
                 "http://localhost:3000",
                 "http://172.20.10.8:3000",
                 "http://localhost:8080"
-                )); // 프론트엔드 IP
+        )); // 프론트엔드 IP
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
-        configuration.setAllowCredentials(true);*/
-
-        configuration.setAllowedOriginPatterns(Arrays.asList("*")); // ✅ 모든 Origin 허용
         configuration.setAllowedMethods(Arrays.asList("*")); // ✅ 모든 HTTP 메서드 허용 (GET, POST, PATCH 등)
         configuration.setAllowedHeaders(Arrays.asList("*")); // ✅ 모든 헤더 허용
         configuration.setAllowCredentials(true); // ✅ 인증 정보 포함 허용

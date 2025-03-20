@@ -14,37 +14,34 @@ import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
 public interface CareerCardMapper {
-        //unknown property 있던 까닭 :>필드 이름 불일치 componentmodel로 빈 인식
-    @Mapping(target = "userId", expression = "java(mapUserId(entity.getUser()))")
-    @Mapping(target = "skills", expression = "java(mapSkills(entity.getSkills()))")
-    @Mapping(target = "companiesInExperience", expression = "java(mapCompaniesInExperience(entity.getExperiences()))")
-    @Mapping(target = "imageUrls", expression = "java(mapImageUrls(entity.getImageUrls()))")
+    CareerCardMapper INSTANCE = Mappers.getMapper(CareerCardMapper.class);
+
+    @Mapping(target = "cardId", source = "id")
+    @Mapping(target = "nickname", source = "user.nickname")
+    @Mapping(target = "userId", source = "user.id")
+    @Mapping(target = "major", source = "major")
+    @Mapping(target = "student_num", source = "student_num")
+    @Mapping(target = "student_status", source = "student_status")
+    @Mapping(target = "grade", source = "grade")
+    @Mapping(target = "job", source = "job")
+    @Mapping(target = "department", source = "department")
+    @Mapping(target = "experiences", expression = "java(mapExperiences(entity.getExperiences()))")
+    @Mapping(target = "skills", source = "skills")
+    @Mapping(target = "imageUrls", source = "imageUrls")
     CareerCardDTO toDto(CareerCard entity);
 
-    default List<CareerCardDTO> toDtoList(List<CareerCard> entities) {
-        if (entities == null) return new ArrayList<>();
-        return entities.stream().map(this::toDto).collect(Collectors.toList());
-    };
-
-    default Long mapUserId(User user) {
-        return user != null ? user.getId() : null;
-    }
-
-    default List<String> mapSkills(List<String> skills) {
-        return skills != null && !skills.isEmpty() ? skills.subList(0, Math.min(skills.size(), 8)) : new ArrayList<>();
-    }
-
-    default List<String> mapCompaniesInExperience(List<Experience> experiences) {
-        if (experiences == null || experiences.isEmpty()) return new ArrayList<>();
+    default List<CareerCardDTO.ExperienceDTO> mapExperiences(List<Experience> experiences) {
         return experiences.stream()
-                .map(Experience::getCompany)
-                .filter(Objects::nonNull)
-                .distinct()
+                .map(exp -> CareerCardDTO.ExperienceDTO.builder()
+                        .company(exp.getCompany())
+                        .period(exp.getPeriod())
+                        .build())
                 .collect(Collectors.toList());
-
     }
 
-    default List<String> mapImageUrls(List<String> imageUrls) {
-        return (imageUrls != null) ? new ArrayList<>(imageUrls) : new ArrayList<>();
+    default List<CareerCardDTO> toDtoList(List<CareerCard> entities) {
+        return entities.stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
     }
 }

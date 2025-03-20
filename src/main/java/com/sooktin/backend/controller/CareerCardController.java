@@ -190,7 +190,7 @@ public class CareerCardController {
 
             validateOwnership(careerCard, userDetails.getUserId());
 
-            careerCardService.deleteById(careerCard.getId());
+            careerCardService.deleteById(careerCard.getCardId());
             return ResponseUtil.buildResponse(204, "커리어카드를 성공적으로 삭제했습니다.", null);
         } catch (IllegalArgumentException e) {
             return ResponseUtil.buildResponse(400, e.getMessage(), null);

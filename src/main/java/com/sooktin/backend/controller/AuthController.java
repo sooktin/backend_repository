@@ -24,7 +24,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
@@ -92,9 +94,16 @@ public class AuthController {
 
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(@RequestBody LogoutRequest logoutRequestDto) {
-        authenticationService.logout(logoutRequestDto.getEmail());
-        return ResponseEntity.ok().build();
+    public ResponseEntity<?> logout() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new RuntimeException("로그아웃 실패: 인증 정보 없음");
+        }
+
+        String email = authentication.getName(); // 현재 인증된 사용자의 이메일
+
+        authenticationService.logout(email);
+        return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("password")

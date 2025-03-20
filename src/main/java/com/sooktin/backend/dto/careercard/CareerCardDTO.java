@@ -16,18 +16,31 @@ import java.util.List;
 @AllArgsConstructor
 public class CareerCardDTO implements Serializable {
     private static final long serialVersionUID = 1L;
-    private Long id;
+    private Long cardId;
+    private String nickname;
     private String major;
+    private String student_num;
+    private String student_status;
+    private Integer grade;
     private String job;
     private Long userId;
     private String department;
-    private String student_num;
     @Builder.Default
     private List<String> skills = new ArrayList<>();
     @Builder.Default
-    private List<String> companiesInExperience = new ArrayList<>();
+    private List<ExperienceDTO> experiences = new ArrayList<>();
     @Builder.Default
     private List<String> imageUrls =new ArrayList<>(); //imageurls 중 첫번째 주소 반환!
 
+    @Data
+    @Builder
+    @NoArgsConstructor // 기본 생성자 추가 (필수)
+    @AllArgsConstructor
+    public static class ExperienceDTO {
+        private String company;
+        private String period;
+
+
+    }
 
 }
