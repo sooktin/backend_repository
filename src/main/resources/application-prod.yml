@@ -71,8 +71,7 @@ spring:
           connectiontimeout: 5000
   data:
     redis:
-#      host: master.sooktin-redis.dvwzww.apn2.cache.amazonaws.com
-      host: 172.31.49.133
+      host: master.sooktin-redis.dvwzww.apn2.cache.amazonaws.com
       port: 6379
       timeout: 5000
 
@@ -105,6 +104,8 @@ logging:
     com.amazonaws: DEBUG
     io.awspring.cloud: DEBUG
     org.springframework.cloud.aws: DEBUG
+    org.springframework.data.redis: DEBUG
+    io.lettuce.core: DEBUG
   file:
     name: /var/log/sooktin/application.log
     max-size: 10MB
