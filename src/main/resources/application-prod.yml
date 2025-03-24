@@ -73,7 +73,10 @@ spring:
     redis:
       host: master.sooktin-redis.dvwzww.apn2.cache.amazonaws.com
       port: 6379
-      timeout: 5000
+      timeout: 10000
+      ssl:
+        enabled: false
+
 
 management:
   endpoints:
