@@ -9,17 +9,9 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=prod
       - AWS_DEFAULT_REGION=ap-northeast-2
-      - SPRING_DATA_REDIS_HOST=redis
     volumes:
       - ~/.aws:/root/.aws:ro
-    depends_on:
-      - redis
 
-  redis:
-    image: redis:latest
-    # network_mode: "host" 대신
-    networks:
-      - app-network
 
   nginx:
     image: nginx:latest

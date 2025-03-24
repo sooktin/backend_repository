@@ -71,7 +71,7 @@ spring:
           connectiontimeout: 5000
   data:
     redis:
-      host: localhost
+      host: master.sooktin-redis.dvwzww.apn2.cache.amazonaws.com
       port: 6379
       timeout: 5000
 
