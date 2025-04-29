@@ -21,4 +21,7 @@ public interface StorageRepository extends JpaRepository<CareerCardStorage,Long>
             "WHERE s.user.id = :userId"
     )
     List<Object[]> findCareerCardsByUserId(@Param("userId") Long userId);
+
+    @Query("SELECT s FROM CareerCardStorage s WHERE s.user.id = :userId")
+    Optional<CareerCardStorage> findByUserId(@Param("userId") Long userId); // Optional<CareerCardStorage>
 }

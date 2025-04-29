@@ -174,7 +174,11 @@ public class UserController {
 ;        return ResponseEntity.ok(message);
     }
 
-    //삭제 기능
-    //TODO @DeleteMapping("/card-storage/career-cards")
+    //위랑 엔드포인트 same해요
+    @DeleteMapping("/card-storage/career-cards")
+    public ResponseEntity<ResponseDto<Long>> deleteCareerCard(@RequestParam Long careerCardId) {
+        ResponseDto<Long> message = storageService.deleteCardsFromStorage(careerCardId);
+        return ResponseEntity.ok(message);
+    }
 
 }

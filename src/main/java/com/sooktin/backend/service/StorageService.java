@@ -93,4 +93,14 @@ public class StorageService {
         }
         throw new RuntimeException("로그인된 사용자가 없습니다.");
     }
+
+    public ResponseDto<Long> deleteCardsFromStorage(Long careerCardId) {
+        Long userId = getCurrentUserId();
+        CareerCardStorage storage = storageRepository.findByUserId(userId)
+                .orElseThrow(()-> new IllegalArgumentException("보관함이 없습니다.")); //보관함 찾기!
+        StorageCardMapping mapping = storageCardMappingRepository.findByCareerCardStorageAndCareerCardId(storage, careerCardId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 카드입니다."));
+        storageCardMappingRepository.delete(mapping);
+        return new ResponseDto<>(200, "커리어카드가 보관함에서 성공적으로 삭제되었습니다.", mapping.getId());
+    }
 }
