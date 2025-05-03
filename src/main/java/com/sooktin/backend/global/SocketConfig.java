@@ -2,18 +2,26 @@ package com.sooktin.backend.global;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.config.annotation.*;
 
 @Configuration
-@EnableWebSocket
-public class SocketConfig implements WebSocketConfigurer {
-    @Override
-    public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(chatWebSocketHandler(), "/chat").setAllowedOrigins("*");
+@EnableWebSocketMessageBroker
+public class SocketConfig implements WebSocketMessageBrokerConfigurer {
+    public void configureMessageBroker(MessageBrokerRegistry registry) {
+       registry.enableStompBrokerRelay("/topic", "/queue")
+               .setRelayHost("localhost")
+               .setRelayPort(61613)
+               .setClientLogin("guest")
+               .setClientPasscode("guest");
+
+       registry.setApplicationDestinationPrefixes("/app");
     }
-    @Bean
-    public ChatWebSocketHandler chatWebSocketHandler() {
-        return new ChatWebSocketHandler();
+
+    public void registerStompEndpoints(StompEndpointRegistry registry) {
+        registry.addEndpoint("/chat").setAllowedOrigins("*").withSockJS();
     }
+
+
 }
