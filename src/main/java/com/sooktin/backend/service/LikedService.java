@@ -9,7 +9,9 @@ import com.sooktin.backend.repository.CommentRepository;
 import com.sooktin.backend.repository.LikedRepository;
 import com.sooktin.backend.repository.UserRepository;
 import com.sooktin.backend.repository.UsernoteRepository;
+import com.sooktin.backend.service.alarm.AlarmService;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,23 +20,14 @@ import java.util.Optional;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class LikedService {
 
     private final LikedRepository likedRepository;
     private final UsernoteRepository usernoteRepository;
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
-
-    @Autowired
-    public LikedService(LikedRepository likedRepository,
-                       UsernoteRepository usernoteRepository,
-                       UserRepository userRepository,
-                        CommentRepository commentRepository) {
-        this.likedRepository = likedRepository;
-        this.usernoteRepository = usernoteRepository;
-        this.userRepository = userRepository;
-        this.commentRepository = commentRepository;
-    }
+    private final AlarmService alarmService;
 
     // 게시글 좋아요 토글
     public LikedResponse toggleNoteLike(Long noteId, Long userId) {
@@ -56,6 +49,11 @@ public class LikedService {
             newLike.setPost(note);
             newLike.setUser(user);
             likedRepository.save(newLike);
+
+            if (!note.getUser().getId().equals(userId)) { // 자기 글이면 알람 X
+                alarmService.sendLikeAlarm(user, note.getUser(), note.getId());
+            }
+
             return LikedResponse.liked();
         }
     }

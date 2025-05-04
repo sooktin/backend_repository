@@ -9,5 +9,8 @@ import java.util.Optional;
 
 @Repository
 public interface StorageCardMappingRepository extends JpaRepository<StorageCardMapping, Long> {
+
     Optional<StorageCardMapping> findByCareerCardStorageAndCareerCardId(CareerCardStorage careerCardStorage, Long cardId);
+
+    boolean existsByCareerCard_UserIdAndCareerCardStorage_UserId(Long cardOwnerId, Long storageOwnerId);
 }
