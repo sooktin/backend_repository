@@ -41,4 +41,4 @@ Git branch 전략: GitHub Flow 방식
 Front: React
 Server: Spring
 DB: MySQL,Redis
-Cloud/infra: Elasitc Cache, beanstalk, EC2, GitHub Actions, Docker
+Cloud/infra: Elasitc Cache, EC2, GitHub Actions, Docker
