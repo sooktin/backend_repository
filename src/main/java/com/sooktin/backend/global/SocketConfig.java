@@ -16,11 +16,11 @@ public class SocketConfig implements WebSocketMessageBrokerConfigurer {
                .setClientLogin("guest")
                .setClientPasscode("guest");
 
-       registry.setApplicationDestinationPrefixes("/app");
+       //registry.setApplicationDestinationPrefixes("/app");
     }
 
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/chat").setAllowedOrigins("*").withSockJS();
+        registry.addEndpoint("/chat").setAllowedOrigins("*"); //.withSockJS();잠깐뺏어욤
     }
 
 
