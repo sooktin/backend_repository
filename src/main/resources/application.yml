@@ -67,7 +67,11 @@ spring:
       host: localhost
       port: 6379
 
-
+  rabbitmq:
+    username: guest
+    password: guest
+    host: localhost
+    port: 5672
 springdoc:
   api-docs:
     path: /v3/api-docs
@@ -104,12 +108,15 @@ logging:
     com:
       sooktin:
         backend:
+          auth: DEBUG
           global:
             exception: TRACE
     org:
       springdoc: TRACE
       springframework:
-        web: TRACE
+        messaging: DEBUG
+        web:
+          socket: DEBUG
         security: DEBUG
         cache: DEBUG
       data:

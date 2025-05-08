@@ -81,6 +81,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 path.startsWith("/swagger-resources") ||
                 path.startsWith("/webjars/") ||
                 path.startsWith("/actuator") ||
+                path.startsWith("/chat") || path.startsWith("/app") ||
+                path.startsWith("/topic") || path.startsWith("/queue") ||
                 path.equals("/error");
 
         log.info("Request path: {}, Should skip filter: {}", path, shouldSkip);
