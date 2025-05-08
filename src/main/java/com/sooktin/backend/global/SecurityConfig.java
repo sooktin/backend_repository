@@ -91,7 +91,13 @@ public class SecurityConfig {
                                 "/api-docs/**",
                                 "/swagger-resources/**",
                                 "/webjars/**",
-                                "/error"
+                                "/error",
+                                "/chat/**",
+                                "/app/**",
+                                "/topic/**",
+                                "/queue/**",
+                                "/search/popular/**",
+                                "/search/trends/**"
                         ).permitAll()
                         .requestMatchers("/users/**","/usernotes/**","/career-cards/**").authenticated()
                         .anyRequest().authenticated()
