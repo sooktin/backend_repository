@@ -95,7 +95,9 @@ public class SecurityConfig {
                                 "/chat/**",
                                 "/app/**",
                                 "/topic/**",
-                                "/queue/**"
+                                "/queue/**",
+                                "/search/popular/**",
+                                "/search/trends/**"
                         ).permitAll()
                         .requestMatchers("/users/**","/usernotes/**","/career-cards/**").authenticated()
                         .anyRequest().authenticated()
