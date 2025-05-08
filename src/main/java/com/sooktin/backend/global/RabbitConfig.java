@@ -58,15 +58,15 @@ public class RabbitConfig {
 
     @Bean
     SimpleRabbitListenerContainerFactory factory(ConnectionFactory connectionFactory) {
-        final SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
+        SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
         factory.setConnectionFactory(connectionFactory);
         factory.setMessageConverter(jsonMessageConverter());
         return factory;
     }
 
     @Bean
-    public RabbitTemplate rabbitTemplate() {
-        RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory());
+    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
+        RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
         rabbitTemplate.setMessageConverter(jsonMessageConverter());
         rabbitTemplate.setRoutingKey(ROUTING_KEY);
         return rabbitTemplate;
@@ -85,15 +85,24 @@ public class RabbitConfig {
     @Bean
     public Jackson2JsonMessageConverter jsonMessageConverter() {
         ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, true);
-        objectMapper.registerModule(dateTimeModule());
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-        Jackson2JsonMessageConverter converter = new Jackson2JsonMessageConverter(objectMapper);
-        return converter;
+        return new Jackson2JsonMessageConverter(objectMapper);
     }
 
     @Bean
-    public Module dateTimeModule() {
-        return new JavaTimeModule();
+    public TopicExchange chatExchange() {
+        return new TopicExchange("chat.exchange");
+    }
+
+    @Bean
+    public Queue chatQueue(@Value("${spring.chat.queue.name:chat.queue}") String queueName) {
+        return new Queue(queueName,true);
+    }
+
+    @Bean
+    public Binding chatBinding(Queue chatQueue, TopicExchange chatExchange) {
+        return BindingBuilder.bind(chatQueue).to(chatExchange).with(ROUTING_KEY);
     }
 }
