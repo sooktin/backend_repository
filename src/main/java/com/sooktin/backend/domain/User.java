@@ -51,6 +51,8 @@ public class User {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private CareerCardStorage careerCardStorage;  //my CC's storage..
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL,  fetch = FetchType.LAZY)
+    private List<UserChatRoom> userChatRooms = new ArrayList<>();
 
     public void setPassword(String password) {
         this.password = password;
