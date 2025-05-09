@@ -104,5 +104,19 @@ public class ChatRoomService {
                 .orElse(null);
     }
 
-    // 기존 메서드들...
+    /**
+     * 새 채팅방을 생성합니다.
+     */
+    @Transactional
+    public ChatRoom createChatRoom(ChatRoom chatRoom) {
+        return chatRoomRepository.save(chatRoom);
+    }
+
+    /**
+     * ID로 채팅방을 조회합니다.
+     */
+    @Transactional(readOnly = true)
+    public Optional<ChatRoom> getChatRoomById(Long roomId) {
+        return chatRoomRepository.findById(roomId);
+    }
 }
