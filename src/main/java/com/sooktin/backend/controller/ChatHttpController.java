@@ -5,12 +5,12 @@ import com.sooktin.backend.domain.ChatRoom;
 import com.sooktin.backend.domain.User;
 import com.sooktin.backend.domain.UserChatRoom;
 import com.sooktin.backend.dto.ResponseDto;
-import com.sooktin.backend.dto.chat.ChatRoomDTO;
+import com.sooktin.backend.dto.chat.ChatRoomSummaryDTO;
 import com.sooktin.backend.dto.chat.ChatRoomStatusUpdateRequest;
 import com.sooktin.backend.dto.chat.UserChatRoomDTO;
-import com.sooktin.backend.global.util.ResponseUtil;
 import com.sooktin.backend.service.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RestController
 @RequestMapping("/chat")
 @RequiredArgsConstructor
@@ -33,19 +34,21 @@ public class ChatHttpController {
 
     //TODO 프로필사진URI
     @GetMapping("/rooms")
-    public ResponseEntity<ResponseDto<List<ChatRoomDTO>>> getUserChatRooms(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestParam(required = false) Long userId
+    public ResponseEntity<ResponseDto<List<ChatRoomSummaryDTO>>> getUserChatRooms(
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Long targetUserId = userId != null ? userId: userDetails.getUserId();
+        log.info("채팅방 목록 조회 요청. 사용자 ID: {}", userDetails.getUserId());
 
-        List<ChatRoom> chatRooms = userChatRoomService.getUserChatRooms(targetUserId);
+        List<ChatRoomSummaryDTO> chatRooms = chatService.getUserChatRooms(userDetails.getUserId());
 
-        List<ChatRoomDTO> chatRoomDTOs = chatRooms.stream()
-                .map(ChatRoomDTO::new)
-                .collect(Collectors.toList());
+        log.info("채팅방 목록 조회 완료. 사용자 ID: {}, 채팅방 수: {}",
+                userDetails.getUserId(), chatRooms.size());
 
-        return ResponseEntity.ok(new ResponseDto<>(200, "채팅방 목록을 성공적으로 가져왔습니다.", chatRoomDTOs));
+        return ResponseEntity.ok(new ResponseDto<>(
+                200,
+                "채팅방 목록을 성공적으로 가져왔습니다.",
+                chatRooms
+        ));
     }
 
     @PostMapping("/rooms")
@@ -56,12 +59,12 @@ public class ChatHttpController {
     ) {
         ChatRoom chatRoom = new ChatRoom(LocalDateTime.now());
 
-        if (name != null && !name.trim().isEmpty()) {
+        /*if (name != null && !name.trim().isEmpty()) {
             chatRoom.setName(name);
-            chatRoom.setDirectMessage(false); //group
+
         } else {
             chatRoom.setDirectMessage(true);
-        }
+        }*/
 
         ChatRoom savedChatRoom = chatRoomService.createChatRoom(chatRoom);
 

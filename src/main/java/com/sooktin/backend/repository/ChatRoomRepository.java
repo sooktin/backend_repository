@@ -25,15 +25,5 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
     @Query("SELECT cr FROM ChatRoom cr JOIN cr.userChatRooms ucr WHERE ucr.user.id = :userId ORDER BY cr.lastMessageAt DESC")
     List<ChatRoom> findRoomsByUserIdOrderByLastActivityDesc(@Param("userId") Long userId);
 
-    /**
-     * 특정 두 사용자 간의 1:1 채팅방 찾기
-     * 두 사용자가 모두 참여하고 있는 채팅방 중 참여자가 정확히 2명인 채팅방을 찾음
-     */
-    @Query("SELECT cr FROM ChatRoom cr WHERE cr.isDirectMessage = true " +
-            "AND EXISTS (SELECT 1 FROM UserChatRoom ucr1 WHERE ucr1.room = cr AND ucr1.user.id = :userId1) " +
-            "AND EXISTS (SELECT 1 FROM UserChatRoom ucr2 WHERE ucr2.room = cr AND ucr2.user.id = :userId2) " +
-            "AND (SELECT COUNT(ucr) FROM UserChatRoom ucr WHERE ucr.room = cr) = 2")
-    Optional<ChatRoom> findDirectMessageRoom(
-            @Param("userId1") Long userId1,
-            @Param("userId2") Long userId2);
+
 }

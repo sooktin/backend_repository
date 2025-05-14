@@ -22,7 +22,6 @@ public class ChatRoom {
 
     private String name;
     private LocalDateTime createdAt;
-    private boolean isDirectMessage = true;
 
     private LocalDateTime lastMessageAt;
     private String lastMessagePreview;

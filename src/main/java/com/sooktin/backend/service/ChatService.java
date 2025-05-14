@@ -1,18 +1,20 @@
 package com.sooktin.backend.service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
+import com.sooktin.backend.domain.ChatRoom;
 import com.sooktin.backend.domain.User;
+import com.sooktin.backend.domain.UserChatRoom;
+import com.sooktin.backend.dto.chat.ChatRoomSummaryDTO;
 import com.sooktin.backend.global.RabbitConfig;
-import com.sooktin.backend.repository.ChatRoomRepository;
-import com.sooktin.backend.repository.UserRepository;
+import com.sooktin.backend.repository.*;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import com.sooktin.backend.domain.ChatMessage.MessageType;
 import com.sooktin.backend.domain.ChatMessage;
-import com.sooktin.backend.repository.ChatRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,10 +22,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class ChatService {
     private final SimpMessagingTemplate messagingTemplate;
     private final RabbitTemplate rabbitTemplate;
     private final ChatRepository chatRepository;
+    private final UserChatRoomRepository userChatRoomRepository;
+    private final CareerCardRepository careerCardRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final UserRepository userRepository;
     private final PresenceService presenceService;
@@ -32,18 +37,89 @@ public class ChatService {
     @Value("${spring.messaging.in-memory:false}")
     private boolean useInMemoryBroker;
     
-    public ChatService(SimpMessagingTemplate messagingTemplate, 
-                      RabbitTemplate rabbitTemplate,
-                      ChatRepository chatRepository, 
-                      ChatRoomRepository chatRoomRepository,
-                      UserRepository userRepository,
-                      PresenceService presenceService) {
-        this.messagingTemplate = messagingTemplate;
-        this.rabbitTemplate = rabbitTemplate;
-        this.chatRepository = chatRepository;
-        this.chatRoomRepository = chatRoomRepository;
-        this.userRepository = userRepository;
-        this.presenceService = presenceService;
+    @Transactional(readOnly = true)
+    public List<ChatRoomSummaryDTO> getUserChatRooms(Long userId) {
+        User currentUser = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        List<UserChatRoom> userChatRooms = userChatRoomRepository.findByUser(currentUser);
+
+        return userChatRooms.stream()
+                .map(ucr->convertToChatRoomSummary(ucr,userId))
+                .collect(Collectors.toList());
+    }
+
+    private ChatRoomSummaryDTO convertToChatRoomSummary(UserChatRoom ucr, Long userId) {
+        ChatRoom room = ucr.getRoom();
+
+        // 채팅방 기본 정보 설정
+        ChatRoomSummaryDTO.ChatRoomSummaryDTOBuilder builder = ChatRoomSummaryDTO.builder()
+                .roomId(room.getId())
+                .lastMessage(room.getLastMessagePreview())
+                .lastMessageAt(room.getLastMessageAt())
+                .createdAt(room.getCreatedAt())
+                .unreadCount(ucr.getUnreadCount());
+
+        try {
+            // 상대방 정보 가져오기 시도
+            User opponentUser = findOtherUser(room, userId);
+
+            if (opponentUser != null) {
+                // 상대방 정보 추가
+                builder.opponentUserNickname(opponentUser.getNickname())
+                        .opponentUserId(opponentUser.getId());
+
+                // 프로필 이미지 안전하게 가져오기
+                try {
+                    if (opponentUser.getCareerCard() != null &&
+                            opponentUser.getCareerCard().getImageUrls() != null &&
+                            !opponentUser.getCareerCard().getImageUrls().isEmpty()) {
+                        builder.opponentImageUrl(opponentUser.getCareerCard().getImageUrls().get(0));
+                    }
+                } catch (Exception e) {
+                    log.warn("프로필 이미지를 가져오는 데 실패했습니다. 사용자 ID: {}", opponentUser.getId(), e);
+                }
+            } else {
+                // 상대방이 없는 경우 기본값 설정
+                builder.opponentUserNickname("알 수 없는 사용자")
+                        .opponentUserId(0L);
+                log.warn("채팅방 ID {}에 상대방이 없습니다.", room.getId());
+            }
+        } catch (Exception e) {
+            // 예외 발생 시 기본값 설정
+            builder.opponentUserNickname("알 수 없는 사용자")
+                    .opponentUserId(0L);
+            log.error("채팅방 ID {}의 상대방 정보를 가져오는 데 실패했습니다: {}", room.getId(), e.getMessage());
+        }
+
+        return builder.build();
+    }
+
+    private User findOtherUser(ChatRoom room, Long currentUserId) {
+        if (room == null) {
+            throw new IllegalArgumentException("채팅방이 null입니다.");
+        }
+
+        return userChatRoomRepository.findByRoom(room).stream()
+                .map(UserChatRoom::getUser)
+                .filter(user -> user!=null && !user.getId().equals(currentUserId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("채팅방에 상대방이 없습니다."));
+    }
+
+    private String getProfileImage(User user) {
+        try {
+            if (user != null && user.getCareerCard() != null &&
+                    user.getCareerCard().getImageUrls() != null &&
+                    !user.getCareerCard().getImageUrls().isEmpty()) {
+                return user.getCareerCard().getImageUrls().get(0);
+            }
+        } catch (Exception e) {
+            log.warn("사용자 ID {}의 프로필 이미지를 가져오는 데 실패했습니다: {}",
+                    user != null ? user.getId() : "null", e.getMessage());
+        }
+        // 기본 이미지 URL 또는 null 반환
+        return null;
     }
 
     @Transactional

@@ -20,12 +20,6 @@ public class ChatWebSocketController {
     private final ChatService chatService;
     private final PresenceService presenceService;
 
-    @MessageMapping("/ping")
-    @SendTo("/topic/pong")
-    public String handlePing() {
-        System.out.println("Revieved ping");
-        return "pong";
-    }
 
     @MessageMapping("/chat/sendMessage/{roomId}")
     public void handleChatMessage(@Payload ChatMessage message, @DestinationVariable String roomId) {
@@ -35,7 +29,7 @@ public class ChatWebSocketController {
     }
  
     //트랙킹, mark read message
-    @MessageMapping("/chat.view/{roomId}")
+    @MessageMapping("/chat/view/{roomId}")
     public void handleRoomView(@Payload ChatMessage message, @DestinationVariable String roomId, SimpMessageHeaderAccessor headerAccessor) {
         headerAccessor.getSessionAttributes().put("nickname", message.getSender());
         headerAccessor.getSessionAttributes().put("roomId", roomId);
@@ -47,7 +41,7 @@ public class ChatWebSocketController {
         chatService.notifyUserViewing(roomId,message);
     }
     //session state cleaning! 사용자가 나갔는지 알려주기?
-    @MessageMapping("/chat.exitView/{roomId}")
+    @MessageMapping("/chat/exitView/{roomId}")
     public void handleExitView(@Payload ChatMessage message, @DestinationVariable String roomId, SimpMessageHeaderAccessor headerAccessor) {
         headerAccessor.getSessionAttributes().remove("nickname");
         headerAccessor.getSessionAttributes().remove("roomId");
