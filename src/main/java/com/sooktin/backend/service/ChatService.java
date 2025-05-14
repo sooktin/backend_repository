@@ -3,9 +3,11 @@ package com.sooktin.backend.service;
 import java.util.List;
 
 import com.sooktin.backend.domain.User;
+import com.sooktin.backend.global.RabbitConfig;
 import com.sooktin.backend.repository.ChatRoomRepository;
 import com.sooktin.backend.repository.UserRepository;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import com.sooktin.backend.domain.ChatMessage.MessageType;
@@ -13,10 +15,11 @@ import com.sooktin.backend.domain.ChatMessage;
 import com.sooktin.backend.repository.ChatRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@RequiredArgsConstructor
+@Slf4j
 public class ChatService {
     private final SimpMessagingTemplate messagingTemplate;
     private final RabbitTemplate rabbitTemplate;
@@ -24,28 +27,49 @@ public class ChatService {
     private final ChatRoomRepository chatRoomRepository;
     private final UserRepository userRepository;
     private final PresenceService presenceService;
-    private final String EXCHANGE_NAME = "chat.exchange";
+    private static final String CHAT_EXCHANGE = "chat.exchange";
+    
+    @Value("${spring.messaging.in-memory:false}")
+    private boolean useInMemoryBroker;
+    
+    public ChatService(SimpMessagingTemplate messagingTemplate, 
+                      RabbitTemplate rabbitTemplate,
+                      ChatRepository chatRepository, 
+                      ChatRoomRepository chatRoomRepository,
+                      UserRepository userRepository,
+                      PresenceService presenceService) {
+        this.messagingTemplate = messagingTemplate;
+        this.rabbitTemplate = rabbitTemplate;
+        this.chatRepository = chatRepository;
+        this.chatRoomRepository = chatRoomRepository;
+        this.userRepository = userRepository;
+        this.presenceService = presenceService;
+    }
 
     @Transactional
     public void sendMessage(String roomId, ChatMessage message) {
         try {
-            System.out.println("Received message for roomId: " + roomId);
-            System.out.println("Message: " + message.getSender() + ", " + message.getContent());
+            log.info("Received message for roomId: {}", roomId);
+            log.info("Message: {}, {}", message.getSender(), message.getContent());
 
             message.setRoomId(roomId);
             message.setType(MessageType.CHAT);
 
             ChatMessage savedMessage = chatRepository.save(message);
-            System.out.println("Message saved with ID: " + savedMessage.getMessageId());
+            log.info("Message saved with ID: {}", savedMessage.getMessageId());
 
-            messagingTemplate.convertAndSend("/topic/chat/" + roomId, savedMessage);
-            System.out.println("Message broadcasted to /topic/chat/" + roomId);
-
-            rabbitTemplate.convertAndSend(EXCHANGE_NAME, "room." + roomId, savedMessage);
-            System.out.println("Message sent to RabbitMQ");
+            if (useInMemoryBroker) {
+                // 인메모리 브로커 사용 시
+                messagingTemplate.convertAndSend("/topic/room/" + roomId, savedMessage);
+                log.info("Message sent to /topic/chat/{}", roomId);
+                log.info("Message sent to in-memory broker");
+            } else {
+                // RabbitMQ 사용 시
+                rabbitTemplate.convertAndSend(CHAT_EXCHANGE, "room." + roomId, savedMessage);
+                log.info("Message sent to RabbitMQ");
+            }
         } catch (Exception e) {
-            System.err.println("Error in sendMessage: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Error in sendMessage: {}", e.getMessage(), e);
             throw e; // 예외를 다시 던져 상위 호출자에서도 확인 가능
         }
     }
@@ -66,9 +90,13 @@ public class ChatService {
         viewingMessage.setSender(message.getSender());
         viewingMessage.setContent(message.getSenderName() + "님이 채팅방을 보고 있습니다.");
 
-        // SSE가 필요하지안다고?
-        messagingTemplate.convertAndSend("/topic/chat/" + roomId, viewingMessage);
-        rabbitTemplate.convertAndSend(EXCHANGE_NAME, "room." + roomId, viewingMessage);
+        if (useInMemoryBroker) {
+            // 인메모리 브로커 사용 시
+            messagingTemplate.convertAndSend("/topic/room." + roomId, viewingMessage);
+        } else {
+            // RabbitMQ 사용 시
+            rabbitTemplate.convertAndSend(CHAT_EXCHANGE, "room." + roomId, viewingMessage);
+        }
     }
 
     // 사용자가 채팅 화면 보기를 종료
@@ -79,7 +107,13 @@ public class ChatService {
         exitViewMessage.setSender(message.getSender());
         exitViewMessage.setContent(message.getSenderName() + "님이 채팅방을 나갔습니다.");
 
-        messagingTemplate.convertAndSend("/topic/chat/" + roomId, exitViewMessage);
+        if (useInMemoryBroker) {
+            // 인메모리 브로커 사용 시
+            messagingTemplate.convertAndSend("/topic/room." + roomId, exitViewMessage);
+        } else {
+            // RabbitMQ 사용 시
+            rabbitTemplate.convertAndSend(CHAT_EXCHANGE, "room." + roomId, exitViewMessage);
+        }
     }
 
     //사용자가 완전 채팅방 나갔을 때 (멤버십 제거)
@@ -95,11 +129,13 @@ public class ChatService {
         // 메시지 저장
         ChatMessage savedMessage = chatRepository.save(message);
 
-        // WebSocket으로 알림 전송
-        messagingTemplate.convertAndSend("/topic/chat/" + roomId, savedMessage);
-
-        // 필요하다면 RabbitMQ로 메시지 전파
-        rabbitTemplate.convertAndSend(EXCHANGE_NAME, "room." + roomId, savedMessage);
+        if (useInMemoryBroker) {
+            // 인메모리 브로커 사용 시
+            messagingTemplate.convertAndSend("/topic/room." + roomId, savedMessage);
+        } else {
+            // RabbitMQ 사용 시
+            rabbitTemplate.convertAndSend(CHAT_EXCHANGE, "room." + roomId, savedMessage);
+        }
 
         // 사용자를 채팅방에서 제거 (DB에서 멤버십 제거)
         // chatRoomService.removeUserFromRoom(roomId, message.getSender());
@@ -114,13 +150,15 @@ public class ChatService {
         // 메시지 저장
         ChatMessage savedMessage = chatRepository.save(message);
 
-        // WebSocket으로 알림 전송
-        messagingTemplate.convertAndSend("/topic/chat/" + roomId, savedMessage);
-
-        // 필요하다면 RabbitMQ로 메시지 전파
-        rabbitTemplate.convertAndSend(EXCHANGE_NAME, "room." + roomId, savedMessage);
+        if (useInMemoryBroker) {
+            // 인메모리 브로커 사용 시
+            messagingTemplate.convertAndSend("/topic/room." + roomId, savedMessage);
+        } else {
+            // RabbitMQ 사용 시
+            rabbitTemplate.convertAndSend(CHAT_EXCHANGE, "room." + roomId, savedMessage);
+        }
     }
-    
+
     public List<ChatMessage> getLatestMessages(String roomId, int limit) {
         return chatRepository.findLatestMessages(roomId, limit);
     }

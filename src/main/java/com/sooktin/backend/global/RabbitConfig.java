@@ -16,6 +16,7 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.retry.backoff.ExponentialBackOffPolicy;
@@ -29,34 +30,31 @@ import java.util.Map;
 @Slf4j
 @Configuration
 @EnableRabbit
-class RabbitConfig {
+@ConditionalOnProperty(name = "spring.messaging.in-memory", havingValue = "false", matchIfMissing = true)
+public class RabbitConfig {
     private static final String CHAT_QUEUE = "chat.queue";
     private static final String CHAT_EXCHANGE = "chat.exchange";
     private static final String ROUTING_KEY = "room.*";
 
-    @Value("${spring.rabbitmq.host}")
+    @Value("${spring.rabbitmq.host:localhost}")
     private String rabbitHost;
 
-    @Value("${spring.rabbitmq.username}")
+    @Value("${spring.rabbitmq.username:guest}")
     private String username;
 
-    @Value("${spring.rabbitmq.password}")
+    @Value("${spring.rabbitmq.password:guest}")
     private String password;
 
-    @Value("${spring.rabbitmq.port}")
+    @Value("${spring.rabbitmq.port:5672}")
     private int port;
 
-    @Value("${spring.chat.queue.name:chat.queue}")
+    @Value("${spring.chat.queue.name}")
     private String queueName;
 
     @Bean
     public Queue chatQueue() {
-        // 큐 설정 최적화
-        Map<String, Object> args = new HashMap<>();
-        args.put("x-max-length", 500);  // 최대 500개 메시지로 제한
-        args.put("x-message-ttl", 86400000);  // 24시간 후 메시지 만료
-        args.put("x-overflow", "reject-publish");  // 큐가 가득 차면 새 메시지 거부
-        return new Queue(queueName, true, false, false, args);
+        // 기본 durable 큐로 단순화
+        return new Queue(queueName, true);
     }
 
     @Bean

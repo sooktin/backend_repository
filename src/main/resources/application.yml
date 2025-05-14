@@ -70,11 +70,24 @@ spring:
     queue: 
       name: chat.queue
     
-  rabbitmq:
-    username: guest
-    password: guest
-    host: localhost
-    port: 5672
+  # RabbitMQ 설정 (백업)
+  #rabbitmq:
+  #  username: guest
+  #  password: guest
+  #  host: localhost
+  #  port: 5672
+  
+  # 인메모리 메시지 브로커 설정 활성화
+  messaging:
+    in-memory: true
+  mvc:
+    cors:
+      mapping: "/**"
+      allowed-origins: "*"
+      allowed-methods: "*"
+      allowed-headers: "*"
+      allow-credentials: false
+      max-age: 3600
 springdoc:
   api-docs:
     path: /v3/api-docs
@@ -111,6 +124,8 @@ logging:
     com:
       sooktin:
         backend:
+          service: DEBUG
+          controller: DEBUG
           auth: DEBUG
           global:
             exception: TRACE
