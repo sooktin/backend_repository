@@ -92,6 +92,8 @@ public class SecurityConfig {
                                 "/swagger-resources/**",
                                 "/webjars/**",
                                 "/error",
+                                "/ws/**",
+                                "/ws/chat",
                                 "/chat/**",
                                 "/app/**",
                                 "/topic/**",
@@ -149,6 +151,7 @@ public class SecurityConfig {
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
+        source.registerCorsConfiguration("/ws/**", configuration);
         return source;
     }
 

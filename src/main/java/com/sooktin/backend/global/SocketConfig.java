@@ -21,15 +21,23 @@ public class SocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/chat")
-                .setAllowedOrigins("*")
-                .withSockJS()
-                .setClientLibraryUrl("https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js")  // SockJS 클라이언트 라이브러리 URL 지정
-                .setWebSocketEnabled(true)  // WebSocket 활성화
-                .setSessionCookieNeeded(false);  // 세션 쿠키 비활성화 (CORS 이슈 방지)
+//        registry.addEndpoint("/ws/chat")
+//                .setAllowedOrigins("*")
+//                .withSockJS()
+//                .setClientLibraryUrl("https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js")  // SockJS 클라이언트 라이브러리 URL 지정
+//                .setWebSocketEnabled(true)  // WebSocket 활성화
+//                .setSessionCookieNeeded(false);  // 세션 쿠키 비활성화 (CORS 이슈 방지)
+        // 순수 WebSocket 엔드포인트
+        registry.addEndpoint("/ws/chat")
+                .setAllowedOrigins(
+                        "http://localhost:3000",
+                        "http://172.20.10.8:3000",
+                        "http://localhost:8080"
+                );
+
     }
 
-    @Override
+  /*  @Override
     public void configureWebSocketTransport(WebSocketTransportRegistration registration) {
         // 메시지 버퍼 크기 설정 (기본값은 64KB)
         registration.setMessageSizeLimit(128 * 1024); // 128KB
@@ -38,7 +46,7 @@ public class SocketConfig implements WebSocketMessageBrokerConfigurer {
         // 전송 버퍼 크기 제한 설정
         registration.setSendBufferSizeLimit(512 * 1024); // 512KB
     }
-
+*/
     @Bean
     public WebSocketHandler chatWebSocketHandler() {
         return new TextWebSocketHandler();

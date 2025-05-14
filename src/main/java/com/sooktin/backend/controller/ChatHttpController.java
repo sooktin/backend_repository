@@ -31,6 +31,7 @@ public class ChatHttpController {
     private final UserChatRoomService userChatRoomService;
     private final UserService userService;
 
+    //TODO 프로필사진URI
     @GetMapping("/rooms")
     public ResponseEntity<ResponseDto<List<ChatRoomDTO>>> getUserChatRooms(
             @AuthenticationPrincipal CustomUserDetails userDetails,

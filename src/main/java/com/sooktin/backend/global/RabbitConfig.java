@@ -3,14 +3,13 @@ package com.sooktin.backend.global;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
-
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -19,11 +18,18 @@ import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.retry.backoff.ExponentialBackOffPolicy;
+import org.springframework.retry.support.RetryTemplate;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 
+@Slf4j
 @Configuration
 @EnableRabbit
-public class RabbitConfig {
+class RabbitConfig {
     private static final String CHAT_QUEUE = "chat.queue";
     private static final String CHAT_EXCHANGE = "chat.exchange";
     private static final String ROUTING_KEY = "room.*";
@@ -40,26 +46,38 @@ public class RabbitConfig {
     @Value("${spring.rabbitmq.port}")
     private int port;
 
+    @Value("${spring.chat.queue.name:chat.queue}")
+    private String queueName;
+
     @Bean
-    public Queue queue() {
-        return new Queue(CHAT_QUEUE,true);
+    public Queue chatQueue() {
+        // 큐 설정 최적화
+        Map<String, Object> args = new HashMap<>();
+        args.put("x-max-length", 500);  // 최대 500개 메시지로 제한
+        args.put("x-message-ttl", 86400000);  // 24시간 후 메시지 만료
+        args.put("x-overflow", "reject-publish");  // 큐가 가득 차면 새 메시지 거부
+        return new Queue(queueName, true, false, false, args);
     }
 
     @Bean
-    public TopicExchange exchange() {
-        return new TopicExchange(CHAT_EXCHANGE,true,false);
+    public TopicExchange chatExchange() {
+        return new TopicExchange(CHAT_EXCHANGE, true, false);
     }
 
     @Bean
-    public Binding binding(Queue queue, TopicExchange exchange) {
-        return BindingBuilder.bind(queue).to(exchange).with(ROUTING_KEY);
+    public Binding chatBinding(Queue chatQueue, TopicExchange chatExchange) {
+        return BindingBuilder.bind(chatQueue).to(chatExchange).with(ROUTING_KEY);
     }
 
     @Bean
-    SimpleRabbitListenerContainerFactory factory(ConnectionFactory connectionFactory) {
+    public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(ConnectionFactory connectionFactory) {
         SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
         factory.setConnectionFactory(connectionFactory);
         factory.setMessageConverter(jsonMessageConverter());
+        factory.setPrefetchCount(5);  // t2.micro에 적합한 낮은 prefetch 값
+        factory.setConcurrentConsumers(1);  // 제한된 리소스에서는 소비자 수 제한
+        factory.setMaxConcurrentConsumers(2);
+        factory.setDefaultRequeueRejected(false);  // 처리 실패 메시지 재큐잉 방지
         return factory;
     }
 
@@ -67,7 +85,16 @@ public class RabbitConfig {
     public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
         RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
         rabbitTemplate.setMessageConverter(jsonMessageConverter());
-        rabbitTemplate.setRoutingKey(ROUTING_KEY);
+        rabbitTemplate.setConfirmCallback((correlationData, ack, cause) -> {
+            if (!ack) {
+                // 메시지 전송 실패 처리
+                log.error("Message delivery failed: {}", cause);
+            }
+        });
+        rabbitTemplate.setReturnsCallback(returned -> {
+            // 메시지가 큐에 도달하지 못한 경우 처리
+            log.error("Message returned: {}", returned.getMessage());
+        });
         return rabbitTemplate;
     }
 
@@ -78,6 +105,18 @@ public class RabbitConfig {
         connectionFactory.setUsername(username);
         connectionFactory.setPassword(password);
         connectionFactory.setPort(port);
+
+        // 연결 관련 설정 최적화
+        connectionFactory.setRequestedHeartBeat(30);  // 30초마다 하트비트 체크
+        connectionFactory.setConnectionTimeout(5000);  // 5초 연결 타임아웃
+        connectionFactory.setPublisherConfirmType(CachingConnectionFactory.ConfirmType.CORRELATED);
+        connectionFactory.setPublisherReturns(true);
+
+        // RabbitMQ Java 클라이언트의 자동 복구 설정
+        // Spring AMQP 2.0 이상에서는 RabbitMQ 클라이언트의 내장 복구 메커니즘을 활용합니다
+        connectionFactory.getRabbitConnectionFactory().setAutomaticRecoveryEnabled(true);
+        connectionFactory.getRabbitConnectionFactory().setNetworkRecoveryInterval(5000); // 5초 간격으로 복구 시도
+
         return connectionFactory;
     }
 
@@ -86,22 +125,6 @@ public class RabbitConfig {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-
         return new Jackson2JsonMessageConverter(objectMapper);
-    }
-
-    @Bean
-    public TopicExchange chatExchange() {
-        return new TopicExchange("chat.exchange");
-    }
-
-    @Bean
-    public Queue chatQueue(@Value("${spring.chat.queue.name:chat.queue}") String queueName) {
-        return new Queue(queueName,true);
-    }
-
-    @Bean
-    public Binding chatBinding(Queue chatQueue, TopicExchange chatExchange) {
-        return BindingBuilder.bind(chatQueue).to(chatExchange).with(ROUTING_KEY);
     }
 }

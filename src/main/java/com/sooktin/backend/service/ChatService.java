@@ -25,20 +25,29 @@ public class ChatService {
     private final UserRepository userRepository;
     private final PresenceService presenceService;
     private final String EXCHANGE_NAME = "chat.exchange";
-    
+
+    @Transactional
     public void sendMessage(String roomId, ChatMessage message) {
-        message.setRoomId(roomId);
-        message.setType(MessageType.CHAT);
+        try {
+            System.out.println("Received message for roomId: " + roomId);
+            System.out.println("Message: " + message.getSender() + ", " + message.getContent());
 
-        ChatMessage savedMessage = chatRepository.save(message);
+            message.setRoomId(roomId);
+            message.setType(MessageType.CHAT);
 
-        //WebSocket을 통한 클라이언트 전송
-        messagingTemplate.convertAndSend("/topic/chat/" + roomId, savedMessage);
-        
-        //RMQ를 통한 서버 간 전송
-        rabbitTemplate.convertAndSend(EXCHANGE_NAME, "room." + roomId, savedMessage);
+            ChatMessage savedMessage = chatRepository.save(message);
+            System.out.println("Message saved with ID: " + savedMessage.getMessageId());
 
-        //TODO : SSE
+            messagingTemplate.convertAndSend("/topic/chat/" + roomId, savedMessage);
+            System.out.println("Message broadcasted to /topic/chat/" + roomId);
+
+            rabbitTemplate.convertAndSend(EXCHANGE_NAME, "room." + roomId, savedMessage);
+            System.out.println("Message sent to RabbitMQ");
+        } catch (Exception e) {
+            System.err.println("Error in sendMessage: " + e.getMessage());
+            e.printStackTrace();
+            throw e; // 예외를 다시 던져 상위 호출자에서도 확인 가능
+        }
     }
 
     @Transactional
