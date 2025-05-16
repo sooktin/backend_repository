@@ -11,14 +11,12 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/search")
 public class SearchController {
-
-
     private final SearchService searchService;
     private final AuthenticationService authenticationService;
 
@@ -49,4 +47,37 @@ public class SearchController {
         return ResponseUtil.buildResponse(200, "최근 검색어 목록입니다.", recentKeywords);
     }
 
+    // 인기 검색어 조회 (간단한 목록)
+    @GetMapping("/popular")
+    public ResponseEntity<ResponseDto<List<String>>> getPopularKeywords() {
+        List<String> popularKeywords = searchService.getPopularKeywords();
+        return ResponseUtil.buildResponse(200, "인기 검색어 목록입니다.", popularKeywords);
+    }
+
+    // 인기 검색어 점수 조회 (디버깅 및 개발용)
+    @GetMapping("/popular/scores")
+    public ResponseEntity<ResponseDto<Map<String, Double>>> getPopularKeywordsWithScores() {
+        Map<String, Double> popularKeywordsWithScores = searchService.getPopularKeywordsWithScores();
+        return ResponseUtil.buildResponse(200, "인기 검색어 점수 목록입니다.", popularKeywordsWithScores);
+    }
+
+    // 키워드의 검색 트렌드 조회
+    @GetMapping("/trends/{keyword}")
+    public ResponseEntity<ResponseDto<List<Map<String, Object>>>> getKeywordTrend(
+            @PathVariable String keyword,
+            @RequestParam(defaultValue = "7") int days) {
+
+        List<Map<String, Object>> trend = searchService.getKeywordTrendByDays(keyword, days);
+        return ResponseUtil.buildResponse(200, "키워드 트렌드 데이터입니다.", trend);
+    }
+
+    // 특정 기간의 인기 검색어 조회
+    @GetMapping("/popular/period")
+    public ResponseEntity<ResponseDto<List<Map<String, Object>>>> getTopKeywordsByPeriod(
+            @RequestParam(defaultValue = "7") int days,
+            @RequestParam(defaultValue = "10") int limit) {
+
+        List<Map<String, Object>> topKeywords = searchService.getTopKeywordsByPeriod(days, limit);
+        return ResponseUtil.buildResponse(200, "기간별 인기 검색어 데이터입니다.", topKeywords);
+    }
 }

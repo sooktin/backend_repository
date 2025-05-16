@@ -26,7 +26,9 @@ Git branch 전략: GitHub Flow 방식
   - 첫 회원 가입 시 커리어카드는 생성 필수
 
 - 채팅, 알람
-  - Spring WebSocket 활용 실시간  기능
+  - WebSocket 활용 실시간 채팅 기능
+  - RabbitMQ를 통한 여러 인스턴스에서도 공유 가능
+  - SSE를 통한 알람 기능
     
 - 회원 문의
   - 고객 문의함 기능
@@ -39,4 +41,4 @@ Git branch 전략: GitHub Flow 방식
 Front: React
 Server: Spring
 DB: MySQL,Redis
-Cloud/infra: Elasitc Cache, beanstalk, EC2, GitHub Actions, Docker
+Cloud/infra: Elasitc Cache, EC2, GitHub Actions, Docker
