@@ -41,21 +41,21 @@ public class AlarmController {
 
     // 알람 목록 조회
     @GetMapping
-    public PagedResponse<AlarmResponse> getAlarms(
+    public ResponseDto<PagedResponse<AlarmResponse>> getAlarms(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         return alarmService.getAlarms(userDetails.getUserId(), pageable);
     }
 
     // 클릭 시 알림 등록
-    @PostMapping("/{alarmId}/check")
+    @PatchMapping("/{alarmId}/check")
     public ResponseEntity<ResponseDto<Object>> checkAlarm(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long alarmId) {
 
         if (userDetails == null) {
             return ResponseUtil.buildResponse(401, "인증 정보가 유효하지 않습니다. 다시 로그인해주세요.", null);
         }
 
-        alarmService.checkAlarm(alarmId);
+        alarmService.checkAlarm(alarmId, userDetails.getUserId());
         return ResponseEntity.ok(new ResponseDto<>(200, "해당 알람이 클릭되었습니다.", alarmId));
 
     }
@@ -66,7 +66,7 @@ public class AlarmController {
         if (userDetails == null) {
             return ResponseUtil.buildResponse(401, "인증 정보가 유효하지 않습니다. 다시 로그인해주세요.", null);
         }
-        alarmService.deleteAlarm(alarmId);
+        alarmService.deleteAlarm(alarmId, userDetails.getUserId());
         return ResponseUtil.buildResponse(204, "해당 알람을 성공적으로 삭제했습니다.", null);
     }
 
