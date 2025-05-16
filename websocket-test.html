@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pure WebSocket Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/stomp-websocket@2.3.4-next/lib/stomp.min.js"></script>
+</head>
+<body>
+    <h1>WebSocket Ping-Pong Test (Pure WebSocket)</h1>
+    <button id="connect">Connect</button>
+    <button id="disconnect" disabled>Disconnect</button>
+    <button id="ping" disabled>Send Ping</button>
+    <div id="log" style="margin-top: 20px; border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: scroll;"></div>
+
+    <script>
+        const connectBtn = document.getElementById('connect');
+        const disconnectBtn = document.getElementById('disconnect');
+        const pingBtn = document.getElementById('ping');
+        const logDiv = document.getElementById('log');
+        let stompClient = null;
+
+        function log(message) {
+            const p = document.createElement('p');
+            p.style.margin = '0';
+            p.textContent = message;
+            logDiv.appendChild(p);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function connect() {
+            log('Connecting to WebSocket...');
+            // 직접 WebSocket 연결 (SockJS 사용 안 함)
+            const socket = new WebSocket('ws://localhost:8080/ws/chat');
+            stompClient = Stomp.over(socket);
+            
+            // 디버그 로그 활성화
+            stompClient.debug = function(str) {
+                log('STOMP: ' + str);
+            };
+
+            stompClient.connect({}, frame => {
+                log('Connected: ' + frame);
+                connectBtn.disabled = true;
+                disconnectBtn.disabled = false;
+                pingBtn.disabled = false;
+
+                // pong 메시지 구독
+                stompClient.subscribe('/topic/pong', message => {
+                    log('Received pong: ' + message.body);
+                });
+            }, error => {
+                log('Error: ' + error);
+                disconnect();
+            });
+        }
+
+        function disconnect() {
+            if (stompClient !== null) {
+                stompClient.disconnect();
+                stompClient = null;
+            }
+            connectBtn.disabled = false;
+            disconnectBtn.disabled = true;
+            pingBtn.disabled = true;
+            log('Disconnected');
+        }
+
+        function sendPing() {
+            log('Sending ping...');
+            stompClient.send('/app/ping', {}, JSON.stringify({}));
+        }
+
+        connectBtn.addEventListener('click', connect);
+        disconnectBtn.addEventListener('click', disconnect);
+        pingBtn.addEventListener('click', sendPing);
+    </script>
+</body>
+</html> 

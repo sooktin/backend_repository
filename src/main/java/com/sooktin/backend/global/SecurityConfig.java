@@ -92,12 +92,12 @@ public class SecurityConfig {
                                 "/swagger-resources/**",
                                 "/webjars/**",
                                 "/error",
+                                "/ws/**",
+                                "/ws/chat",
                                 "/chat/**",
                                 "/app/**",
                                 "/topic/**",
-                                "/queue/**",
-                                "/search/popular/**",
-                                "/search/trends/**"
+                                "/queue/**"
                         ).permitAll()
                         .requestMatchers("/users/**","/usernotes/**","/career-cards/**").authenticated()
                         .anyRequest().authenticated()
@@ -139,15 +139,10 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList(
-                "http://localhost:3000",
-                "http://172.20.10.8:3000",
-                "http://localhost:8080"
-        )); // 프론트엔드 IP
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedMethods(Arrays.asList("*")); // ✅ 모든 HTTP 메서드 허용 (GET, POST, PATCH 등)
-        configuration.setAllowedHeaders(Arrays.asList("*")); // ✅ 모든 헤더 허용
-        configuration.setAllowCredentials(true); // ✅ 인증 정보 포함 허용
+        configuration.setAllowedOrigins(Arrays.asList("*")); // 모든 오리진 허용
+        configuration.setAllowedMethods(Arrays.asList("*")); // 모든 HTTP 메서드 허용 (GET, POST, PATCH 등)
+        configuration.setAllowedHeaders(Arrays.asList("*")); // 모든 헤더 허용
+        configuration.setAllowCredentials(false); // 모든 오리진 허용 시 false로 설정 필요
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
