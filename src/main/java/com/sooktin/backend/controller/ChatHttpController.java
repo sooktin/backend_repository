@@ -77,7 +77,7 @@ public class ChatHttpController {
         return ResponseEntity.ok(new ResponseDto<>(201, "채팅방이 성공적으로 생성되었습니다.", savedChatRoom));
     }
 
-    @DeleteMapping("/rooms/{roomId}")
+    @DeleteMapping("/rooms/{roomId}/leave")
     public ResponseEntity<ResponseDto<Void>> leaveChatRoom(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long roomId
@@ -137,7 +137,7 @@ public class ChatHttpController {
         return ResponseEntity.ok(new ResponseDto<>(200, "채팅방 상태가 성공적으로 업데이트되었습니다.", null));
     }
 
-    @PostMapping("/rooms/{roomId}")
+    @PostMapping("/rooms/{roomId}/enter")
     public ResponseEntity<ResponseDto<Map<String, Object>>> enterChatRoom(
             @PathVariable Long roomId,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
