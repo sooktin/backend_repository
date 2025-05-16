@@ -18,6 +18,8 @@ public class Alarm extends BaseEntity{
 
     private String mergedMessage;
 
+    @Column(nullable = false)
+    @Builder.Default
     private Boolean isChecked = false;
 
     @Enumerated(EnumType.STRING)
