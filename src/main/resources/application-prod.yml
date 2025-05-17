@@ -69,6 +69,18 @@ spring:
             enable: true
           timeout: 5000
           connectiontimeout: 5000
+  # RabbitMQ 설정 추가
+  rabbitmq:
+    host: localhost  # 또는 실제 RabbitMQ 서버 주소
+    port: 5672
+    username: guest
+    password: guest
+
+  # 채팅 설정 추가
+  chat:
+    queue:
+      name: chat.queue
+
   data:
     redis:
       host: master.sooktin-redis.dvwzww.apn2.cache.amazonaws.com
