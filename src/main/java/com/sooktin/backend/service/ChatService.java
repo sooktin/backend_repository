@@ -1,6 +1,8 @@
 package com.sooktin.backend.service;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 import com.sooktin.backend.domain.ChatRoom;
@@ -52,12 +54,19 @@ public class ChatService {
     private ChatRoomSummaryDTO convertToChatRoomSummary(UserChatRoom ucr, Long userId) {
         ChatRoom room = ucr.getRoom();
 
-        // 채팅방 기본 정보 설정
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm a", Locale.ENGLISH);
+
+        String formattedCreatedAt = room.getCreatedAt() != null ?
+                room.getCreatedAt().format(formatter) : null;
+
+        String formattedLastMessageAt = room.getLastMessageAt() != null ?
+                room.getLastMessageAt().format(formatter) : null;
+
         ChatRoomSummaryDTO.ChatRoomSummaryDTOBuilder builder = ChatRoomSummaryDTO.builder()
                 .roomId(room.getId())
                 .lastMessage(room.getLastMessagePreview())
-                .lastMessageAt(room.getLastMessageAt())
-                .createdAt(room.getCreatedAt())
+                .lastMessageAt(formattedCreatedAt)
+                .createdAt(formattedLastMessageAt)
                 .unreadCount(ucr.getUnreadCount());
 
         try {
@@ -67,6 +76,7 @@ public class ChatService {
             if (opponentUser != null) {
                 // 상대방 정보 추가
                 builder.opponentUserNickname(opponentUser.getNickname())
+                        .opponentCareerCardId(opponentUser.getCareerCard() != null ? opponentUser.getCareerCard().getId() : null)
                         .opponentUserId(opponentUser.getId());
 
                 // 프로필 이미지 안전하게 가져오기
@@ -125,28 +135,29 @@ public class ChatService {
     @Transactional
     public void sendMessage(String roomId, ChatMessage message) {
         try {
-            log.info("Received message for roomId: {}", roomId);
-            log.info("Message: {}, {}", message.getSender(), message.getContent());
-
             message.setRoomId(roomId);
             message.setType(MessageType.CHAT);
-
             ChatMessage savedMessage = chatRepository.save(message);
-            log.info("Message saved with ID: {}", savedMessage.getMessageId());
 
             if (useInMemoryBroker) {
-                // 인메모리 브로커 사용 시
-                messagingTemplate.convertAndSend("/topic/room/" + roomId, savedMessage);
-                log.info("Message sent to /topic/chat/{}", roomId);
-                log.info("Message sent to in-memory broker");
+                // 인메모리 브로커
+                messagingTemplate.convertAndSend("/topic/chat/" + roomId, savedMessage);
+                log.info("SimpleBroker: /topic/chat/{}", roomId);
             } else {
-                // RabbitMQ 사용 시
-                rabbitTemplate.convertAndSend(CHAT_EXCHANGE, "room." + roomId, savedMessage);
-                log.info("Message sent to RabbitMQ");
+                // RabbitMQ STOMP 브로커 (라우팅키 불필요)
+                messagingTemplate.convertAndSend("/topic/room." + roomId, savedMessage);
+                log.info("STOMP Broker: /topic/room.{}", roomId);
             }
+
+            // 추가: AMQP로도 전송 (Consumer용, 라우팅키 필요)
+            /*if (rabbitTemplate != null) {
+                rabbitTemplate.convertAndSend(CHAT_EXCHANGE, "room." + roomId, savedMessage);
+                log.info("AMQP: Exchange={}, RoutingKey=room.{}", CHAT_EXCHANGE, roomId);
+            }*/
+
         } catch (Exception e) {
             log.error("Error in sendMessage: {}", e.getMessage(), e);
-            throw e; // 예외를 다시 던져 상위 호출자에서도 확인 가능
+            throw e;
         }
     }
 

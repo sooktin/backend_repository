@@ -4,6 +4,8 @@ import com.sooktin.backend.domain.UserChatRoom;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 @Data
 public class UserChatRoomDTO {
@@ -12,18 +14,17 @@ public class UserChatRoomDTO {
     private Long roomId;
     private String roomName;
     private Long lastReadMessageId;
-    private LocalDateTime lastReadAt;
+    private String lastReadAt;      // LocalDateTime에서 String으로 변경
     private Integer unreadCount;
-    private LocalDateTime joinedAt;
+    private String joinedAt;        // LocalDateTime에서 String으로 변경
     private Boolean isMuted;
     private Boolean isPinned;
     private String lastMessagePreview;
+    private String lastMessageAt;   // 추가된 필드
 
-    /**
-     *
-     * 정적 팩토리 메서드일시 여러 생성패턴을 만들수있음
-     *
-     */
+    private static final DateTimeFormatter FORMATTER =
+            DateTimeFormatter.ofPattern("HH:mm a", Locale.ENGLISH);
+
     public static UserChatRoomDTO from(UserChatRoom userChatRoom) {
         UserChatRoomDTO dto = new UserChatRoomDTO();
         dto.setId(userChatRoom.getId());
@@ -31,14 +32,18 @@ public class UserChatRoomDTO {
         dto.setRoomId(userChatRoom.getRoom().getId());
         dto.setRoomName(userChatRoom.getRoom().getName());
         dto.setLastReadMessageId(userChatRoom.getLastReadMessageId());
-        dto.setLastReadAt(userChatRoom.getLastReadAt());
+        dto.setLastReadAt(formatDateTime(userChatRoom.getLastReadAt()));
         dto.setUnreadCount(userChatRoom.getUnreadCount());
-        dto.setJoinedAt(userChatRoom.getJoinedAt());
+        dto.setJoinedAt(formatDateTime(userChatRoom.getJoinedAt()));
         dto.setIsMuted(userChatRoom.getIsMuted());
         dto.setIsPinned(userChatRoom.getIsPinned());
         dto.setLastMessagePreview(userChatRoom.getRoom().getLastMessagePreview());
+        dto.setLastMessageAt(formatDateTime(userChatRoom.getRoom().getLastMessageAt()));
 
         return dto;
     }
 
+    private static String formatDateTime(LocalDateTime dateTime) {
+        return dateTime != null ? dateTime.format(FORMATTER) : null;
+    }
 }
