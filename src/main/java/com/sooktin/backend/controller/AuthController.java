@@ -1,5 +1,6 @@
 package com.sooktin.backend.controller;
 
+import com.sooktin.backend.dto.ResponseDto;
 import com.sooktin.backend.dto.user.AuthResponse;
 import com.sooktin.backend.auth.AuthenticationResult;
 import com.sooktin.backend.auth.JwtUtil;
@@ -16,22 +17,29 @@ import com.sooktin.backend.global.exception.auth.DuplicateResourceException;
 import com.sooktin.backend.global.exception.auth.PasswordMismatchException;
 import com.sooktin.backend.service.AuthenticationService;
 import com.sooktin.backend.service.CustomUserDetails;
+import com.sooktin.backend.service.EmailService;
 import com.sooktin.backend.service.UserService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static com.sooktin.backend.auth.AuthenticationStatus.*;
 
+@Slf4j
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
@@ -39,6 +47,7 @@ public class AuthController {
     private final AuthenticationService authenticationService;
     private final JwtUtil jwtUtil;
     private final UserService userService;
+    private final EmailService emailService;
 
     @GetMapping("/id")
     public String id() {
@@ -66,13 +75,40 @@ public class AuthController {
     }
 
     @PostMapping("/send-verification")
-    public ResponseEntity<?> sendVerificationCode(@RequestBody SendVerificationRequest request) {
-        try {
-            userService.sendVerificationCode(request.getEmail());
-            return ResponseEntity.ok("인증 코드가 발송되었습니다.");
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("인증 코드 발송에 실패했습니다.");
-        }
+    public ResponseEntity<ResponseDto<Object>> sendVerificationCode(@RequestBody SendVerificationRequest request) {
+
+            log.info("인증 코드 발송 요청 - 이메일: {}", request.getEmail());
+
+            // EmailService에서 처리 (동기: 코드 생성/저장, 비동기: 이메일 발송)
+            EmailService.VerificationResult result = emailService.sendVerificationCode(request.getEmail());
+
+            return switch (result) {
+                case SUCCESS -> {
+                    log.info("인증 코드 생성 및 발송 시작 - 이메일: {}", request.getEmail());
+                    yield ResponseEntity.ok(new ResponseDto<>(
+                            200,
+                            "인증 코드가 생성되었습니다. 이메일을 확인해주세요.",
+                            null
+                    ));
+                }
+                case RATE_LIMITED -> {
+                    log.warn("Rate limit 초과 - 이메일: {}", request.getEmail());
+                    yield ResponseEntity.status(429).body(new ResponseDto<>(
+                            429,
+                            result.getMessage(),
+                            null
+                    ));
+                }
+                default -> {
+                    log.error("인증 코드 처리 실패 - 이메일: {}, 결과: {}", request.getEmail(), result);
+                    yield ResponseEntity.status(500).body(new ResponseDto<>(
+                            500,
+                            result.getMessage(),
+                            null
+                    ));
+                }
+            };
+
     }
 
     @PostMapping("/check-email")
@@ -118,14 +154,24 @@ public class AuthController {
                 : ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
-    @PostMapping("/refresh-token")
-    public ResponseEntity<RefreshTokenResponse> refreshToken(@RequestHeader("Authorization") String expiredAccessToken) {
+    @DeleteMapping("/verification/{email}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<ResponseDto<Object>> deleteVerification(@PathVariable String email) {
         try {
-            String newAccessToken = authenticationService.refreshAccessToken(expiredAccessToken);
-            return ResponseEntity.ok(RefreshTokenResponse.success(newAccessToken));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(RefreshTokenResponse.fail());
+            userService.removeVerificationToken(email);
+            log.info("관리자에 의한 인증 코드 삭제 - 이메일: {}", email);
+            return ResponseEntity.ok(new ResponseDto<>(
+                    200,
+                    "인증 코드가 삭제되었습니다.",
+                    null
+            ));
+        } catch (Exception e) {
+            log.error("인증 코드 삭제 실패 - 이메일: {}", email, e);
+            return ResponseEntity.status(500).body(new ResponseDto<>(
+                    500,
+                    "인증 코드 삭제에 실패했습니다.",
+                    null
+            ));
         }
     }
 }

@@ -2,6 +2,7 @@ package com.sooktin.backend.global;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -11,6 +12,7 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 public class RedisConfig {
 
     @Bean
+    @Primary
     public RedisTemplate<String,String> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
         RedisTemplate<String,String> template = new RedisTemplate<>();
         template.setConnectionFactory(redisConnectionFactory);
@@ -19,7 +21,7 @@ public class RedisConfig {
         return template;
     }
 
-    //리프레시 토큰
+    //인증코드,리프레시 토큰
     @Bean
     public StringRedisTemplate stringRedisTemplate(RedisConnectionFactory redisConnectionFactory) {
         return new StringRedisTemplate(redisConnectionFactory);

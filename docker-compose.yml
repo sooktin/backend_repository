@@ -13,6 +13,19 @@ services:
       - ~/.aws:/root/.aws:ro
 
 
+  rabbitmq:
+    image: rabbitmq:3-management
+    networks:
+      - app-network
+    ports:
+      - "61613:61613"
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+      - RABBITMQ_ENABLED_PLUGINS="rabbitmq_stomp, rabbitmq_management"
+
   nginx:
     image: nginx:latest
     # network_mode: host 대신
