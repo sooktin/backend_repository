@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+// 페이지 통일
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
