@@ -1,10 +1,8 @@
 package com.sooktin.backend.service;
 
-import com.sooktin.backend.auth.JwtUtil;
 import com.sooktin.backend.domain.CareerCardStorage;
 import com.sooktin.backend.domain.User;
 import com.sooktin.backend.domain.UserRole;
-import com.sooktin.backend.domain.VerificationToken;
 import com.sooktin.backend.dto.email.EmailCheckResponse;
 import com.sooktin.backend.dto.user.NicknameResponse;
 import com.sooktin.backend.dto.user.PasswordChangeResponse;
@@ -13,22 +11,16 @@ import com.sooktin.backend.dto.verification.VerficationResponse;
 import com.sooktin.backend.global.exception.auth.DuplicateEmailException;
 import com.sooktin.backend.global.exception.auth.DuplicateNicknameException;
 import com.sooktin.backend.global.exception.auth.PasswordMismatchException;
-import com.sooktin.backend.repository.StorageRepository;
 import com.sooktin.backend.repository.UserRepository;
-import com.sooktin.backend.repository.VerificationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Duration;
 import java.util.*;
 
 @Service

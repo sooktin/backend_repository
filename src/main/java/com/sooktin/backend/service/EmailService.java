@@ -34,12 +34,7 @@ public class EmailService {
     private static final int ATTEMPT_RESET_MINUTES = 60;
     private static final Duration RATE_LIMIT_WINDOW = Duration.ofMinutes(1);
 
-    /**
-     * 인증 코드 생성 및 발송 요청 (동기 처리)
-     * - 인증 코드 생성/저장: 동기
-     * - 이메일 발송: 비동기
-     */
-    //처음에는 그냥 같이 해도 되는줄알았는데 AOP가 적용이 안되어서 비동기 무시 ㅠㅠ 별도 서비스 분리
+
     @Transactional
     public VerificationResult sendVerificationCode(String email) {
         try {
@@ -80,11 +75,6 @@ public class EmailService {
     }
 
 
-
-
-    /**
-     * 인증 코드 검증 (동기 처리)
-     */
     @Transactional
     public VerificationResult verifyCode(String email, String inputCode) {
         try {
@@ -128,30 +118,18 @@ public class EmailService {
     }
 
 
-    /**
-     * 6자리 랜덤 인증 코드 생성
-     */
     private String generateVerificationCode() {
         Random random = new Random();
         return String.format("%06d", random.nextInt(1000000));
     }
 
-    /**
-     * 인증 코드 조회
-     */
+
     public String getVerificationCode(String email) {
         String key = VERIFICATION_KEY_PREFIX + email;
         return stringRedisTemplate.opsForValue().get(key);
     }
 
-    /**
-     * 인증 코드 삭제
-     */
 
-
-    /**
-     * 시도 횟수 확인
-     */
     private boolean checkAttemptLimit(String email) {
         String key = ATTEMPT_KEY_PREFIX + email;
         String attempts = stringRedisTemplate.opsForValue().get(key);
@@ -169,9 +147,7 @@ public class EmailService {
         }
     }
 
-    /**
-     * 시도 횟수 증가
-     */
+
     private void incrementAttemptCount(String email) {
         String key = ATTEMPT_KEY_PREFIX + email;
         String attempts = stringRedisTemplate.opsForValue().get(key);
@@ -192,18 +168,14 @@ public class EmailService {
         log.debug("인증 시도 횟수 증가 - 이메일: {}, 횟수: {}/{}", email, currentAttempts, MAX_ATTEMPTS);
     }
 
-    /**
-     * 시도 횟수 초기화
-     */
+
     private void resetAttemptCount(String email) {
         String key = ATTEMPT_KEY_PREFIX + email;
         stringRedisTemplate.delete(key);
         log.debug("인증 시도 횟수 초기화 - 이메일: {}", email);
     }
 
-    /**
-     * 인증 결과 열거형
-     */
+
     public enum VerificationResult {
         SUCCESS("성공"),
         RATE_LIMITED("1분에 한 번만 요청 가능합니다"),

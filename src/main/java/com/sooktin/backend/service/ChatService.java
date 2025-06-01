@@ -131,6 +131,12 @@ public class ChatService {
         // 기본 이미지 URL 또는 null 반환
         return null;
     }
+    
+    // 추가: AMQP로도 전송 (Consumer용, 라우팅키 필요)
+            /*if (rabbitTemplate != null) {
+                rabbitTemplate.convertAndSend(CHAT_EXCHANGE, "room." + roomId, savedMessage);
+                log.info("AMQP: Exchange={}, RoutingKey=room.{}", CHAT_EXCHANGE, roomId);
+            }*/
 
     @Transactional
     public void sendMessage(String roomId, ChatMessage message) {
@@ -148,12 +154,6 @@ public class ChatService {
                 messagingTemplate.convertAndSend("/topic/room." + roomId, savedMessage);
                 log.info("STOMP Broker: /topic/room.{}", roomId);
             }
-
-            // 추가: AMQP로도 전송 (Consumer용, 라우팅키 필요)
-            /*if (rabbitTemplate != null) {
-                rabbitTemplate.convertAndSend(CHAT_EXCHANGE, "room." + roomId, savedMessage);
-                log.info("AMQP: Exchange={}, RoutingKey=room.{}", CHAT_EXCHANGE, roomId);
-            }*/
 
         } catch (Exception e) {
             log.error("Error in sendMessage: {}", e.getMessage(), e);

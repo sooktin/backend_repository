@@ -18,17 +18,10 @@ public class AsyncEmailService {
 
     private final JavaMailSender mailSender;
     private final StringRedisTemplate stringRedisTemplate;
-
     // Redis 키 패턴 추가
     private static final String VERIFICATION_KEY_PREFIX = "verification:";
 
-    /**
-     * 비동기 이메일 발송
-     * @param email 수신자 이메일
-     * @param code 인증 코드
-     * @param type 발송 타입 ("신규" 또는 "재발송")
-     * @return CompletableFuture<Void> 비동기 작업 결과
-     */
+
     @Async("emailTaskExecutor")
     public CompletableFuture<Void> sendEmailAsync(String email, String code, String type) {
         try {
@@ -60,9 +53,6 @@ public class AsyncEmailService {
         }
     }
 
-    /**
-     * 이메일 메시지 생성
-     */
     private SimpleMailMessage createEmailMessage(String email, String code, String type) {
         SimpleMailMessage msg = new SimpleMailMessage();
         msg.setTo(email);
