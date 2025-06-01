@@ -55,7 +55,7 @@ public class ChatHttpController {
         @AuthenticationPrincipal CustomUserDetails userDetails,
         @RequestParam Long targetUserId
     ) {
-        ChatRoom chatRoom = new ChatRoom(LocalDateTime.now());
+        ChatRoom chatRoom = new ChatRoom();
 
         /*if (name != null && !name.trim().isEmpty()) {
             chatRoom.setName(name);
