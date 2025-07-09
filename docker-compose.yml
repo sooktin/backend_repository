@@ -18,9 +18,12 @@ services:
       - RABBITMQ_DEFAULT_USER=guest
       - RABBITMQ_DEFAULT_PASS=guest
       - RABBITMQ_VM_MEMORY_HIGH_WATERMARK=0.4
-    # 플러그인 사전 활성화 설정 파일 추가
-    volumes:
-      - ./rabbitmq-plugins.conf:/etc/rabbitmq/enabled_plugins
+    # volumes 대신 command로 플러그인 활성화
+    command: >
+      sh -c "
+        rabbitmq-plugins enable rabbitmq_stomp rabbitmq_web_stomp &&
+        rabbitmq-server
+      "
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
       interval: 30s
