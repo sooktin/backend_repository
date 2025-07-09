@@ -46,6 +46,35 @@
             }
           }
         }
+      },
+      "delete": {
+        "tags": [
+          "user-controller"
+        ],
+        "operationId": "deleteCareerCard",
+        "parameters": [
+          {
+            "name": "careerCardId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json;charset=UTF-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseDtoLong"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/usernotes": {
@@ -354,6 +383,86 @@
         }
       }
     },
+    "/chat/rooms": {
+      "get": {
+        "tags": [
+          "chat-http-controller"
+        ],
+        "operationId": "getUserChatRooms",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json;charset=UTF-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseDtoListChatRoomSummaryDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "chat-http-controller"
+        ],
+        "operationId": "createChatRoom",
+        "parameters": [
+          {
+            "name": "targetUserId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json;charset=UTF-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseDtoChatRoom"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/chat/rooms/{roomId}/enter": {
+      "post": {
+        "tags": [
+          "chat-http-controller"
+        ],
+        "operationId": "enterChatRoom",
+        "parameters": [
+          {
+            "name": "roomId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json;charset=UTF-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseDtoMapStringObject"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/career-cards": {
       "get": {
         "tags": [
@@ -419,7 +528,7 @@
         "tags": [
           "career-card-controller"
         ],
-        "operationId": "deleteCareerCard",
+        "operationId": "deleteCareerCard_1",
         "responses": {
           "200": {
             "description": "OK",
@@ -528,7 +637,7 @@
             "content": {
               "application/json;charset=UTF-8": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/ResponseDtoObject"
                 }
               }
             }
@@ -559,36 +668,6 @@
               "application/json;charset=UTF-8": {
                 "schema": {
                   "$ref": "#/components/schemas/RegisterResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/auth/refresh-token": {
-      "post": {
-        "tags": [
-          "auth-controller"
-        ],
-        "operationId": "refreshToken",
-        "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json;charset=UTF-8": {
-                "schema": {
-                  "$ref": "#/components/schemas/RefreshTokenResponse"
                 }
               }
             }
@@ -979,6 +1058,47 @@
         }
       }
     },
+    "/chat/rooms/{roomId}": {
+      "patch": {
+        "tags": [
+          "chat-http-controller"
+        ],
+        "operationId": "updateRoomStatus",
+        "parameters": [
+          {
+            "name": "roomId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json;charset=UTF-8": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatRoomStatusUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json;charset=UTF-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseDtoVoid"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/auth/password": {
       "patch": {
         "tags": [
@@ -1002,6 +1122,37 @@
               "application/json;charset=UTF-8": {
                 "schema": {
                   "$ref": "#/components/schemas/PasswordChangeResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/alarms/{alarmId}/check": {
+      "patch": {
+        "tags": [
+          "alarm-controller"
+        ],
+        "operationId": "checkAlarm",
+        "parameters": [
+          {
+            "name": "alarmId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json;charset=UTF-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseDtoObject"
                 }
               }
             }
@@ -1229,6 +1380,46 @@
         }
       }
     },
+    "/search/trends/{keyword}": {
+      "get": {
+        "tags": [
+          "search-controller"
+        ],
+        "operationId": "getKeywordTrend",
+        "parameters": [
+          {
+            "name": "keyword",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 7
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json;charset=UTF-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseDtoListMapStringObject"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/search/recent": {
       "get": {
         "tags": [
@@ -1242,6 +1433,88 @@
               "application/json;charset=UTF-8": {
                 "schema": {
                   "$ref": "#/components/schemas/ResponseDtoListString"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/search/popular": {
+      "get": {
+        "tags": [
+          "search-controller"
+        ],
+        "operationId": "getPopularKeywords",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json;charset=UTF-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseDtoListString"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/search/popular/scores": {
+      "get": {
+        "tags": [
+          "search-controller"
+        ],
+        "operationId": "getPopularKeywordsWithScores",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json;charset=UTF-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseDtoMapStringDouble"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/search/popular/period": {
+      "get": {
+        "tags": [
+          "search-controller"
+        ],
+        "operationId": "getTopKeywordsByPeriod",
+        "parameters": [
+          {
+            "name": "days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 7
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json;charset=UTF-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseDtoListMapStringObject"
                 }
               }
             }
@@ -1438,6 +1711,37 @@
         }
       }
     },
+    "/chat/{userId}": {
+      "get": {
+        "tags": [
+          "chat-http-controller"
+        ],
+        "operationId": "getUserChatRoomRelations",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json;charset=UTF-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseDtoListUserChatRoomDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/career-cards/{userId}/images": {
       "get": {
         "tags": [
@@ -1610,6 +1914,56 @@
         }
       }
     },
+    "/alarms": {
+      "get": {
+        "tags": [
+          "alarm-controller"
+        ],
+        "operationId": "getAlarms",
+        "parameters": [
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json;charset=UTF-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseDtoPagedResponseAlarmResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/alarms/subscribe": {
+      "get": {
+        "tags": [
+          "alarm-controller"
+        ],
+        "operationId": "subscribe",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/SseEmitter"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/s3/delete": {
       "delete": {
         "tags": [
@@ -1666,6 +2020,98 @@
               "application/json;charset=UTF-8": {
                 "schema": {
                   "$ref": "#/components/schemas/ResponseDtoVoid"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/chat/rooms/{roomId}/leave": {
+      "delete": {
+        "tags": [
+          "chat-http-controller"
+        ],
+        "operationId": "leaveChatRoom",
+        "parameters": [
+          {
+            "name": "roomId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json;charset=UTF-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseDtoVoid"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/verification/{email}": {
+      "delete": {
+        "tags": [
+          "auth-controller"
+        ],
+        "operationId": "deleteVerification",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json;charset=UTF-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseDtoObject"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/alarms/{alarmId}": {
+      "delete": {
+        "tags": [
+          "alarm-controller"
+        ],
+        "operationId": "deleteAlarm",
+        "parameters": [
+          {
+            "name": "alarmId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json;charset=UTF-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseDtoObject"
                 }
               }
             }
@@ -1832,6 +2278,288 @@
           },
           "data": {
             "$ref": "#/components/schemas/LikedDto"
+          }
+        }
+      },
+      "CareerCard": {
+        "type": "object",
+        "properties": {
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "user": {
+            "$ref": "#/components/schemas/User"
+          },
+          "major": {
+            "type": "string"
+          },
+          "imageUrls": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "student_status": {
+            "type": "string"
+          },
+          "grade": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "student_num": {
+            "type": "string"
+          },
+          "department": {
+            "type": "string"
+          },
+          "job": {
+            "type": "string"
+          },
+          "experiences": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Experience"
+            }
+          },
+          "skills": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "storageMappings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StorageCardMapping"
+            }
+          }
+        }
+      },
+      "CareerCardStorage": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "user": {
+            "$ref": "#/components/schemas/User"
+          },
+          "cardMappings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StorageCardMapping"
+            }
+          }
+        }
+      },
+      "ChatRoom": {
+        "type": "object",
+        "properties": {
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "lastMessageAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastMessagePreview": {
+            "type": "string"
+          },
+          "userChatRooms": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserChatRoom"
+            }
+          }
+        }
+      },
+      "Experience": {
+        "type": "object",
+        "properties": {
+          "company": {
+            "type": "string"
+          },
+          "period": {
+            "type": "string"
+          }
+        }
+      },
+      "ResponseDtoChatRoom": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ChatRoom"
+          }
+        }
+      },
+      "StorageCardMapping": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "careerCard": {
+            "$ref": "#/components/schemas/CareerCard"
+          },
+          "careerCardStorage": {
+            "$ref": "#/components/schemas/CareerCardStorage"
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "email": {
+            "type": "string",
+            "description": "email",
+            "example": "foo@sookmyung.ac.kr"
+          },
+          "nickname": {
+            "maxLength": 10,
+            "minLength": 2,
+            "type": "string"
+          },
+          "password": {
+            "type": "string",
+            "description": "password",
+            "example": "jamone122@3"
+          },
+          "roles": {
+            "uniqueItems": true,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "USER",
+                "ADMIN"
+              ]
+            }
+          },
+          "careerCard": {
+            "$ref": "#/components/schemas/CareerCard"
+          },
+          "careerCardStorage": {
+            "$ref": "#/components/schemas/CareerCardStorage"
+          },
+          "userChatRooms": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserChatRoom"
+            }
+          }
+        },
+        "description": "회원"
+      },
+      "UserChatRoom": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "user": {
+            "$ref": "#/components/schemas/User"
+          },
+          "room": {
+            "$ref": "#/components/schemas/ChatRoom"
+          },
+          "lastReadMessageId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "lastReadAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "unreadCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "joinedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "isMuted": {
+            "type": "boolean"
+          },
+          "isPinned": {
+            "type": "boolean"
+          },
+          "roomId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "userId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "muted": {
+            "type": "boolean",
+            "writeOnly": true
+          },
+          "pinned": {
+            "type": "boolean",
+            "writeOnly": true
+          }
+        }
+      },
+      "ResponseDtoMapStringObject": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object"
+            }
           }
         }
       },
@@ -2018,6 +2746,21 @@
           }
         }
       },
+      "ResponseDtoObject": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "object"
+          }
+        }
+      },
       "RegisterRequest": {
         "required": [
           "confirmPassword",
@@ -2057,36 +2800,6 @@
           }
         }
       },
-      "RefreshTokenResponse": {
-        "type": "object",
-        "properties": {
-          "statusCode": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "message": {
-            "type": "string"
-          },
-          "data": {
-            "$ref": "#/components/schemas/TokenDto"
-          }
-        }
-      },
-      "TokenDto": {
-        "type": "object",
-        "properties": {
-          "accessToken": {
-            "type": "string"
-          },
-          "expiresIn": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "tokenType": {
-            "type": "string"
-          }
-        }
-      },
       "LoginRequest": {
         "required": [
           "email",
@@ -2116,6 +2829,21 @@
           },
           "data": {
             "$ref": "#/components/schemas/TokenDto"
+          }
+        }
+      },
+      "TokenDto": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string"
+          },
+          "expiresIn": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "tokenType": {
+            "type": "string"
           }
         }
       },
@@ -2188,7 +2916,18 @@
           }
         }
       },
-      "ResponseDtoObject": {
+      "ChatRoomStatusUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "isMuted": {
+            "type": "boolean"
+          },
+          "isPinned": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ResponseDtoVoid": {
         "type": "object",
         "properties": {
           "statusCode": {
@@ -2270,155 +3009,6 @@
             "$ref": "#/components/schemas/FindMyUsernoteDto"
           }
         }
-      },
-      "CareerCard": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "user": {
-            "$ref": "#/components/schemas/User"
-          },
-          "major": {
-            "type": "string"
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "modified_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "imageUrls": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "student_status": {
-            "type": "string"
-          },
-          "grade": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "student_num": {
-            "type": "string"
-          },
-          "department": {
-            "type": "string"
-          },
-          "job": {
-            "type": "string"
-          },
-          "experiences": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Experience"
-            }
-          },
-          "skills": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "storageMappings": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/StorageCardMapping"
-            }
-          }
-        }
-      },
-      "CareerCardStorage": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "user": {
-            "$ref": "#/components/schemas/User"
-          },
-          "cardMappings": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/StorageCardMapping"
-            }
-          }
-        }
-      },
-      "Experience": {
-        "type": "object",
-        "properties": {
-          "company": {
-            "type": "string"
-          },
-          "period": {
-            "type": "string"
-          }
-        }
-      },
-      "StorageCardMapping": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "careerCard": {
-            "$ref": "#/components/schemas/CareerCard"
-          },
-          "careerCardStorage": {
-            "$ref": "#/components/schemas/CareerCardStorage"
-          }
-        }
-      },
-      "User": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "email": {
-            "type": "string",
-            "description": "email",
-            "example": "foo@sookmyung.ac.kr"
-          },
-          "nickname": {
-            "maxLength": 10,
-            "minLength": 2,
-            "type": "string"
-          },
-          "password": {
-            "type": "string",
-            "description": "password",
-            "example": "jamone122@3"
-          },
-          "roles": {
-            "uniqueItems": true,
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "USER",
-                "ADMIN"
-              ]
-            }
-          },
-          "careerCard": {
-            "$ref": "#/components/schemas/CareerCard"
-          },
-          "careerCardStorage": {
-            "$ref": "#/components/schemas/CareerCardStorage"
-          }
-        },
-        "description": "회원"
       },
       "CardStorageItem": {
         "type": "object",
@@ -2569,6 +3159,27 @@
           }
         }
       },
+      "ResponseDtoListMapStringObject": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      },
       "ResponseDtoListString": {
         "type": "object",
         "properties": {
@@ -2583,6 +3194,143 @@
             "type": "array",
             "items": {
               "type": "string"
+            }
+          }
+        }
+      },
+      "ResponseDtoMapStringDouble": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number",
+              "format": "double"
+            }
+          }
+        }
+      },
+      "ResponseDtoListUserChatRoomDTO": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserChatRoomDTO"
+            }
+          }
+        }
+      },
+      "UserChatRoomDTO": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "userId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "roomId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "roomName": {
+            "type": "string"
+          },
+          "lastReadMessageId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "lastReadAt": {
+            "type": "string"
+          },
+          "unreadCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "joinedAt": {
+            "type": "string"
+          },
+          "isMuted": {
+            "type": "boolean"
+          },
+          "isPinned": {
+            "type": "boolean"
+          },
+          "lastMessagePreview": {
+            "type": "string"
+          },
+          "lastMessageAt": {
+            "type": "string"
+          }
+        }
+      },
+      "ChatRoomSummaryDTO": {
+        "type": "object",
+        "properties": {
+          "roomId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "opponentUserNickname": {
+            "type": "string"
+          },
+          "opponentCareerCardId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "opponentUserId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "lastMessageAt": {
+            "type": "string"
+          },
+          "lastMessage": {
+            "type": "string"
+          },
+          "opponentImageUrl": {
+            "type": "string"
+          },
+          "unreadCount": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "ResponseDtoListChatRoomSummaryDTO": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChatRoomSummaryDTO"
             }
           }
         }
@@ -2643,7 +3391,60 @@
           }
         }
       },
-      "ResponseDtoVoid": {
+      "AlarmResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "mergedMessage": {
+            "type": "string"
+          },
+          "targetId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "alarmType": {
+            "type": "string",
+            "enum": [
+              "LIKE_NOTE",
+              "MATCH"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "checked": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PagedResponseAlarmResponse": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AlarmResponse"
+            }
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "ResponseDtoPagedResponseAlarmResponse": {
         "type": "object",
         "properties": {
           "statusCode": {
@@ -2654,7 +3455,16 @@
             "type": "string"
           },
           "data": {
-            "type": "object"
+            "$ref": "#/components/schemas/PagedResponseAlarmResponse"
+          }
+        }
+      },
+      "SseEmitter": {
+        "type": "object",
+        "properties": {
+          "timeout": {
+            "type": "integer",
+            "format": "int64"
           }
         }
       }
