@@ -18,13 +18,13 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Configuration
 @EnableAsync
 public class AsyncConfig implements AsyncConfigurer {
-    @Value("${spring.application.async.email.core-pool-size}")
+    @Value("${spring.application.async.email.core-pool-size:2}")
     private int emailCorePoolSize;
 
-    @Value("${spring.application.async.email.max-pool-size}")
+    @Value("${spring.application.async.email.max-pool-size:4}")
     private int emailMaxPoolSize;
 
-    @Value("${spring.application.async.email.queue-capacity}")
+    @Value("${spring.application.async.email.queue-capacity:50}")
     private int emailQueueCapacity;
 
     @Bean("emailTaskExecutor")

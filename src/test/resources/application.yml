@@ -5,7 +5,7 @@ spring:
       email:
         core-pool-size: 2
         max-pool-size: 4
-        queue-capacity: 10
+        queue-capacity: 50
   
   # 테스트용 메일 설정 (실제 발송 안 함)
   mail:
