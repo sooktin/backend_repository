@@ -33,9 +33,9 @@ spring:
     name: sooktin
   async:
     email:
-      core-pool-size: 8
-      max-pool-size: 20
-      queue-capacity: 100
+      core-pool-size: 2
+      max-pool-size: 4
+      queue-capacity: 50
   config:
     import: aws-parameterstore:/sooktin/prod/
   datasource:
