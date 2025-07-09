@@ -1,10 +1,8 @@
 package com.sooktin.backend.service;
 
-import com.sooktin.backend.auth.JwtUtil;
 import com.sooktin.backend.domain.CareerCardStorage;
 import com.sooktin.backend.domain.User;
 import com.sooktin.backend.domain.UserRole;
-import com.sooktin.backend.domain.VerificationToken;
 import com.sooktin.backend.dto.email.EmailCheckResponse;
 import com.sooktin.backend.dto.user.NicknameResponse;
 import com.sooktin.backend.dto.user.PasswordChangeResponse;
@@ -13,11 +11,9 @@ import com.sooktin.backend.dto.verification.VerficationResponse;
 import com.sooktin.backend.global.exception.auth.DuplicateEmailException;
 import com.sooktin.backend.global.exception.auth.DuplicateNicknameException;
 import com.sooktin.backend.global.exception.auth.PasswordMismatchException;
-import com.sooktin.backend.repository.StorageRepository;
 import com.sooktin.backend.repository.UserRepository;
-import com.sooktin.backend.repository.VerificationRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -29,14 +25,14 @@ import java.util.*;
 
 @Service
 @RequiredArgsConstructor
-
+@Slf4j
 public class UserService {
     private final UserRepository userRepository;
-    private final VerificationRepository tokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     @Qualifier("redisTemplate")
-    private final RedisTemplate redisTemplate;
+    private final RedisTemplate<String, String> redisTemplate;
+
 
     @Transactional
     public void registerUser(RegisterRequest request) {
@@ -98,6 +94,34 @@ public class UserService {
         return new NicknameResponse(200,"닉네임이 변경되었습니다.", user);
     }
 
+    @Transactional
+    public VerficationResponse verifyEmail(String email, String code) {
+        EmailService.VerificationResult result = emailService.verifyCode(email, code);
+
+        return switch (result) {
+            case SUCCESS -> {
+                log.info("이메일 인증 성공 - 이메일: {}", email);
+                yield VerficationResponse.success();
+            }
+            case CODE_NOT_FOUND_OR_EXPIRED -> {
+                log.warn("인증 코드 만료 또는 없음 - 이메일: {}", email);
+                yield VerficationResponse.expired();
+            }
+            case CODE_MISMATCH -> {
+                log.warn("인증 코드 불일치 - 이메일: {}", email);
+                yield VerficationResponse.invalidCode();
+            }
+            case TOO_MANY_ATTEMPTS -> {
+                log.warn("인증 시도 횟수 초과 - 이메일: {}", email);
+                yield VerficationResponse.tooManyAttempts();
+            }
+            default -> {
+                log.error("인증 시스템 오류 - 이메일: {}, 결과: {}", email, result);
+                yield VerficationResponse.systemError();
+            }
+        };
+    }
+
     @Transactional(readOnly = true)
     public EmailCheckResponse checkEmail(String email) {
 
@@ -109,24 +133,6 @@ public class UserService {
 
     }
 
-    @Transactional
-    public void createVerificationToken(String email, String code) {
-        VerificationToken verificationToken = new VerificationToken(code, email);
-        tokenRepository.save(verificationToken);
-        emailService.sendVerificationEmail(email, code);
-    }
-
-    @Transactional
-    public void sendVerificationCode(String email) {
-        String verficationCode = generateVerificationCode();
-
-        createVerificationToken(email, verficationCode);
-    }
-
-    private String generateVerificationCode() {
-        Random random = new Random();
-        return String.format("%06d", random.nextInt(1000000));
-    }
 
     @Transactional(readOnly = true)
     public Optional<User> findUserById(Long id) {
@@ -136,25 +142,6 @@ public class UserService {
     @Transactional(readOnly = true)
     public Optional<User> findUserByEmail(String email) {
         return userRepository.findByEmail(email);
-    }
-
-    @Transactional
-    public VerficationResponse verifyEmail(String email, String code) {
-        VerificationToken verificationToken = tokenRepository.findByEmailAndToken(email,code);
-
-        if (verificationToken == null) {
-            return VerficationResponse.invalidCode();
-        }
-
-        Calendar calendar = Calendar.getInstance();
-        if (verificationToken.getExpiryDate().getTime() - calendar.getTime().getTime() <= 0) {
-            tokenRepository.delete(verificationToken);
-            return VerficationResponse.expired();
-        }
-
-        tokenRepository.delete(verificationToken);
-
-        return VerficationResponse.success();
     }
 
     @Transactional(readOnly = true)
@@ -175,5 +162,12 @@ public class UserService {
 
         String refreshtoken = "REFRESH_" + user.getEmail();
         redisTemplate.delete(refreshtoken);
+    }
+
+
+    @Transactional
+    public void removeVerificationToken(String email) {
+        emailService.deleteVerificationCode(email);
+        log.info("인증 코드 삭제 완료 by ADMIN!- 이메일: {}", email);
     }
 }

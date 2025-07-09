@@ -19,7 +19,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "careercards")
-public class CareerCard {
+public class CareerCard extends BaseEntity{
 
     /* ERD카드 참고하여 작성한 엔티티
         아직은 미완입니다!! 수정사항 발생하면 말해주세요 */
@@ -41,13 +41,6 @@ public class CareerCard {
     @Column(length = 20, nullable = false)
     private String major; // 전공
 
-    @CreationTimestamp
-    @Column(nullable = false)
-    private LocalDateTime created_at; // 생성일시
-
-    @UpdateTimestamp
-    @Column(nullable = false)
-    private LocalDateTime modified_at; // 수정일시
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "career_card_images", joinColumns = @JoinColumn(name = "card_id"))

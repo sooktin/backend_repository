@@ -1,10 +1,48 @@
+# src/test/resources/application.yml
 spring:
+  application:
+    async:
+      email:
+        core-pool-size: 2
+        max-pool-size: 4
+        queue-capacity: 10
+  
+  # 테스트용 메일 설정 (실제 발송 안 함)
+  mail:
+    host: localhost
+    port: 25
+    test-connection: false
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+
+  # H2 인메모리 DB 사용
   datasource:
     url: jdbc:h2:mem:testdb;MODE=MySQL;DATABASE_TO_LOWER=TRUE
     driver-class-name: org.h2.Driver
     username: sa
     password:
+  
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: create-drop
+    show-sql: false
+
+  # 테스트용 Redis (Embedded Redis 사용)
+  data:
+    redis:
+      host: localhost
+      port: 6370  # 다른 포트 사용
+      timeout: 1000
+
+# 상세 로깅으로 비동기 확인
+logging:
+  level:
+    com.sooktin.backend.service.EmailService: DEBUG
+    org.springframework.scheduling: DEBUG
+    org.springframework.mail: WARN  # 실제 발송 안 하므로 WARNING 레벨
+    root: INFO

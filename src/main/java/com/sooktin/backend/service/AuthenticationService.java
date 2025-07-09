@@ -22,8 +22,6 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final RedisTemplate<String, String> redisTemplate;
-    private final UserRepository userRepository;
-    private final EmailService emailService;
     private final CustomUserDetailsService customUserDetailsService;
 
     public AuthenticationResult authenticate(String email, String password) {

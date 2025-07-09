@@ -32,7 +32,6 @@ public class ChatHttpController {
     private final UserChatRoomService userChatRoomService;
     private final UserService userService;
 
-    //TODO 프로필사진URI
     @GetMapping("/rooms")
     public ResponseEntity<ResponseDto<List<ChatRoomSummaryDTO>>> getUserChatRooms(
             @AuthenticationPrincipal CustomUserDetails userDetails
@@ -54,10 +53,9 @@ public class ChatHttpController {
     @PostMapping("/rooms")
     public ResponseEntity<ResponseDto<ChatRoom>> createChatRoom(
         @AuthenticationPrincipal CustomUserDetails userDetails,
-        @RequestParam(required = false) Long targetUserId,
-        @RequestParam(required = false) String name
+        @RequestParam Long targetUserId
     ) {
-        ChatRoom chatRoom = new ChatRoom(LocalDateTime.now());
+        ChatRoom chatRoom = new ChatRoom();
 
         /*if (name != null && !name.trim().isEmpty()) {
             chatRoom.setName(name);

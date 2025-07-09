@@ -13,23 +13,21 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
-public class ChatRoom {
+public class ChatRoom extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;
-    private LocalDateTime createdAt;
+
 
     private LocalDateTime lastMessageAt;
     private String lastMessagePreview;
 
     // 생성자 추가
-    public ChatRoom(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-        this.lastMessageAt = createdAt;
+    public ChatRoom() {
+        this.lastMessageAt = LocalDateTime.now();
     }
 
     public void updateLastMessage(String content, LocalDateTime timestamp) {

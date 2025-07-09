@@ -48,13 +48,12 @@ public class RabbitConfig {
     @Value("${spring.rabbitmq.port:5672}")
     private int port;
 
-    @Value("${spring.chat.queue.name}")
-    private String queueName;
+
 
     @Bean
     public Queue chatQueue() {
         // 기본 durable 큐로 단순화
-        return new Queue(queueName, true);
+        return new Queue(CHAT_QUEUE, true);
     }
 
     @Bean
