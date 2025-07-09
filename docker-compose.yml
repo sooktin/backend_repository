@@ -5,26 +5,27 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=prod
       - AWS_DEFAULT_REGION=ap-northeast-2
-      - SPRING_DATA_REDIS_HOST=master.sooktin-redis.dvwzww.apn2.cache.amazonaws.com
+      - SPRING_DATA_REDIS_HOST=localhost
     volumes:
       - ~/.aws:/root/.aws:ro
     depends_on:
       - rabbitmq
 
   rabbitmq:
-    image: rabbitmq:3-management-alpine
+    image: rabbitmq:3-management
     network_mode: "host"
     environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
-      RABBITMQ_VM_MEMORY_HIGH_WATERMARK: 0.3
-      RABBITMQ_ENABLED_PLUGINS_FILE: /etc/rabbitmq/enabled_plugins
-    volumes:
-      - ./enabled_plugins:/etc/rabbitmq/enabled_plugins
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   nginx:
     image: nginx:latest
-    network_mode: "host"
+    network_mode: host
     volumes:
       - ./nginx-default.conf:/etc/nginx/conf.d/default.conf
       - /etc/letsencrypt:/etc/letsencrypt:ro
