@@ -52,6 +52,7 @@ public class User extends BaseEntity {
     private CareerCardStorage careerCardStorage;  //my CC's storage..
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL,  fetch = FetchType.LAZY)
+    @Builder.Default
     private List<UserChatRoom> userChatRooms = new ArrayList<>();
 
     public void setPassword(String password) {
