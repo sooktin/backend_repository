@@ -1,3 +1,4 @@
+/**
 package com.sooktin.backend.global;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
@@ -30,3 +31,4 @@ public class S3Config {
                 .build();
     }
 }
+**/
