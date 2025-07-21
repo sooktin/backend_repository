@@ -26,7 +26,7 @@ public class S3Service {
 
     private final AmazonS3 amazonS3;
 
-    @Value("${cloud.aws.s3.bucket}")
+    @Value("${aws.s3-bucket}")
     private String bucketName;
 
     // 단일 이미지 업로드
