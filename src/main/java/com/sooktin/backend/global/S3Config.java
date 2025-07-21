@@ -1,4 +1,3 @@
-/**
 package com.sooktin.backend.global;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
@@ -12,23 +11,11 @@ import org.springframework.beans.factory.annotation.Value;
 
 @Configuration
 public class S3Config {
-
-    @Value("${cloud.aws.credentials.access-key}")
-    private String accessKey;
-
-    @Value("${cloud.aws.credentials.secret-key}")
-    private String secretKey;
-
-    @Value("${cloud.aws.region.static}")
-    private String region;
-
     @Bean
     public AmazonS3 amazonS3() {
-        BasicAWSCredentials awsCreds = new BasicAWSCredentials(accessKey, secretKey);
         return AmazonS3ClientBuilder.standard()
-                .withRegion(Regions.fromName(region))
-                .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+                .withRegion(Regions.AP_NORTHEAST_2)
+                .withCredentials(new InstanceProfileCredentialsProvider(false))
                 .build();
     }
 }
-**/
