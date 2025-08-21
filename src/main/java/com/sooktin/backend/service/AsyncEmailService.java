@@ -70,9 +70,6 @@ public class AsyncEmailService {
         return msg;
     }
 
-    /**
-     * 인증 코드 삭제
-     */
     @Transactional
     public void deleteVerificationCode(String email) {
         String key = VERIFICATION_KEY_PREFIX + email;

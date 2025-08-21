@@ -35,6 +35,7 @@ public class CareerCardService {
     private final CareerCardMapper careerCardMapper;
 
     // C - 커리어카드 생성 (S3 이미지 업로드 추가)
+    @CachePut(value = "careerCard", key = "#user.id")
     public CareerCardDTO createCareerCard(CreateCareerCardRequest request, User user, List<MultipartFile> files) {
         if (careerCardRepository.findByUserId(user.getId()).isPresent()) {
             throw new IllegalArgumentException("해당 유저는 이미 커리어카드를 가지고 있습니다.");
@@ -82,7 +83,15 @@ public class CareerCardService {
 
 
     // U - 커리어카드 수정 (S3 이미지 변경 가능)
-    @CacheEvict(value = "careerCard", allEntries = true)
+    @Caching(
+        put = {
+            @CachePut(value = "careerCard", key = "#result.id"),
+            @CachePut(value = "careerCard", key = "#user.id")
+        },
+        evict = {
+            @CacheEvict(value = "careerCard", key = "'keyword_*'", allEntries = true)
+        }
+    )
     @Transactional
     public CareerCardDTO updateCareerCard(CreateCareerCardRequest request, User user, List<MultipartFile> files) {
         CareerCard careerCard = careerCardRepository.findByUserId(user.getId())
@@ -108,10 +117,17 @@ public class CareerCardService {
 
     // D - 커리어카드 삭제 (S3 이미지도 삭제)
     @Transactional
-    @CacheEvict(value = "careerCard", key = "#cardId")
-    public void deleteById(Long cardId) {
+    @Caching(evict = {
+        @CacheEvict(value = "careerCard", key = "#cardId"),
+        @CacheEvict(value = "careerCard", key = "#result.userId", condition = "#result != null"),
+        @CacheEvict(value = "careerCard", allEntries = true)
+    })
+    public CareerCardDTO deleteById(Long cardId) {
         CareerCard careerCard = careerCardRepository.findById(cardId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 커리어카드를 찾을 수 없습니다. id: " + cardId));
+
+        // 삭제 전 DTO 생성 (캐시 무효화용)
+        CareerCardDTO deletedCard = careerCardMapper.toDto(careerCard);
 
         // S3 이미지 삭제
         if (careerCard.getImageUrls() != null && !careerCard.getImageUrls().isEmpty()) {
@@ -120,6 +136,8 @@ public class CareerCardService {
 
         // DB에서 삭제
         careerCardRepository.deleteById(cardId);
+        
+        return deletedCard;
     }
 
     // 권한 검증 (현재 로그인한 유저가 본인 카드만 수정/삭제 가능)

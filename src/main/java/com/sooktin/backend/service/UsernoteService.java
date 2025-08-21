@@ -9,7 +9,9 @@ import com.sooktin.backend.repository.UsernoteRepositoryCustom;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -30,11 +32,14 @@ public class UsernoteService {
     private final UsernoteRepositoryCustom usernoteRepositoryCustom;
 
     // C - Create post
+    @CacheEvict(value = "userNote", key = "#usernote.user.email")
     public Usernote createUsernote(Usernote usernote) {
         if (usernote.getContent().length() > 300) {
             throw new IllegalArgumentException("내용은 300자를 초과할 수 없습니다.");
         }
-        return usernoteRepository.save(usernote);
+        Usernote savedUsernote = usernoteRepository.save(usernote);
+        // 이메일별 캐시 무효화 (새 포스트 추가로 목록 변경)
+        return savedUsernote;
     }
 
     // R - Read all posts
@@ -49,20 +54,32 @@ public class UsernoteService {
     }
 
     // U - Update post by ID
-    @CacheEvict(value = "userNote",allEntries = true)
+    @Caching(
+        put = @CachePut(value = "userNote", key = "#result.id"),
+        evict = {
+            @CacheEvict(value = "userNote", key = "#result.user.email"),
+            @CacheEvict(value = "userNote", key = "'*'", condition = "#result.content != null")
+        }
+    )
     public Usernote updateUsernote(Long id, Usernote updatedUsernote) {
         Usernote usernote = usernoteRepository.findById(id).orElseThrow(
                 () -> new IllegalArgumentException("해당 포스트가 존재하지 않습니다. id: " + id)
         );
         usernote.setContent(updatedUsernote.getContent());
         //usernote.setLikes(updatedUsernote.getLikes());
-        return usernote;
+        Usernote savedUsernote = usernoteRepository.save(usernote);
+        return savedUsernote;
     }
 
     // D - Delete post by ID
-    @CacheEvict(value = "userNote",key = "#id")
+    @Caching(evict = {
+        @CacheEvict(value = "userNote", key = "#id"),
+        @CacheEvict(value = "userNote", allEntries = true, condition = "#result == true")
+    })
     public boolean deleteById(long id) {
         if (usernoteRepository.existsById(id)) {
+            // 삭제 전 사용자 이메일 정보 조회 (캐시 무효화용)
+            Optional<Usernote> usernote = usernoteRepository.findById(id);
             usernoteRepository.deleteById(id);
             return true;
         } else {
