@@ -1,0 +1,24 @@
+global:
+  scrape_interval: 15s  # 모든 타겟을 15초마다 스크래핑
+  evaluation_interval: 15s
+
+scrape_configs:
+  # Prometheus 자체 모니터링
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Spring Boot 애플리케이션 (host 모드라서 localhost 사용)
+  - job_name: 'sooktin-app'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['localhost:8080']  # app:8080 → localhost:8080 변경
+    scrape_interval: 10s
+    scrape_timeout: 5s
+
+  # RabbitMQ Management (필요시)
+  - job_name: 'rabbitmq'
+    static_configs:
+      - targets: ['localhost:15692']  # RabbitMQ Prometheus plugin
+    metrics_path: '/metrics'
+    scrape_interval: 30s
