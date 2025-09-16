@@ -6,10 +6,10 @@ services:
       - SPRING_PROFILES_ACTIVE=prod
       - AWS_DEFAULT_REGION=ap-northeast-2
       - SPRING_DATA_REDIS_HOST=localhost
-      - JAVA_OPTS=-XX:-UseContainerSupport 
+      - JAVA_TOOL_OPTIONS=-XX:-UseContainerSupport
     depends_on:
       - rabbitmq
-
+      
   rabbitmq:
     image: rabbitmq:3-management
     network_mode: "host"
