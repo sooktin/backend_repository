@@ -13,13 +13,11 @@ services:
   rabbitmq:
     image: rabbitmq:3-management
     network_mode: "host"
-    volumes:
-      - ./rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
     environment:
       - RABBITMQ_DEFAULT_USER=guest
       - RABBITMQ_DEFAULT_PASS=guest
-      - RABBITMQ_VM_MEMORY_HIGH_WATERMARK=0.4
-    # volumes 대신 command로 플러그인 활성화
+    volumes:
+      - ./rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
     command: >
       sh -c "
         rabbitmq-plugins enable rabbitmq_stomp rabbitmq_web_stomp &&
