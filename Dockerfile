@@ -10,11 +10,8 @@ RUN apt-get update && \
 
 WORKDIR /app
 COPY build/libs/*.jar app.jar
-COPY entrypoint.sh /app/entrypoint.sh
-RUN chmod +x /app/entrypoint.sh
-
-# JVM 옵션 환경변수 설정
-ENV JAVA_OPTS="-XX:-UseContainerSupport -Dfile.encoding=UTF-8"
 
 EXPOSE 8080
-ENTRYPOINT ["/app/entrypoint.sh"]
+
+# cgroup 문제 해결하면서도 모든 메트릭 유지
+ENTRYPOINT ["java", "-XX:-UseContainerSupport", "-jar", "app.jar"]
