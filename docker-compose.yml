@@ -7,8 +7,6 @@ services:
       - AWS_DEFAULT_REGION=ap-northeast-2
       - SPRING_DATA_REDIS_HOST=localhost
       - JAVA_OPTS=-XX:-UseContainerSupport 
-    volumes:
-      - ~/.aws:/root/.aws:ro
     depends_on:
       - rabbitmq
 
