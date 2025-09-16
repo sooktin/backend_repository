@@ -6,6 +6,7 @@ services:
       - SPRING_PROFILES_ACTIVE=prod
       - AWS_DEFAULT_REGION=ap-northeast-2
       - SPRING_DATA_REDIS_HOST=localhost
+      - JAVA_OPTS=-XX:-UseContainerSupport 
     volumes:
       - ~/.aws:/root/.aws:ro
     depends_on:
@@ -40,3 +41,38 @@ services:
       - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
       - app
+      
+  prometheus:
+    image: prom/prometheus:latest
+    network_mode: "host"  # host 모드로 localhost 통신 가능
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+      - '--web.listen-address=0.0.0.0:9090'  # 포트 명시
+    restart: unless-stopped
+
+  # Grafana - 대시보드
+  grafana:
+    image: grafana/grafana:latest
+    network_mode: "host"  # host 모드로 prometheus 접근 가능
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=sooktin2024!
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_HTTP_PORT=3000
+      - GF_SERVER_ROOT_URL=https://sooktin.duckdns.org/grafana/
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true
+    volumes:
+      - grafana_data:/var/lib/grafana
+    restart: unless-stopped
+
+volumes:
+  prometheus_data:
+  grafana_data:
