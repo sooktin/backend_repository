@@ -23,9 +23,6 @@ services:
     command: >
       sh -c "
         rabbitmq-plugins enable rabbitmq_stomp rabbitmq_web_stomp &&
-        echo 'stomp.default_user = guest' >> /etc/rabbitmq/rabbitmq.conf &&
-        echo 'stomp.default_pass = guest' >> /etc/rabbitmq/rabbitmq.conf &&
-        echo 'web_stomp.tcp.port = 61613' >> /etc/rabbitmq/rabbitmq.conf &&
         rabbitmq-server
       "
     healthcheck:
